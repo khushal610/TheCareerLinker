@@ -1,0 +1,64 @@
+1. Admin Plateform
+Authentication:
+•	Login: Admins can securely access the system using their credentials.
+•	Logout: Terminate the session securely.
+
+Accessiblities:
+•   Student Management:
+    o	View and manage profiles of Students.
+    o	Handle Student queries and review.
+•   Course Management:
+    o	Can add new course or update existing course.
+•  Developer Management:
+    o	View and manage profiles of Developers.
+•  Manage Assessment:
+    o	Create new Assessment or update existing Assessment.
+
+•  Manage Assessment:
+    o	Create new Assessment or update existing Assessment.
+
+
+2. Student Plateform
+Authentication:
+•	Login: Admins can securely access the system using their credentials.
+•	Logout: Terminate the session securely.
+
+Accessiblities:
+•   Profile Management:
+    o	Student can manage his/her profile.
+    o	Can give review or can ask queries.
+•   General Accessiblities:
+    o	Student can enroll for courses.
+    o	Student can give online Assessment.
+    o	Student can Practice for interview.
+    o	Student can Apply for internship/job to companies like [Small,Medium,MNC].
+
+
+
+3. Developer Plateform
+Authentication:
+•	Login: Admins can securely access the system using their credentials.
+•	Logout: Terminate the session securely.
+
+•   Profile Management:
+    o	Developer can manage his/her profile.
+•   General Accessiblities:
+    o	Developer can create Assessment
+    o	Developer can provide the practice session of interview to the student.
+
+•   Shortlisting or Student selection:
+    o	Select student based on their performance and quiz score.
+    o	Handle Student queries related to course.
+
+
+
+
+
+
+
+
+
+
+
+
+--    o	Developer can arrenge interview in the company. --

@@ -1,0 +1,17 @@
+--accent-color: #003285; // all theme color of the site
+
+--nav-hover-color: #2A629A; // nav text hover effect color
+
+--nav-color: #c6c6c6;  // nav text or link color
+
+--background-color: #060606; // index page image background color
+
+--heading-color: #003385;  // all page title font of sections
+
+
+----------------------------------------responsive color code------------------------------------------
+--nav-dropdown-color: #c6c6c6; // text color of navigation
+
+--nav-mobile-background-color: #010101; // navigation background color 
+
+--nav-dropdown-hover-color: #2A629A; // navigation text or link hover effect color

@@ -1,0 +1,155 @@
+{% extends "studentapp/master.html" %}
+{% load static %}
+{% block content %}
+
+{% comment %} <section class="h-100 h-custom gradient-custom-2"> {% endcomment %}
+    <div class="container py-5 h-100">
+      <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col-12">
+          <div class="card card-registration card-registration-2" style="border-radius: 15px;">
+            <div class="card-body p-0">
+              
+              {% comment %} form tag start  {% endcomment %}
+              <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              {% comment %} {{ form.as_p }} {% endcomment %}
+
+              <div class="row g-0 text-white">
+                  {% comment %} left side form section {% endcomment %}
+                  <div class="col-lg-6 bg-dark" style="border-top-left-radius:10px;border-bottom-left-radius:10px;">
+                    <div class="p-5">
+                      <h3 class="fw-normal mb-5" style="color: #fff;">General Infomation</h3>
+                      
+                      <div class="row">
+                        <div class="col-md-6 mb-4 pb-2">
+                          <div data-mdb-input-init class="form-outline">
+                            <input type="text" name="first_name" id="form3Examplev2" class="form-control form-control-lg" />
+                            <label class="form-label" for="form3Examplev2">First Name</label>
+                          </div>
+                        </div>
+
+                        <div class="col-md-6 mb-4 pb-2">
+                          <div data-mdb-input-init class="form-outline">
+                            <input type="text" name="last_name" id="form3Examplev3" class="form-control form-control-lg" />
+                            <label class="form-label" for="form3Examplev3">Last name</label>
+                          </div>
+                        </div>
+
+                      </div>
+    
+                      <div class="row">
+                        <div class="col-md-12 mb-4 pb-2">
+                          <div data-mdb-input-init class="form-outline">
+                            <input type="email" name="email" id="form3Examplev2" class="form-control form-control-lg" /> 
+                            <label class="form-label" for="form3Examplev2">Email</label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-12 mb-4 pb-2">
+                          <div data-mdb-input-init class="form-outline">
+                            <input type="tel" name="contact" id="form3Examplev2" class="form-control form-control-lg" />
+                            <label class="form-label" for="form3Examplev2">Contact</label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-6 mb-4 pb-2">
+                          <div data-mdb-input-init class="form-outline">
+                            <input type="password" name="password" id="form3Examplev2" class="form-control form-control-lg" />
+                            <label class="form-label" for="form3Examplev2">Password</label>
+                          </div>
+                          <span class='text-warning'>{{error}}</span>
+                        </div>
+
+                        <div class="col-md-6 mb-4 pb-2">
+                          <div data-mdb-input-init class="form-outline">
+                            <input type="password" name="confirmPassword" id="form3Examplev2" class="form-control form-control-lg" />
+                            <label class="form-label" for="form3Examplev2">Confirm Password</label>
+                          </div>
+                        </div>
+                      </div>
+    
+    
+                      <div class="row">
+                        <div class="col-md-12 mb-4 pb-2 mb-md-0 pb-md-0">
+    
+                          <div data-mdb-input-init class="form-outline">
+                            <textarea name="address" class="form-control" rows="5" style="resize:none"></textarea>
+                            <label class="form-label" for="form3Examplev5">Address</label>
+                          </div>
+    
+                        </div>
+                      </div>
+    
+                    </div>
+                  </div>
+
+                  {% comment %} right side form section {% endcomment %}
+                  <div class="col-lg-6 text-white" style="border-top-right-radius:10px;border-bottom-right-radius:10px;background:rgb(71, 81, 222)">
+                    <div class="p-5">
+                      <h3 class="fw-normal mb-5" style="color:#fff">Educational Details</h3>
+    
+                      <div class="mb-4 pb-2">
+                        <div data-mdb-input-init class="form-outline form-white">
+                          <input type="text" name="institute_name" id="form3Examplea2" class="form-control form-control-lg" />
+                          <label class="form-label" for="form3Examplea2">University/College Name</label>
+                        </div>
+                      </div>
+    
+                      <div class="mb-4 pb-2">
+                        <div data-mdb-input-init class="form-outline form-white">
+                          <input type="file" name="last_sem_marksheet" id="form3Examplea3" class="form-control form-control-lg" />
+                          <label class="form-label" for="form3Examplea3">Last Sem Marksheet</label>
+                        </div>
+                      </div>
+    
+                      <div class="mb-4 pb-2">
+                        <div data-mdb-input-init class="form-outline form-white">
+                          <input type="file" name="student_resume" id="form3Examplea6" class="form-control form-control-lg" />
+                          <label class="form-label" for="form3Examplea6">Resume</label>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-5 mb-4 pb-2">
+    
+                          <div data-mdb-input-init class="form-outline form-white">
+                            <label class="form-label" for="form3Examplea4">Study Area</label>
+                            <select name="course" id="" class="form-control">
+                              <option value="">select course</option>
+                              <option value="B.B.A">B.B.A</option>
+                              <option value="B.Com">B.Com</option>
+                              <option value="B.C.A">B.C.A</option>
+                              <option value="Bsc.IT">Bsc.IT</option>
+                              <option value="B.Tech">B.Tech</option>
+                              <option value="M.C.A">M.C.A</option>
+                              <option value="Msc.IT">Msc.IT</option>
+                            </select>
+                            {% comment %} <input type="text" id="form3Examplea4" class="form-control form-control-lg" /> {% endcomment %}
+                          </div>
+    
+                        </div>
+                      </div>
+    
+                      <p class="mb-5 pb-lg-2">Have an already account? <a href="{% url "login" %}"
+                        style="color: #000000"><u>Login here</u></a></p>
+                      <button  type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-dark btn-lg"
+                        data-mdb-ripple-color="dark">Register</button>
+    
+                    </div>
+                  </div>    
+              </div>
+
+              </form>
+              {% comment %} form tag close {% endcomment %}
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% comment %} </section> {% endcomment %}
+  {% endblock %}

@@ -1,0 +1,68 @@
+{% extends "adminapp/master.html" %}
+{% load static %}
+{% block content %}
+
+    <!-- Table Start -->
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-sm-12 col-xl-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">Developers Table</h6>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Username</th>
+                                <th scope="col">Company Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Contact</th>
+                                <th scope="col">Password</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in devData %}
+                                <tr>
+                                    <th scope="row">{{data.id}}</th>
+                                    <td>{{data.username}}</td>
+                                    <td>{{data.company_name}}</td>
+                                    <td>{{data.email}}</td>
+                                    <td>{{data.contact}}</td>
+                                    <td>{{data.password}}</td>
+                                    <td>
+                                        {% if data.is_verified != True %}
+                                            <span class="px-2 text-danger d-flex align-items-center justify-content-center gap-1"><i class="fa-solid fa-ban"></i> Unauthorize</span>
+                                        {% else %}
+                                            <span class="px-2 text-primary"><i class="fa-solid fa-certificate"></i> Authorized</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="d-flex gap-2">
+                                        {% if data.is_verified != True %}
+                                            <form method="post" action="{% url "authorize_dev" data.id %}">
+                                            {% csrf_token %}
+                                                <button type="submit" class="btn btn-success">Authorize</button>
+                                            </form>
+                                            <form method="post" action="{% url 'deleteDev' data.id %}">
+                                            {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                            </form>
+
+                                        {% else %}
+                                            <form action="{% url "unauthorize_dev" data.id %}" method="post">
+                                            {% csrf_token %}
+                                                <button class="btn btn-warning">Remove Permissions</button>
+                                            </form>                                            
+
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Table End -->
+{% endblock %}  

@@ -1,0 +1,74 @@
+<---------------------------------- admin side ---------------------------------->
+Admin
+    -> Registration
+    -> Login
+    -> Logout
+    -> Manage Developer, Manage Candidate/student, Manage Quiz
+    -> for candidate/student ----> Sorting, Time, Result/Status, Scheduling
+
+<---------------------------------- user side ---------------------------------->
+Student Plateform
+    => sign in page
+        -> Registration
+            --> fullname [firstName,lastName]
+            --> email
+            --> contact
+            --> password
+            --> college/university name [instituteName]
+            --> address
+            --> course
+            --> resume
+            --> last_sem_marksheet
+        -> Login
+            --> email
+            --> password
+    -> Interview Practice
+    -> Interview Type
+        --> online
+            ---> Practice
+            ---> Test
+            ---> Sorting / Selection Status
+        --> offline
+            ---> Resume
+            ---> Select Company
+            ---> Schedule Interview
+    -> Company List (Type)
+        --> Small
+        --> Medium
+        --> MNC
+    -> Selected Developer list from each company
+    -> Student Profile
+        --> name
+        --> email
+        --> contact
+        --> field of study
+        --> college or university name
+        --> cgpa
+        --> passing year
+        --> resume
+    -> courses
+        --> image
+        --> enroll now [btn]
+        --> course name
+        --> content
+        --> developer image
+        --> total number of enrollments
+    -> Developer Profile
+        --> name
+        --> email
+        --> contact
+        --> company name
+        --> experience
+    -> Online Interview Quiz/Test
+        --> dependes on selected language
+        --> quiz time limit
+        --> final result score
+        --> Status (selected or not) | if score > 80 ? Schedule Interview : Attend Practice
+    -> Logout
+
+<---------------------------------- company side ---------------------------------->
+Company's Developer Plateform
+    -> Select Student or Schedule Interview based on student's score (shortlisting)
+    -> Developer Profile
+    -> Create Quiz/Test
+    -> Show Student list whose score is above 80%

@@ -1,0 +1,113 @@
+--------------------------------------------------------------------------------------------
+Developer Entity Flow Structure
+--------------------------------------------------------------------------------------------
+Registration/Login:
+    Developer registers on the platform using an email and password.
+    Login is enabled with secure authentication.
+    Option to reset the password if forgotten.
+Dashboard Access:
+    After login, the developer is redirected to their dashboard.
+    Dashboard shows:
+        Scheduled practice sessions.
+        Assessments they’ve created.
+        Notifications for student session bookings and quiz completions.
+Profile Management:
+    Developer can update their professional profile, which includes:
+        Adding/changing their expertise (e.g., Python, JavaScript).
+        Setting availability for live practice sessions.
+        Uploading a professional profile picture.
+Conduct Practice Sessions:
+    Developer sets availability for live interview practice sessions.
+    Students can book these slots.
+    During the session, developers can provide:
+        Real-time feedback.
+        Tips to improve performance.
+        After the session, developers can submit session feedback for students.
+Create Assessments:
+    Developer designs quizzes/assessments with:
+        Custom questions (MCQs, coding questions, etc.).
+        Difficulty levels (Easy, Medium, Hard).
+        Time limits for the quiz.
+        Assessments are sent to the admin for approval before being available for students.
+Student Shortlisting:
+    Developers review student quiz results and interview performance.
+    Based on scores and feedback, developers can:
+        Shortlist students for company recommendations.
+        Provide additional mentorship to students.
+
+--------------------------------------------------------------------------------------------
+Admin Entity Flow Structure
+--------------------------------------------------------------------------------------------
+Login/Access Panel:
+    Admin logs in with a unique username and password.
+    Admin panel is accessible only to authorized person.
+Manage Users (Student and Developer):
+    View all registered students and developers.
+    Add, update, or delete user accounts.
+    Approve or deactivate accounts if required.
+Monitor Activities:
+    Track live interview sessions conducted by developers.
+    Monitor student quiz attempts and performance data.
+Content Moderation:
+    Review assessments created by developers.
+    Approve or reject quizzes for student access.
+Resolve Conflicts/Issues:
+    Handle reported issues or conflicts between users.
+    Take necessary actions like suspending accounts or resolving disputes.
+Analytics & Reporting:
+    Admin dashboard provides key metrics such as:
+        Number of active users.
+        Quiz performance trends.
+        Session activity rates.
+        Generate reports for stakeholders.
+
+--------------------------------------------------------------------------------------------
+Student Entity Flow Structure
+--------------------------------------------------------------------------------------------
+Registration & Login:
+    Registration:
+        Students create an account by providing:
+            Name, email, password, and contact number.
+            Option to upload a profile picture.
+            Verification email sent for activation.
+    Login:
+        Secure login with email and password.
+        Option for social login (e.g., Google, LinkedIn, etc.) for quick access.
+        Password recovery in case of forgotten credentials.
+Profile Management:
+    After login, the student is redirected to their dashboard.
+The student can:
+    Update profile details such as skills, bio, and contact information.
+    Upload or update a resume.
+    View and manage performance data, including quiz scores and interview feedback.
+Quiz/Assessment Interaction:
+    Browse quiz categories (e.g., JavaScript, Python, etc.).
+    Select a quiz type and difficulty level.
+Attempt quizzes with features like:
+    Timer for each quiz.
+    Real-time scoring or results post-quiz completion.
+    View quiz history and performance analytics.
+Live Interview Practice:
+    Browse available slots for practice sessions with developers.
+    Book a session based on developer availability.
+    Attend live sessions (using tools like WebRTC/Django Channels).
+    Receive feedback and suggestions post-session.
+Performance Evaluation:
+    Track performance metrics based on:
+        Quiz scores.
+        Feedback from developers after practice sessions.
+        Students are shown areas of improvement with suggestions.
+Company Shortlisting:
+    Based on their quiz scores and performance feedback:
+        View a list of companies they qualify for.
+        Get notified when shortlisted for interviews by developers or companies.
+Notifications & Updates:
+    Receive real-time updates about:
+        Scheduled practice sessions.
+        Feedback from developers.
+        Company shortlisting or rejection status.
+        Access notifications in a dedicated section or via email.
+Continuous Learning:
+    Access learning resources such as:
+        Articles, interview tips, or coding challenges.
+        Previous quiz questions for practice.
