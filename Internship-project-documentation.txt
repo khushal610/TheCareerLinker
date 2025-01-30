@@ -58,7 +58,14 @@ Student Plateform
         --> email
         --> contact
         --> company name
+        --> password
+
         --> experience
+        --> developer image
+        --> experties
+        --> bio-title
+        --> profile-about-bio
+
     -> Online Interview Quiz/Test
         --> dependes on selected language
         --> quiz time limit

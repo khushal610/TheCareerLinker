@@ -1,0 +1,44 @@
+{% extends "devapp/master.html" %}
+{% load static %}
+{% block content %}
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-sm-12 col-xl-6">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">Bio Form</h6>
+                    <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="exampleInputEmail1" class="form-label">Bio Title</label>
+                            <input type="text" name="bio_summary" class="form-control" id="exampleInputEmail1"
+                                aria-describedby="emailHelp">
+                        </div>
+                        <div class="mb-3">
+                            <label for="exampleInputPassword1" class="form-label">About Bio-Detail</label>
+                            <textarea name="bio_detail" class="form-control" id=""></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="exampleInputPassword1" class="form-label">Experties</label>
+                            <input type="text" name="experties" class="form-control" id="exampleInputPassword1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="exampleInputPassword1" class="form-label">Experience</label>
+                            <select name="experience" class="form-control" id="">
+                                <option value="1 Year">1 Year</option>
+                                <option value="2 Year">2 Year</option>
+                                <option value="3 Year">3 Year</option>
+                                <option value="5 Year">5 Year</option>
+                                <option value="More then 5 year">More then 5 year</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="exampleInputPassword1" class="form-label">Upload Your Image</label>
+                            <input type="file" name="dev_img" class="form-control" id="exampleInputPassword1">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
