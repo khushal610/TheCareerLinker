@@ -13,9 +13,7 @@ urlpatterns = [
     path('login/',views.loginview,name="login"),
     path('registration/',views.registration,name="registration"),
     path('logout/',views.signout,name="logout"),
+    path('forgot-password/',views.forgot_password,name="forgot_password"),
+    path('verify-otp/',views.compare_otp,name="compare_otp"),
+    path('reset-password/',views.reset_password,name="reset_password"),
 ]
-
-
-# from django-documentation
-# from django.contrib.auth import views as auth_views
-# path('login/',auth_views.LoginView.as_view(),name="login"),
