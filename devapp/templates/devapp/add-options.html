@@ -1,0 +1,30 @@
+{% extends "devapp/master.html" %}
+{% load static %}
+{% block content %}
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4 d-flex align-items-center justify-content-center p-5">
+            <div class="col-sm-12 col-xl-6">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">Add Options</h6>
+                    <form>
+                        <div class="mb-3">
+                            <label for="exampleInputEmail1" class="form-label">Option 1</label>
+                            <input type="text" class="form-control" id="exampleInputEmail1"
+                                aria-describedby="emailHelp">
+                        </div>
+                        <div class="mb-3">
+                            <label for="exampleInputPassword1" class="form-label">Select Quiz Category</label>
+                            <select name="quiz_category" id="" class="form-control">
+                                <option value="None">None</option>
+                                <option value="Python">Python</option>
+                                <option value="JavaScript">JavaScript</option>
+                                <option value="Android Application">Android Application</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

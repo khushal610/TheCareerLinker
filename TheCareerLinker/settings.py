@@ -72,6 +72,8 @@ TEMPLATES = [
     },
 ]
 
+AUTH_USER_MODEL = 'studentapp.User'
+
 WSGI_APPLICATION = 'TheCareerLinker.wsgi.application'
 
 

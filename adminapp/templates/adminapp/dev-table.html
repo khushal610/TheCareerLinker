@@ -16,44 +16,40 @@
                                 <th scope="col">Company Name</th>
                                 <th scope="col">Email</th>
                                 <th scope="col">Contact</th>
-                                <th scope="col">Password</th>
+                                <th scope="col">Experience</th>
                                 <th scope="col">Status</th>
                                 <th scope="col">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for data in devData %}
+                            {% for dev_data in dev_details %}
                                 <tr>
-                                    <th scope="row">{{data.id}}</th>
-                                    <td>{{data.username}}</td>
-                                    <td>{{data.company_name}}</td>
-                                    <td>{{data.email}}</td>
-                                    <td>{{data.contact}}</td>
-                                    <td>{{data.password}}</td>
-                                    <td>
-                                        {% if data.is_verified != True %}
-                                            <span class="px-2 text-danger d-flex align-items-center justify-content-center gap-1"><i class="fa-solid fa-ban"></i> Unauthorize</span>
-                                        {% else %}
-                                            <span class="px-2 text-primary"><i class="fa-solid fa-certificate"></i> Authorized</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="d-flex gap-2">
-                                        {% if data.is_verified != True %}
-                                            <form method="post" action="{% url "authorize_dev" data.id %}">
-                                            {% csrf_token %}
-                                                <button type="submit" class="btn btn-success">Authorize</button>
+                                    <td>{{dev_data.id}}</td>
+                                    <td>{{dev_data.username}}</td>
+                                    <td>{{dev_data.company_name}}</td>
+                                    <td>{{dev_data.email}}</td>
+                                    <td>{{dev_data.contact}}</td>
+                                    <td>{{dev_data.experience}}</td>
+                                    {% if dev_data.is_verified == True %}
+                                        <td class="d-flex align-items-center gap-1 text-success"><i class="fa-solid fa-certificate"></i> Authorized</td>
+                                    {% else %}
+                                        <td class="d-flex align-items-center gap-1 text-danger"><i class="fa-solid fa-ban"></i> Unauthorized</td>
+                                    {% endif %}
+                                    <td class="d-flex align-items-center justify-content-center gap-2">
+                                        {% if dev_data.is_verified != True %}
+                                            <form method="POST" action="{% url 'authorize_dev' dev_data.id %}">
+                                                {% csrf_token %}
+                                                <button class="btn btn-success">Authorize</button>
                                             </form>
-                                            <form method="post" action="{% url 'deleteDev' data.id %}">
-                                            {% csrf_token %}
-                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                            <form method="post" action="{% url 'deleteDev' dev_data.id %}">
+                                                {% csrf_token %}
+                                                <button class="btn btn-danger">Delete</button>
                                             </form>
-
                                         {% else %}
-                                            <form action="{% url "unauthorize_dev" data.id %}" method="post">
-                                            {% csrf_token %}
+                                            <form method="post" action="{% url 'unauthorize_dev' dev_data.id %}">
+                                                {% csrf_token %}
                                                 <button class="btn btn-warning">Remove Permissions</button>
-                                            </form>                                            
-
+                                            </form>
                                         {% endif %}
                                     </td>
                                 </tr>

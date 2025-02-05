@@ -1,18 +1,27 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 # Create your models here.
-# -------------------- Registration model 
-# full_name = models.CharField(max_length=40,default=first_name+last_name)
-# username = models.CharField(max_length=50)
-class Registration(models.Model):
-    first_name = models.CharField(max_length=20,default="")  
-    last_name = models.CharField(max_length=20,default="")
-    email = models.EmailField()                   
-    contact = models.IntegerField()
-    password = models.CharField(max_length=10)      
-    address = models.CharField(max_length=255)
-    institute_name = models.CharField(max_length=70)
-    last_sem_marksheet = models.FileField(upload_to='student_marksheet/')
-    student_resume = models.FileField(upload_to='student_resume/')
-    course = models.CharField(max_length=20,default="B.C.A")
+class User(AbstractUser):
+    ADMIN = 'Admin'
+    DEVELOPER = 'Developer'
+    STUDENT = 'Student'
 
+    role = models.CharField(max_length=20,null=True,blank=True,default=STUDENT)
+
+    # student registration fields
+    contact = models.BigIntegerField(null=True,blank=True)
+    address = models.CharField(max_length=255,null=True,blank=True)
+    institute_name = models.CharField(max_length=70,null=True,blank=True)
+    last_sem_marksheet = models.FileField(upload_to='student_marksheet/',null=True,blank=True)
+    student_resume = models.FileField(upload_to='student_resume/',null=True,blank=True)
+    course = models.CharField(max_length=20,null=True,blank=True)
+
+    # developer registration fields
+    company_name = models.CharField(max_length=70,null=True,blank=True)
+    bio_title = models.CharField(max_length=70,null=True,blank=True)
+    bio_detail = models.CharField(max_length=255,null=True,blank=True)
+    experties = models.CharField(max_length=70,null=True,blank=True)
+    experience = models.CharField(max_length=20,null=True,blank=True)
+    dev_img = models.FileField(upload_to='developer_images/',null=True,blank=True)
+    is_verified = models.BooleanField(default=False)

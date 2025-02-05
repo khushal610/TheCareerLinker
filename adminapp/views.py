@@ -3,44 +3,33 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
 from devapp import models as devModels
 from devapp import forms
-from studentapp import models
+from studentapp.models import User
+from TheCareerLinker import views as TCL_views
 
 # Create your views here.
 def index(request):
-    totalStudents = models.Registration.objects.all().count()
-    totalDevelopers = devModels.DevList.objects.all().count()
+    totalStudents = User.objects.filter(role="Student").count()
+    totalDevelopers = User.objects.filter(role="Developer").count()
     context = {
         'totalStudents':totalStudents,
         'totalDevelopers':totalDevelopers,
     }
     return render(request,'adminapp/index.html',context=context)
 
-def signIn(request):
-    if request.method == "POST":
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(username=username,password=password)
-        if user is not None:
-            login(request,user)
-            return redirect(index)
-        else:
-            return HttpResponse("Please Enter valid data")
-    return render(request,'adminapp/signin.html')
-
 def signout(request):
     logout(request)
-    return redirect(signIn)
+    return redirect(TCL_views.main_login)
 
 def formview(request):
     return render(request,'adminapp/form.html')
 
 def studentTable(request):
-    data = models.Registration.objects.all
-    context = {'data':data}
+    students = User.objects.filter(role="Student",is_superuser=False)
+    context = {'students':students}
     return render(request,'adminapp/student-table.html',context=context)
 
 def deleteUser(request,id):
-    data = models.Registration.objects.get(id=id)
+    data = User.objects.get(id=id)
     data.delete()
     return redirect(studentTable)
 
@@ -53,9 +42,6 @@ def widget(request):
 def assessment(request):
     return render(request,'adminapp/assessment.html')
 
-def dev_add_form(request):
-    return render(request,'adminapp/dev-add-form.html')
-
 def admin_add_form(request):
     if request.method == "POST":
         username = request.POST.get('username')
@@ -66,7 +52,13 @@ def admin_add_form(request):
                 User.objects.get(username=username)
                 return render(request,"adminapp/admin-add-form.html",{'alert':"Admin already exist"})
             except:
-                User.objects.create_user(username=username,password=password)
+                User.objects.create_user(
+                    username=username,
+                    password=password,
+                    role=User.ADMIN,
+                    is_superuser=True,
+                    is_staff=True,
+                )
                 return render(request,"adminapp/admin-add-form.html",{'new_add_msg':"New Admin Created"})
         else:
             return render(request,"adminapp/admin-add-form.html",{'error':"Password Doesn't Match"})
@@ -74,13 +66,13 @@ def admin_add_form(request):
 
 
 def dev_list_table(request):
-    devData = devModels.DevList.objects.all()
-    context = {'devData':devData}
+    dev_details = User.objects.filter(role="Developer")
+    context = {'dev_details':dev_details}
     return render(request,"adminapp/dev-table.html",context=context)
 
 
 def authorize_dev(request,id):
-    data = devModels.DevList.objects.get(id=id)
+    data = User.objects.get(id=id)
     if request.method == "POST":
         data.is_verified = True
         data.save()
@@ -88,7 +80,7 @@ def authorize_dev(request,id):
     return render(request,"adminapp/dev-table.html")
 
 def unauthorize_dev(request,id):
-    data = devModels.DevList.objects.get(id=id)
+    data = User.objects.get(id=id)
     if request.method == "POST":
         data.is_verified = False
         data.save()
@@ -96,6 +88,6 @@ def unauthorize_dev(request,id):
     return render(request,"adminapp/dev-table.html")
 
 def deleteDev(request,id):
-    data = devModels.DevList.objects.get(id=id)
+    data = User.objects.get(id=id)
     data.delete()
     return redirect(dev_list_table)

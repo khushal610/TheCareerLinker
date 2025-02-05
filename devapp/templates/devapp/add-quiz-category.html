@@ -1,0 +1,33 @@
+{% extends "devapp/master.html" %}
+{% load static %}
+{% block content %}
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4 d-flex align-items-center justify-content-center p-5">
+            <div class="col-sm-12 col-xl-6">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">Add Quiz Category</h6>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="exampleInputEmail1" class="form-label">Quiz Category Name</label>
+                            <input type="text" name="quiz_category_name" class="form-control" id="exampleInputEmail1"
+                                aria-describedby="emailHelp">
+                        </div>
+                        <div class="mb-3">
+                            <label for="exampleInputPassword1" class="form-label">Select Quiz Level</label>
+                            <select name="quiz_level" id="" class="form-control">
+                                <option value="None">None</option>
+                                <option value="Easy">Easy</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Hard">Hard</option>
+                            </select>
+                            {{quiz_undefine_error}}
+                        </div>
+                        {{error}}
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

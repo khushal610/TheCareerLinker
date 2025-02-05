@@ -7,35 +7,35 @@
             <div class="col-lg-6">
                 <div class="about-text go-to">
                     <h3 class="dark-color">About Me</h3>
-                    <h6 class="theme-color lead">{{dev_bio_data.bio_summary}}</h6>
-                    <p>{{dev_bio_data.bio_detail}}</p>
+                    <h6 class="theme-color lead">{{request.user.bio_title}}</h6>
+                    <p>{{request.user.bio_detail}}</p>
                     <div class="row about-list">
                         <div class="col-md-6">
                             <div class="media">
                                 <label>E-mail</label>
-                                <p>{{dev_data.email}}</p>
+                                <p>{{request.user.email}}</p>
                             </div>
                             <div class="media">
                                 <label>Contact</label>
-                                <p>{{dev_data.contact}}</p>
+                                <p>{{request.user.contact}}</p>
                             </div>
                             <div class="media">
                                 <label>Experience</label>
-                                <p>{{dev_bio_data.experience}}</p>
+                                <p>{{request.user.experience}}</p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="media">
                                 <label>Contact</label>
-                                <p>{{dev_data.contact}}</p>
+                                <p></p>
                             </div>
                             <div class="media">
                                 <label>Company Name</label>
-                                <p>{{dev_data.company_name}}</p>
+                                <p>{{request.user.company_name}}</p>
                             </div>
                             <div class="media">
                                 <label>Experties</label>
-                                <p>{{dev_bio_data.experties}}</p>
+                                <p>{{request.user.experties}}</p>
                             </div>
                         </div>
                     </div>
@@ -43,7 +43,7 @@
             </div>
             <div class="col-lg-6">
                 <div class="about-avatar">
-                    <img src="{{dev_bio_data.dev_img.url}}" title="" alt="">
+                    <img src="{{request.user.dev_img.url}}" title="" alt="">
                 </div>
             </div>
         </div>

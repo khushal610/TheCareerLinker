@@ -61,7 +61,9 @@
           <li><a href="{% url "courses" %}">Courses</a></li>
           <li><a href="{% url "trainers" %}">Trainers</a></li>
           {% comment %} <li><a href="events.html">Events</a></li> {% endcomment %}
-          <li><a href="{% url "profile" %}">{{username}}</a></li>
+          {% if request.user.is_authenticated %}
+          <li><a href="{% url "profile" %}">{{request.user}}</a></li>
+          {% endif %}
           <li><a href="{% url "pricing" %}">Pricing</a></li>
           {% comment %} <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
             <ul>
@@ -84,9 +86,11 @@
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
-
-      <a class="btn-getstarted" href="{% url "login" %}">Sign in</a>
-      <a class="btn-getstarted" href="{% url "logout" %}">Sign Out</a>
+      {% if request.user.is_authenticated %}
+        <a class="btn-getstarted" href="{% url "logout" %}">Sign Out</a>
+      {% else %}
+        <a class="btn-getstarted" href="{% url "login" %}">Sign in</a>
+      {% endif %}
 
     </div>
   </header>
