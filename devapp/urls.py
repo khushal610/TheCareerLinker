@@ -5,6 +5,7 @@ urlpatterns = [
     path('dev-signup/',views.dev_signUp,name="dev_signUp"),
     path('dev-index/',views.index,name="devIndex"),
     path('dev-profile/',views.dev_profile,name="dev_profile"),
+    path('edit-profile/<int:id>/',views.edit_profile,name="edit_profile"),
     path('dev-widget/',views.dev_widget,name="dev_widget"),
     path('dev-form/',views.dev_forms,name="dev_form"),
     path('dev-signout/',views.dev_signOut,name="dev_signOut"),

@@ -26,16 +26,15 @@
                         </div>
                         <div class="col-md-6">
                             <div class="media">
-                                <label>Contact</label>
-                                <p></p>
-                            </div>
-                            <div class="media">
                                 <label>Company Name</label>
                                 <p>{{request.user.company_name}}</p>
                             </div>
                             <div class="media">
                                 <label>Experties</label>
                                 <p>{{request.user.experties}}</p>
+                            </div>
+                            <div class="media">
+                                <p><a href="{% url "edit_profile" request.user.id %}" class="btn btn-primary">edit profile</a></p>
                             </div>
                         </div>
                     </div>

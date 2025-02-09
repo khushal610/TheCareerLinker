@@ -10,9 +10,11 @@ from TheCareerLinker import views as TCL_views
 def index(request):
     totalStudents = User.objects.filter(role="Student").count()
     totalDevelopers = User.objects.filter(role="Developer").count()
+    totalQuiz = devModels.QuizCategory.objects.count()
     context = {
         'totalStudents':totalStudents,
         'totalDevelopers':totalDevelopers,
+        'totalQuiz':totalQuiz,
     }
     return render(request,'adminapp/index.html',context=context)
 
@@ -91,3 +93,8 @@ def deleteDev(request,id):
     data = User.objects.get(id=id)
     data.delete()
     return redirect(dev_list_table)
+
+def quiz_category_list_table(request):
+    quiz_data = devModels.QuizCategory.objects.all()
+    context = {'quiz_data':quiz_data}
+    return render(request,"adminapp/quiz-category-list-table.html",context=context)

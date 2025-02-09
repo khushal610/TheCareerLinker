@@ -12,7 +12,7 @@
     <div class="container py-5 h-100">
         <div class="row d-flex justify-content-center align-items-center h-100">
           <div class="col-12">
-            <h1 class="text-center"><span style="color:rgb(71, 81, 222)">Register as </span><u>{{role}}</u></h1>
+            <h1 class="text-center">Edit Profile</h1>
             <div class="card card-registration card-registration-2" style="border-radius: 15px;">
               <div class="card-body p-0">
                 {% comment %} form tag start  {% endcomment %}
@@ -27,7 +27,7 @@
                           <div class="row">
                             <div class="col-md-12 mb-4 pb-2">
                               <div data-mdb-input-init class="form-outline">
-                                <input type="text" name="username" id="form3Examplev2" class="form-control form-control-lg" />
+                                <input type="text" name="username" value="{{dev_data.username}}" id="form3Examplev2" class="form-control form-control-lg" />
                                 <label class="form-label" for="form3Examplev2">Username</label>
                               </div>
                               {{exist_dev_alert}}
@@ -38,7 +38,7 @@
                           <div class="row">
                             <div class="col-md-12 mb-4 pb-2">
                               <div data-mdb-input-init class="form-outline">
-                                <input type="email" name="email" id="form3Examplev2" class="form-control form-control-lg" /> 
+                                <input type="email" name="email" value="{{dev_data.email}}" id="form3Examplev2" class="form-control form-control-lg" readonly /> 
                                 <label class="form-label" for="form3Examplev2">Email</label>
                               </div>
                             </div>
@@ -47,13 +47,13 @@
                           <div class="row">
                             <div class="col-md-12 mb-4 pb-2">
                               <div data-mdb-input-init class="form-outline">
-                                <input type="tel" name="contact" id="form3Examplev2" class="form-control form-control-lg" />
+                                <input type="tel" name="contact" value="{{dev_data.contact}}" id="form3Examplev2" class="form-control form-control-lg" />
                                 <label class="form-label" for="form3Examplev2">Contact</label>
                               </div>
                             </div>
                           </div>
     
-                          <div class="row">
+                          {% comment %} <div class="row">
                             <div class="col-md-6 mb-4 pb-2">
                               <div data-mdb-input-init class="form-outline">
                                 <input type="password" name="password" id="form3Examplev2" class="form-control form-control-lg" />
@@ -68,13 +68,13 @@
                                 <label class="form-label" for="form3Examplev2">Confirm Password</label>
                               </div>
                             </div>
-                          </div>
+                          </div> {% endcomment %}
         
         
                           <div class="row">
                               <div class="col-md-12 mb-4 pb-2">
                                 <div data-mdb-input-init class="form-outline">
-                                  <input type="text" name="company_name" id="form3Examplev2" class="form-control form-control-lg" />
+                                  <input type="text" name="company_name" value="{{dev_data.company_name}}" id="form3Examplev2" class="form-control form-control-lg" />
                                   <label class="form-label" for="form3Examplev2">Company Name</label>
                                 </div>
                               </div>
@@ -90,56 +90,28 @@
         
                           <div class="mb-4 pb-2">
                             <div data-mdb-input-init class="form-outline form-white">
-                              <input type="text" name="bio_title" id="form3Examplea2" class="form-control form-control-lg" />
+                              <input type="text" name="bio_title" value="{{dev_data.bio_title}}" id="form3Examplea2" class="form-control form-control-lg" />
                               <label class="form-label" for="form3Examplea2">Bio Title</label>
                             </div>
                           </div>
 
                           <div class="mb-4 pb-2">
                               <div data-mdb-input-init class="form-outline form-white">
-                                  <textarea name="bio_detail" class="form-control" rows="2" style="resize:none"></textarea>
+                                  <textarea name="bio_detail" value="{{dev_data.bio_detail}}" class="form-control" rows="2" style="resize:none"></textarea>
                                   <label class="form-label" for="form3Examplev5">Bio Detail</label>
                               </div>
                           </div>
         
                           <div class="mb-4 pb-2">
                             <div data-mdb-input-init class="form-outline form-white">
-                              <input type="text" name="experties" id="form3Examplea3" class="form-control form-control-lg" />
+                              <input type="text" value="{{dev_data.experties}}" name="experties" id="form3Examplea3" class="form-control form-control-lg" />
                               <label class="form-label" for="form3Examplea3">Experties</label>
                             </div>
                           </div>
+                               
         
-    
-                          <div class="row">
-                            <div class="col-md-5 mb-4 pb-2">
-        
-                              <div data-mdb-input-init class="form-outline form-white">
-                                <label class="form-label" for="form3Examplea4">Experience</label>
-                                <select name="experience" class="form-control" id="">
-                                  <option value="1 Year">1 Year</option>
-                                  <option value="2 Year">2 Year</option>
-                                  <option value="3 Year">3 Year</option>
-                                  <option value="5 Year">5 Year</option>
-                                  <option value="More then 5 year">More then 5 year</option>
-                              </select>
-                              </div>
-        
-                            </div>
-                            <div class="col-md-6 mb-4 pb-2">
-        
-                              <div data-mdb-input-init class="form-outline form-white">
-                                <label class="form-label" for="form3Examplea4">Upload Your Image</label>
-                                <input type="file" name="dev_img" id="" class="form-control">
-                              </select>
-                              </div>
-        
-                            </div>
-                          </div>
-        
-                          <p class="mb-5 pb-lg-2">Have an already account? <a href="{% url "main_login" %}"
-                            style="color: #000000"><u>Login here</u></a></p>
                           <button  type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-dark btn-lg"
-                            data-mdb-ripple-color="dark">Register</button>
+                            data-mdb-ripple-color="dark">Save</button>
         
                         </div>
                       </div>    

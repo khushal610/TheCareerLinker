@@ -34,13 +34,7 @@ def courseDetails(request):
 
 # trainers page
 def trainers(request):
-    dev_data = devModels.DevList.objects.all()
-    dev_bio_data = devModels.DevBio.objects.all()
-    context = {
-        'dev_data':dev_data,
-        'dev_bio_data':dev_bio_data
-    }
-    return render(request,'studentapp/trainers.html',context=context)
+    return render(request,'studentapp/trainers.html')
 
 # pricing page
 def pricing(request):

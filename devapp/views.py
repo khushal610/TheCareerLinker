@@ -1,5 +1,5 @@
 from django.shortcuts import render,HttpResponse,redirect
-from devapp import models
+from devapp import models,forms
 from studentapp.models import User
 from TheCareerLinker import views as TCL_views
 from django.contrib.auth import logout
@@ -76,7 +76,7 @@ def dev_signUp(request):
                     role=User.DEVELOPER,
                     is_verified=False
                 )
-                return redirect(dev_signIn)
+                return redirect(TCL_views.main_login)
             else:
                 print(devSignForm.errors)
                 return render(request,"devapp/signup.html",{'error':"Password Doesn't Match"})
@@ -86,24 +86,19 @@ def dev_signOut(request):
     logout(request)
     return redirect(TCL_views.main_login)
 
-
 def add_quiz_category(request):
-    # if request.method == "POST":
-    #     dev_name = request.session.get('dev_name')
-    #     quiz_category_name = request.session.get('quiz_category_name')
-    #     findUser = models.DevList.objects.get(username=dev_name)
-    #     dev_id = findUser
-    #     quiz_level = request.POST.get('quiz_level')
-    #     if quiz_level == "None":
-    #         return render(request,"devapp/add-quiz-category.html",{'quiz_undefine_error':"Please Select the quiz level"})
-    #     quiz_cat_form = forms.QuizCategoryForm(request.POST)
-    #     if quiz_cat_form.is_valid():
-    #         quiz_cat_form_obj = quiz_cat_form.save(commit=False)
-    #         quiz_cat_form_obj.dev_id = dev_id
-    #         quiz_cat_form_obj.save()
-    #         return redirect(add_questions)
-    #     else:
-    #         return render(request,"devapp/add-quiz-category.html",{'error':"Please Enter valid data"})
+    if request.method == "POST":
+        form = forms.QuizCategoryForm(request.POST)
+        if form.is_valid():
+            form_obj = form.save(commit=False)
+            form_obj.is_approved = False
+            form_obj.dev_id = request.user
+            form_obj.save()
+            return render(request,"devapp/add-quiz-category.html",{'alert':"New category added"})
+        else:
+            print(form.errors)
+            return HttpResponse("Error")
+        # print(request.user.id)
     return render(request,"devapp/add-quiz-category.html")
 
 
@@ -112,3 +107,10 @@ def add_questions(request):
 
 def add_options(request):
     return render(request,'devapp/add-options.html')
+
+def edit_profile(request,id):
+    dev_data = User.objects.get(id=id)
+    context = { 
+        'dev_data':dev_data,
+    }
+    return render(request,"devapp/update-profile.html",context=context)

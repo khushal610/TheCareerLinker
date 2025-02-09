@@ -9,6 +9,7 @@ urlpatterns = [
     path('chart/',views.chartview,name="chart"),
     path('widget/',views.widget,name="widget"),
     path('assessment/',views.assessment,name="assessment"),
+    path('quiz-category-list-table/',views.quiz_category_list_table,name="quiz_category_list_table"),
     path('deleteUser/<int:id>/',views.deleteUser,name="deleteUser"),
     path('admin-add-form/',views.admin_add_form,name="admin-add-form"),
     path('dev-table/',views.dev_list_table,name="dev-table"),

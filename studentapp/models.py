@@ -20,7 +20,7 @@ class User(AbstractUser):
     # developer registration fields
     company_name = models.CharField(max_length=70,null=True,blank=True)
     bio_title = models.CharField(max_length=70,null=True,blank=True)
-    bio_detail = models.CharField(max_length=255,null=True,blank=True)
+    bio_detail = models.TextField(null=True,blank=True)
     experties = models.CharField(max_length=70,null=True,blank=True)
     experience = models.CharField(max_length=20,null=True,blank=True)
     dev_img = models.FileField(upload_to='developer_images/',null=True,blank=True)

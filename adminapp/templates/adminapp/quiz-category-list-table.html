@@ -1,0 +1,45 @@
+{% extends "adminapp/master.html" %}
+{% load static %}
+{% block content %}
+    <!-- Table Start -->
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-sm-12 col-xl-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">Students Table</h6>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Quiz Category Name</th>
+                                <th scope="col">Quiz Level</th>
+                                <th scope="col">Developer Name</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for quiz_detail in quiz_data %}
+                                <tr>
+                                    <th scope="row">{{quiz_detail.id}}</th>
+                                    <td>{{quiz_detail.quiz_category_name}}</td>
+                                    <td>{{quiz_detail.quiz_level}}</td>
+                                    <td>{{quiz_detail.dev_id}}</td>
+                                    <td>{{quiz_detail.is_approved}}</td>
+                                    <td>
+                                        <a href="#">
+                                            <button class="btn btn-success">Approve</button>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Table End -->
+{% endblock %}  
+
+{% comment %} <i class="fa-solid fa-circle-check"></i>   {% endcomment %}

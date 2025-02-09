@@ -1,22 +1,8 @@
-# from django import forms
-# from devapp import models
+from django import forms
+from devapp import models
 
-# class DevListForm(forms.ModelForm):
-#     class Meta:
-#         model = models.DevList
-#         exclude = ['is_verified']
-#         # fields = "__all__"
-
-
-# class DevBioForm(forms.ModelForm):
-#     class Meta:
-#         model = models.DevBio
-#         exclude = ['dev_id']
-#         # fields = "__all__"
-
-
-# class QuizCategoryForm(forms.ModelForm):
-#     class Meta:
-#         model = models.QuizCategory
-#         exclude = ['dev_id']
-#         # fields = "__all__"
+class QuizCategoryForm(forms.ModelForm):
+    class Meta:
+        model = models.QuizCategory
+        fields = "__all__"
+        exclude = ['dev_id']
