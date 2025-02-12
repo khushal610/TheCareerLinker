@@ -18,23 +18,6 @@ def dev_forms(request):
 
 
 def dev_profile_bio_forms(request):
-    # dev_name = request.session.get('dev_name')
-    # dev_data = models.DevList.objects.get(username=dev_name)
-    # current_dev_id = models.DevList.objects.get(id=dev_data.id)
-    # context = {
-    #     'dev_data':dev_data,
-    #     'dev_id':current_dev_id.id,
-    # }
-    # if request.method == "POST":
-    #     dev_form = forms.DevBioForm(request.POST,request.FILES)
-    #     if dev_form.is_valid():
-    #         dev_bio_obj = dev_form.save(commit=False)
-    #         dev_bio_obj.dev_id = current_dev_id
-    #         dev_bio_obj.save()
-    #         return redirect(dev_profile)
-    #     else:
-    #         print(dev_form.errors)
-    #         return HttpResponse("Errors")
     return render(request,'devapp/dev-profile-bio.html')
 
 
@@ -78,7 +61,6 @@ def dev_signUp(request):
                 )
                 return redirect(TCL_views.main_login)
             else:
-                print(devSignForm.errors)
                 return render(request,"devapp/signup.html",{'error':"Password Doesn't Match"})
     return render(request,"devapp/signup.html",{'role':User.DEVELOPER})
 
@@ -88,25 +70,122 @@ def dev_signOut(request):
 
 def add_quiz_category(request):
     if request.method == "POST":
-        form = forms.QuizCategoryForm(request.POST)
-        if form.is_valid():
-            form_obj = form.save(commit=False)
-            form_obj.is_approved = False
-            form_obj.dev_id = request.user
-            form_obj.save()
-            return render(request,"devapp/add-quiz-category.html",{'alert':"New category added"})
+        quiz_category_name = request.POST.get('quiz_category_name')
+        quiz_level = request.POST.get('quiz_level')
+        if quiz_level == "None":
+            return render(request,"devapp/add-quiz-category.html",{'level_error':"Please Define the quiz level"})
+        findQuiz = models.QuizCategory.objects.filter(
+            quiz_category_name = quiz_category_name,
+            quiz_level = quiz_level,
+            dev_id=request.user
+        )
+        if findQuiz.exists():
+            return render(request,"devapp/add-quiz-category.html",{'quiz_name_error':"Quiz Category with same level already existed"})
         else:
-            print(form.errors)
-            return HttpResponse("Error")
-        # print(request.user.id)
+            form = forms.QuizCategoryForm(request.POST)
+            if form.is_valid():
+                form_obj = form.save(commit=False)
+                form_obj.is_approved = False
+                form_obj.dev_id = request.user
+                form_obj.save()
+                return render(request,"devapp/add-quiz-category.html",{'alert':"New category added"})
+            else:
+                print(form.errors)
+                return HttpResponse("Error")
     return render(request,"devapp/add-quiz-category.html")
 
 
 def add_questions(request):
-    return render(request,'devapp/add-questions.html')
+    data = models.QuizCategory.objects.filter(dev_id=request.user)
+    context = {'data':data}
+    if request.method == "POST":
+        quiz_question = request.POST.get('quiz_question')
+        quiz_category_id = request.POST.get('quiz_category_id')
+        if quiz_question == "":
+            return render(request,"devapp/add-questions.html",{
+                'question_error':"Please enter the value",
+                'data':data
+            })
+        if quiz_category_id == "None":
+            return render(request,"devapp/add-questions.html",{
+                'quiz_cat_id_error':"Please select the quiz category",
+                'data':data
+            })
+        quiz_cat_id_instance = models.QuizCategory.objects.get(id=quiz_category_id)
+        form_question = forms.QuizQuestionForm(request.POST)
+        if form_question.is_valid():
+            form_question_obj = form_question.save(commit=False)
+            form_question_obj.quiz_category_id = quiz_cat_id_instance
+            form_question_obj.save()
+            return redirect(add_questions)
+        else:
+            print(form_question.errors)
+    return render(request,'devapp/add-questions.html',context=context)
 
-def add_options(request):
-    return render(request,'devapp/add-options.html')
+
+
+def add_options(request,id):
+    questions = models.QuizQuestions.objects.filter(quiz_category_id=id)
+    options = models.QuizOptions.objects.all()
+    # print(questions)
+    if request.method == "POST":
+        option_1 = request.POST.get('option_1')
+        option_2 = request.POST.get('option_2')
+        option_3 = request.POST.get('option_3')
+        option_4 = request.POST.get('option_4')
+        question_id = request.POST.get('question_id')
+        question_id_instance = models.QuizQuestions.objects.get(id=question_id)
+        print(option_1,option_2,option_3,option_4)
+        print("---------------------------------------------->",question_id)
+        options_form = forms.QuizOptionsForm(request.POST)
+        findQuestion = models.QuizQuestions.objects.get(id=question_id)
+        print("---------------------------------------------->",question_id_instance)
+        if options_form.is_valid():
+            option_form_obj = options_form.save(commit=False)
+            option_form_obj.question_id = question_id_instance
+            option_form_obj.save()
+            findQuestion.is_option_added = True
+            findQuestion.save()
+        else:
+            print(options_form.errors)
+    context = {
+        'data':questions,
+        'options':options
+        }
+    return render(request,'devapp/add-options.html',context=context)
+
+
+def update_options(request,id):
+    question_data = models.QuizQuestions.objects.get(id=id)
+    options = models.QuizOptions.objects.get(question_id=question_data)
+    if request.method == "POST":
+        quiz_question = request.POST.get('quiz_question')
+        option_1 = request.POST.get('option_1')
+        option_2 = request.POST.get('option_2')
+        option_3 = request.POST.get('option_3')
+        option_4 = request.POST.get('option_4')
+        print(quiz_question)
+        question_data.quiz_question = quiz_question
+        question_data.save()
+        options.option_1 = option_1
+        options.option_2 = option_2
+        options.option_3 = option_3
+        options.option_4 = option_4
+        options.save()
+        return redirect(add_questions)
+    context = {
+        'data':question_data,
+        'options':options
+    }
+    return render(request,"devapp/update-options.html",context=context)
+
+
+def delete_question(request,id):
+    question_data = models.QuizQuestions.objects.get(id=id)
+    question_data.delete()
+    return redirect(add_questions)
+
+
 
 def edit_profile(request,id):
     dev_data = User.objects.get(id=id)
@@ -114,3 +193,41 @@ def edit_profile(request,id):
         'dev_data':dev_data,
     }
     return render(request,"devapp/update-profile.html",context=context)
+
+def table(request):
+    data = models.QuizCategory.objects.filter(dev_id=request.user)
+    context = {'data': data}
+    return render(request, "devapp/table.html", context=context)
+
+
+def update_quiz_category(request,id):
+    data = models.QuizCategory.objects.get(id=id)
+    context = {'data':data}
+    if request.method == "POST":
+        quiz_category_name = request.POST.get('quiz_category_name')
+        quiz_level = request.POST.get('quiz_level')
+        findQuiz = models.QuizCategory.objects.filter(
+                    quiz_category_name = quiz_category_name,
+                    quiz_level = quiz_level,
+                    dev_id=request.user
+                ).exclude(id=id)
+        
+        if quiz_level == "None":
+            return render(request,"devapp/update-quiz-category.html",{
+                'data':data,
+                'level_error':"Please Define the quiz level"
+            })
+
+        if findQuiz.exists():
+            return render(request,"devapp/update-quiz-category.html",{
+                'data':data,
+                'alert':"Quiz Category with same level already existed"
+            })
+
+        data.quiz_category_name = quiz_category_name
+        data.quiz_level = quiz_level
+        data.save()
+        return redirect(table)
+    return render(request,"devapp/update-quiz-category.html",context=context)
+
+# def

@@ -41,14 +41,15 @@
                     </a>
                 </div>
                 <div class="col-sm-6 col-xl-3">
-                    <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                        {% comment %} <i class="fa fa-chart-area fa-3x text-primary"></i> {% endcomment %}
-                        <i class="fa-regular fa-file-lines fa-3x text-primary"></i>
-                        <div class="ms-3">
-                            <p class="mb-2">Manage Assessment</p>
-                            <h6 class="mb-0">$1234</h6>
+                    {% comment %} <a href="{% url "quiz_review" %}"> {% endcomment %}
+                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                            <i class="fa-regular fa-file-lines fa-3x text-primary"></i>
+                            <div class="ms-3">
+                                <p class="mb-2">Manage Quesions</p>
+                                <h6 class="mb-0">$1234</h6>
+                            </div>
                         </div>
-                    </div>
+                    {% comment %} </a> {% endcomment %}
                 </div>
             </div>
         </div>

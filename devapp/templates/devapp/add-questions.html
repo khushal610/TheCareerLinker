@@ -3,54 +3,59 @@
 {% block content %}
     <div class="container-fluid pt-4 px-4">
         <div class="row g-4 d-flex align-items-center justify-content-center p-2">
-            <div class="col-sm-12 col-xl-6">
+            <div class="col-sm-12 col-xl-8">
                 <div class="bg-light rounded h-100 p-4">
                     <h6 class="mb-4">Add Questions</h6>
-                    <form>
+                    <form method="post">
+                        {% csrf_token %}
                         <div class="mb-3">
                             <label for="exampleInputEmail1" class="form-label">Question</label>
-                            <input type="text" class="form-control" id="exampleInputEmail1"
+                            <input type="text" name="quiz_question" class="form-control" id="exampleInputEmail1"
                                 aria-describedby="emailHelp">
-                        </div>
-                        <div class="mb-3">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <label for="exampleInputEmail1" class="form-label">Options</label>
-                                <label for="exampleInputEmail1" class="form-label">Ans</label>
-                            </div>
-                            <div class="d-flex flex-column gap-2">
-                                <div class="d-flex gap-3">
-                                    <input type="text" name="option1" class="form-control" placeholder="Option 1" id="exampleInputEmail1"
-                                        aria-describedby="emailHelp">
-                                    <input type="radio" name="question_ans" value="option1" id="">
-                                </div>
-                                <div class="d-flex gap-3">
-                                    <input type="text" name="option2" class="form-control" placeholder="Option 2" id="exampleInputEmail1"
-                                        aria-describedby="emailHelp">
-                                    <input type="radio" name="question_ans" value="option2" id="">
-                                </div>
-                                <div class="d-flex gap-3">
-                                    <input type="text" name="option3" class="form-control" placeholder="Option 3" id="exampleInputEmail1"
-                                        aria-describedby="emailHelp">
-                                    <input type="radio" name="question_ans" value="option3" id="">
-                                </div>
-                                <div class="d-flex gap-3">
-                                    <input type="text" name="option4" class="form-control" placeholder="Option 4" id="exampleInputEmail1"
-                                        aria-describedby="emailHelp">
-                                    <input type="radio" name="question_ans" value="option4" id="">
-                                </div>
-                            </div>
+                            <span class="text-danger">{{question_error}}</span>
                         </div>
                         <div class="mb-3">
                             <label for="exampleInputPassword1" class="form-label">Select Quiz Category</label>
-                            <select name="quiz_category" id="" class="form-control">
-                                <option value="None">None</option>
-                                <option value="Python">Python</option>
-                                <option value="JavaScript">JavaScript</option>
-                                <option value="Android Application">Android Application</option>
+                            <select name="quiz_category_id" id="" class="form-control">
+                                <option value="None">select</option>
+                                {% for quiz_cat_list in data %}
+                                    <option value="{{quiz_cat_list.id}}">{{quiz_cat_list.quiz_category_name}} [{{quiz_cat_list.quiz_level}}]</option>
+                                {% endfor %}
                             </select>
+                            <span class="text-danger">{{quiz_cat_id_error}}</span>
                         </div>
                         <button type="submit" class="btn btn-primary">Add</button>
                     </form>
+                </div>
+            </div>
+
+            <div class="col-sm-12 col-xl-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">Quiz Category Review</h6>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th scope="col">Quiz Category Id</th>
+                                <th scope="col">Quiz Category Name</th>
+                                <th scope="col">Quiz Level</th>
+                                <th scope="col">Add Options</th>
+                                <th scope="col">Developer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for quiz_cat_list in data %}
+                                <tr>
+                                    <th scope="row">{{quiz_cat_list.id}}</th>
+                                    <td>{{quiz_cat_list.quiz_category_name}}</td>
+                                    <td>{{quiz_cat_list.quiz_level}}</td>
+                                    <td>
+                                        <a href="{% url "add_options" quiz_cat_list.id %}">Quiz Review</a>
+                                    </td>
+                                    <td>{{quiz_cat_list.dev_id}}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

@@ -6,7 +6,7 @@
         <div class="row g-4">
             <div class="col-sm-12 col-xl-12">
                 <div class="bg-light rounded h-100 p-4">
-                    <h6 class="mb-4">Students Table</h6>
+                    <h6 class="mb-4">Quiz Category Table</h6>
                     <table class="table">
                         <thead>
                             <tr>
@@ -14,6 +14,7 @@
                                 <th scope="col">Quiz Category Name</th>
                                 <th scope="col">Quiz Level</th>
                                 <th scope="col">Developer Name</th>
+                                {% comment %} <th scope="col">Review</th> {% endcomment %}
                                 <th scope="col">Status</th>
                                 <th scope="col">Action</th>
                             </tr>
@@ -25,11 +26,31 @@
                                     <td>{{quiz_detail.quiz_category_name}}</td>
                                     <td>{{quiz_detail.quiz_level}}</td>
                                     <td>{{quiz_detail.dev_id}}</td>
-                                    <td>{{quiz_detail.is_approved}}</td>
+                                    {% comment %} <td><a href="{% url "quiz_review" quiz_detail.id %}">View Quiz<a></td> {% endcomment %}
                                     <td>
-                                        <a href="#">
-                                            <button class="btn btn-success">Approve</button>
-                                        </a>
+                                        {% if quiz_detail.is_approved == False %}
+                                            <p class="text-danger d-flex align-items-center gap-1">
+                                                <i class="fa-regular fa-circle-xmark"></i>Not Approved
+                                            </p>
+                                        {% else %}
+                                            <p class="text-success d-flex align-items-center gap-1">
+                                                <i class="fa-regular fa-circle-check"></i>Approved   
+                                            </p>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if quiz_detail.is_approved == False %}
+                                            <a href="{% url "quiz_approve" quiz_detail.id %}">
+                                                <button class="btn btn-success">Approve</button>
+                                            </a>
+                                            <a href="{% url "delete_quiz_category" quiz_detail.id %}">
+                                                <button class="btn btn-danger">Delete</button>
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url "quiz_disapprove" quiz_detail.id %}">
+                                                <button class="btn btn-warning">Disapprove</button>
+                                            </a>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}

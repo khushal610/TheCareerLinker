@@ -5,12 +5,13 @@ from devapp import models as devModels
 from devapp import forms
 from studentapp.models import User
 from TheCareerLinker import views as TCL_views
+from devapp import views as dev_views
 
 # Create your views here.
 def index(request):
     totalStudents = User.objects.filter(role="Student").count()
     totalDevelopers = User.objects.filter(role="Developer").count()
-    totalQuiz = devModels.QuizCategory.objects.count()
+    totalQuiz = devModels.QuizCategory.objects.all().count()
     context = {
         'totalStudents':totalStudents,
         'totalDevelopers':totalDevelopers,
@@ -98,3 +99,31 @@ def quiz_category_list_table(request):
     quiz_data = devModels.QuizCategory.objects.all()
     context = {'quiz_data':quiz_data}
     return render(request,"adminapp/quiz-category-list-table.html",context=context)
+
+def quiz_approve(request,id):
+    data = devModels.QuizCategory.objects.get(id=id)
+    data.is_approved = True
+    data.save()
+    return redirect(quiz_category_list_table)
+
+def quiz_disapprove(request,id):
+    data = devModels.QuizCategory.objects.get(id=id)
+    data.is_approved = False
+    data.save()
+    return redirect(quiz_category_list_table)
+
+def delete_quiz_category(request,id):
+    data = devModels.QuizCategory.objects.get(id=id)
+    if request.user.role == "Admin":
+        data.delete()
+        return redirect(quiz_category_list_table)
+    elif request.user.role == "Developer":
+        data.delete()
+        return redirect(dev_views.table)
+    
+
+# def quiz_review(request,id):
+#     quiz_category_data = devModels.QuizCategory.objects.get(id=id)
+#     quiz_questions_data = devModels.QuizQuestions.objects.filter(quiz_category_id=quiz_category_data.id)
+#     context = {'data':quiz_questions_data}
+#     return render(request,"adminapp/quiz-review-link.html",context=context)

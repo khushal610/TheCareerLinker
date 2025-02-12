@@ -1,30 +1,219 @@
 {% extends "devapp/master.html" %}
 {% load static %}
 {% block content %}
+
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6>
+                    <a href="{% url 'add_questions' %}">
+                        <i class="fa-solid fa-arrow-left"></i> Add Questions
+                    </a>
+                </h6>
+                <h4 class="mb-4">Add Quiz Options</h4>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">Question ID</th>
+                            <th scope="col">Question</th>
+                            {% comment %} <th scope="col">Select Answer</th> {% endcomment %}
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for question_detail in data %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <tr>
+                                <th rowspan="2">
+                                    <input type="text" name="question_id" class="form-control" value="{{ question_detail.id }}" readonly>
+                                </th>
+                                <td>{{ question_detail.quiz_question }}</td>
+                                {% comment %} <td rowspan="2">
+                                    <select name="answer" class="form-control">
+                                        <option value="None">Select</option>
+                                        {% for option in options %}
+                                            {% if option.question_id == question_detail %}
+                                                <option value="{{ option.option_1 }}">{{ option.option_1 }}</option>
+                                                <option value="{{ option.option_2 }}">{{ option.option_2 }}</option>
+                                                <option value="{{ option.option_3 }}">{{ option.option_3 }}</option>
+                                                <option value="{{ option.option_4 }}">{{ option.option_4 }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </td> {% endcomment %}
+                                <th rowspan="2">
+                                    <div class="d-grid align-items-center justify-content-center gap-2">
+                                        {% if question_detail.is_option_added == False %}
+                                            <button type="submit" class="btn btn-secondary">Save</button>
+                                        {% else %}
+                                            <a href="{% url "update_options" question_detail.id %}" class="btn btn-warning">Update</a>
+                                        {% endif %}
+                                        <a href="{% url "delete_question" question_detail.id %}" class="btn btn-danger">Delete</a>
+                                    </div>
+                                </th>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        {% if question_detail.is_option_added %}
+                                            {% for option in options %}
+                                                {% if option.question_id == question_detail %}
+                                                    <div class="d-flex align-items-center px-2 gap-1">
+                                                        <p class="pt-3 text-primary fw-bold">A</p>
+                                                        <input type="text" name="option_1" value="{{ option.option_1 }}" class="form-control" readonly>
+                                                    </div>
+                                                    <div class="d-flex align-items-center px-2 gap-1">
+                                                        <p class="pt-3 text-secondary fw-bold">B</p>
+                                                        <input type="text" name="option_2" value="{{ option.option_2 }}" class="form-control" readonly>
+                                                    </div>
+                                                    <div class="d-flex align-items-center px-2 gap-1">
+                                                        <p class="pt-3 text-secondary fw-bold">C</p>
+                                                        <input type="text" name="option_3" value="{{ option.option_3 }}" class="form-control" readonly>
+                                                    </div>
+                                                    <div class="d-flex align-items-center px-2 gap-1">
+                                                        <p class="pt-3 text-secondary fw-bold">D</p>
+                                                        <input type="text" name="option_4" value="{{ option.option_4 }}" class="form-control" readonly>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="d-flex align-items-center px-2 gap-1">
+                                                <p class="pt-3 text-primary fw-bold">A</p>
+                                                <input type="text" name="option_1" class="form-control">
+                                            </div>
+                                            <div class="d-flex align-items-center px-2 gap-1">
+                                                <p class="pt-3 text-secondary fw-bold">B</p>
+                                                <input type="text" name="option_2" class="form-control">
+                                            </div>
+                                            <div class="d-flex align-items-center px-2 gap-1">
+                                                <p class="pt-3 text-secondary fw-bold">C</p>
+                                                <input type="text" name="option_3" class="form-control">
+                                            </div>
+                                            <div class="d-flex align-items-center px-2 gap-1">
+                                                <p class="pt-3 text-secondary fw-bold">D</p>
+                                                <input type="text" name="option_4" class="form-control">
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        </form>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% comment %} {% extends "devapp/master.html" %}
+{% load static %}
+{% block content %}
+
     <div class="container-fluid pt-4 px-4">
-        <div class="row g-4 d-flex align-items-center justify-content-center p-5">
-            <div class="col-sm-12 col-xl-6">
+        <div class="row g-4">
+            <div class="col-sm-12 col-xl-12">
                 <div class="bg-light rounded h-100 p-4">
-                    <h6 class="mb-4">Add Options</h6>
-                    <form>
-                        <div class="mb-3">
-                            <label for="exampleInputEmail1" class="form-label">Option 1</label>
-                            <input type="text" class="form-control" id="exampleInputEmail1"
-                                aria-describedby="emailHelp">
-                        </div>
-                        <div class="mb-3">
-                            <label for="exampleInputPassword1" class="form-label">Select Quiz Category</label>
-                            <select name="quiz_category" id="" class="form-control">
-                                <option value="None">None</option>
-                                <option value="Python">Python</option>
-                                <option value="JavaScript">JavaScript</option>
-                                <option value="Android Application">Android Application</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Add</button>
-                    </form>
+                    <h6><a href="{% url "add_questions" %}"><i class="fa-solid fa-arrow-left"></i> Add Questions</a></h6>
+                    <h4 class="mb-4">Add Quiz Options</h4>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th scope="col">Question ID</th>
+                                <th scope="col">Question</th>
+                                <th scope="col">Select Answer</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for question_detail in data %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <tr>
+                                    <th rowspan="2" scope="row">
+                                        <input type="text" name="question_id" class="form-control" value="{{ question_detail.id }}" readonly disable>
+                                    </th>
+                                    <td>{{question_detail.quiz_question}}</td>
+                                    <td rowspan="2">
+                                        <select name="answer" class="form-control" id="">
+                                            <option value="None">select</option>
+                                            {% for option in options %}
+                                            {% if option.question_id == question_detail %}
+                                                <option value="{{option.option_1}}">{{option.option_1}}</option>
+                                                <option value="{{option.option_2}}">{{option.option_2}}</option>
+                                                <option value="{{option.option_3}}">{{option.option_3}}</option>
+                                                <option value="{{option.option_4}}">{{option.option_4}}</option>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <th rowspan="2" scope="row">
+                                        <div class="d-flex align-items-center justify-content-center flex-column gap-2">
+                                            <button type="submit" class="btn btn-secondary">Save</button>
+                                            <a href="#" class="btn btn-danger">Delete</a>
+                                        </div>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            {% for option in options %}
+                                                {% if question_detail == option.question_id %}
+                                                    {% if question_detail.is_option_added == True %}
+                                                    <div class="d-flex align-items-center px-2 gap-1">
+                                                        <p class="pt-3">A</p>
+                                                        <input type="text" name="option_1" value="{{option.option_1}}" class="form-control" id="">
+                                                    </div>
+                                                    <div class="d-flex align-items-center px-2 gap-1">
+                                                        <p class="pt-3">B</p>
+                                                        <input type="text" name="option_2" value="{{option.option_2}}" class="form-control" id="">
+                                                    </div>
+                                                    <div class="d-flex align-items-center px-2 gap-1">
+                                                        <p class="pt-3">C</p>
+                                                        <input type="text" name="option_3" value="{{option.option_3}}" class="form-control" id="">
+                                                    </div>
+                                                    <div class="d-flex align-items-center px-2 gap-1">
+                                                        <p class="pt-3">D</p>
+                                                        <input type="text" name="option_4" value="{{option.option_4}}" class="form-control" id="">
+                                                    </div>
+                                                    
+                                                    {% elif question_detail.is_option_added == False %}
+                                                    {% for question_detail in data %}
+                                                        <div class="d-flex align-items-center px-2 gap-1">
+                                                            <p class="pt-3">A</p>
+                                                            <input type="text" name="option_1" class="form-control" id="">
+                                                        </div>
+                                                        <div class="d-flex align-items-center px-2 gap-1">
+                                                            <p class="pt-3">B</p>
+                                                            <input type="text" name="option_2" class="form-control" id="">
+                                                        </div>
+                                                        <div class="d-flex align-items-center px-2 gap-1">
+                                                            <p class="pt-3">C</p>
+                                                            <input type="text" name="option_3" class="form-control" id="">
+                                                        </div>
+                                                        <div class="d-flex align-items-center px-2 gap-1">
+                                                            <p class="pt-3">D</p>
+                                                            <input type="text" name="option_4" class="form-control" id="">
+                                                        </div>
+                                                    {% endfor %}
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        </td>
+                                    </tr>
+                            </form>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-{% endblock %}
+{% endblock %} {% endcomment %}
+
