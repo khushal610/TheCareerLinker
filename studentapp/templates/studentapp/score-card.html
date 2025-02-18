@@ -1,0 +1,30 @@
+{% extends "studentapp/master.html" %}
+{% load static %}
+{% block content %}
+<div class="p-5">
+    <div class="container d-flex align-items-center justify-content-center p-5">
+        <div class="border p-3 rounded d-flex flex-column align-items-center">
+            <div>
+                <h1>Congratulations {{request.user}}</h1>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="p-1 px-4 d-flex flex-column align-items-center score rounded">
+                    <span class="d-block char text-success">Score</span>
+                    <span class="text-success">{{data.score}} / {{totalQuestions}}</span>
+                </div>
+
+
+                <div class="ml-2 p-3">
+                    {% comment %} <h6 class="heading1">PageSpeed Score</h6> {% endcomment %}
+                    <h6 class="heading1">{{quiz_category.quiz_category_name}} [ {{quiz_category.quiz_level}} ]</h6>
+                    <span>The average page speed score is 75%</span> 
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-primary px-4 py-2">Find Another Quiz</button>
+                <a href="{% url "profile" %}" class="btn btn-primary px-4 py-2">View Profile</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

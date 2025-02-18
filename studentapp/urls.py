@@ -16,4 +16,7 @@ urlpatterns = [
     path('forgot-password/',views.forgot_password,name="forgot_password"),
     path('verify-otp/',views.compare_otp,name="compare_otp"),
     path('reset-password/',views.reset_password,name="reset_password"),
+    path('quiz-list/',views.quiz_list,name="quiz_list"),
+    path('quiz/<int:id>/',views.quiz,name="quiz"),
+    path('score-card',views.score_card,name="score_card")
 ]

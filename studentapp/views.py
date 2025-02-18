@@ -3,7 +3,7 @@ from studentapp import forms
 from devapp import models as devModels
 from django.core.mail import send_mail
 from django.conf import settings
-from studentapp.models import User
+from studentapp.models import User,Quiz_attempt
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.hashers import make_password
 from devapp import views as dev_views
@@ -177,3 +177,97 @@ def reset_password(request):
         else:
             return render(request,"studentapp/reset-password.html",{'error':"Password doesn't match"})
     return render(request,"studentapp/reset-password.html")
+
+
+def quiz_list(request):
+    quiz_data_list = devModels.QuizCategory.objects.all()
+    context = {
+        'data':quiz_data_list
+    }
+    return render(request,"studentapp/quiz-list.html",context=context)
+
+
+def quiz(request, id):
+    quiz_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=id)
+    quiz_questions_options = devModels.QuizOptions.objects.all()
+
+    context = {
+        'data': quiz_questions,
+        'options': quiz_questions_options
+    }
+
+    if request.method == "POST":
+        score = 0  # Initialize score
+        total_questions = quiz_questions.count()
+
+        for question in quiz_questions:
+            user_choice = request.POST.get(f"user_choice_{question.id}")  # Get user answer
+            try:
+                quiz_answer = devModels.QuizOptions.objects.get(question_id=question.id)
+                
+                # Assuming option_1 is the correct answer (modify if needed)
+                correct_answer = quiz_answer.option_1
+
+                if user_choice == correct_answer:
+                    score += 1  # Increase score for correct answers
+                    
+            except devModels.QuizOptions.DoesNotExist:
+                continue  # Skip if the question has no options
+        
+        quiz_category = devModels.QuizCategory.objects.get(id=id)
+
+        quiz_attempt_form = forms.QuizAttemptForm(request.POST)
+        if quiz_attempt_form.is_valid():
+            quiz_attempt_obj = quiz_attempt_form.save(commit=False)
+            quiz_attempt_obj.student_id = request.user
+            quiz_attempt_obj.quiz_category = quiz_category
+            quiz_attempt_obj.score = score
+            quiz_attempt_obj.save()
+            return redirect(score_card)
+        else:
+            print(quiz_attempt_form.errors)
+
+        # Pass the score to the template
+        context["score"] = score
+        context["total_questions"] = total_questions
+
+    return render(request, "studentapp/quiz.html", context=context)
+
+
+def score_card(request):
+    data = Quiz_attempt.objects.get(student_id=request.user)
+    findQuizCatName = devModels.QuizCategory.objects.get(id=data.quiz_category.id)
+    totalQuestions = devModels.QuizQuestions.objects.filter(quiz_category_id=findQuizCatName).count()
+    print(totalQuestions)
+    context = {
+        'data':data,
+        'quiz_category':findQuizCatName,
+        'totalQuestions':totalQuestions
+    }
+    return render(request,"studentapp/score-card.html",context=context)
+
+
+# def quiz(request,id):
+#     quiz_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=id)
+#     quiz_questions_options = devModels.QuizOptions.objects.all()
+#     context = {
+#         'data':quiz_questions,
+#         'options':quiz_questions_options
+#     }
+
+#     if request.method == "POST":
+#         user_choice = request.POST.get('user_choice')
+#         question_id = request.POST.get('question_id')
+#         print("user_choice==================================>",user_choice)
+#         print("question_id==================================>",question_id)
+#         quiz_answer = devModels.QuizOptions.objects.get(question_id=question_id)
+#         print("================quiz_answer==================>",quiz_answer)
+#         if user_choice == quiz_answer.option_1:
+#             print("score increase by 1")
+#             return render(request,"studentapp/quiz.html",context=context)
+#         else:
+#             print("incorrect answer")
+#             return render(request,"studentapp/quiz.html",context=context)
+#     return render(request,"studentapp/quiz.html",context=context)
+
+

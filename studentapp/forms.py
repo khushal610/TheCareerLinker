@@ -1,6 +1,13 @@
-# from django import forms
-# from studentapp import models
+from django import forms
+from studentapp import models
 # from django.contrib.auth.forms import UserCreationForm
+
+class QuizAttemptForm(forms.ModelForm):
+    class Meta:
+        model = models.Quiz_attempt
+        exclude = ['student_id','quiz_category','score']
+        # fields = "__all__"
+
 
 # class Student_Reg_Form(forms.ModelForm):
 #     contact = forms.IntegerField(required=True)
