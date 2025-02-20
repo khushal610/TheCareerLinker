@@ -40,7 +40,7 @@
                 </div>
             </div> {% endcomment %}
 
-            <div class="col-sm-12 col-xl-8">
+            <div class="col-sm-12 col-xl-10">
                 <div class="bg-light rounded h-100 p-4">
                     <h6 class="mb-4">Quiz List</h6>
                     <table class="table table-striped">
@@ -56,32 +56,53 @@
                         <tbody>
                             {% for quiz_data in data %}
                                 <tr>
-                                    <th scope="row">{{quiz_data.id}}</th>
+                                    <th scope="row">{{forloop.counter}}</th>
                                     <td>{{quiz_data.quiz_category_name}}</td>
                                     <td>{{quiz_data.quiz_level}}</td>
                                     <td>
                                         {% if quiz_data.is_approved == False %}
                                             <p class="text-danger d-flex align-items-center gap-1">
-                                                <i class="fa-regular fa-circle-xmark"></i>Not Approved
+                                                <i class="fa-regular fa-circle-xmark"></i>Unpublished
                                             </p>
                                         {% else %}
                                             <p class="text-success d-flex align-items-center gap-1">
-                                                <i class="fa-regular fa-circle-check"></i>Approved   
+                                                <i class="fa-regular fa-circle-check"></i>Published   
                                             </p>
                                         {% endif %}
                                     </td>
                                     <td class="d-flex gap-2">
-                                        <a href="{% url "update_quiz_category" quiz_data.id %}" class="btn btn-secondary">Edit</a>
-                                        <a href="{% url "delete_quiz_category" quiz_data.id %}" class="btn btn-danger">Delete</a>
+                                        {% if quiz_data.is_approved == False %}
+                                            <a href="{% url "quiz_approve" quiz_data.id %}" class="btn btn-success">Publish</a>
+                                            <a href="{% url "update_quiz_category" quiz_data.id %}" class="btn btn-secondary">Edit</a>
+                                            <a href="{% url "delete_quiz_category" quiz_data.id %}" class="btn btn-danger">Delete</a>
+                                        {% else %}
+                                            <a href="{% url "update_quiz_category" quiz_data.id %}" class="btn btn-secondary">Edit</a>
+                                            <a href="{% url "quiz_disapprove" quiz_data.id %}" class="btn btn-warning">Unpublish</a>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
+
+                    <div class="pagination d-flex align-items-center gap-4">
+                        {% if data.has_previous %}
+                            <a href="?page=1" class="btn btn-secondary">First</a>
+                            <a href="?page={{ data.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                        {% endif %}
+    
+                        <span class="current-page">Page {{ data.number }} of {{ data.paginator.num_pages }}</span>
+    
+                        {% if data.has_next %}
+                            <a href="?page={{ data.next_page_number }}" class="btn btn-secondary">Next</a>
+                            <a href="?page={{ data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
+                        {% endif %}
+                    </div>
+
                 </div>
             </div>
 
-            <div class="col-sm-12 col-xl-6">
+            {% comment %} <div class="col-sm-12 col-xl-6">
                 <div class="bg-light rounded h-100 p-4">
                     <h6 class="mb-4">Hoverable Table</h6>
                     <table class="table table-hover">
@@ -269,7 +290,7 @@
                         </table>
                     </div>
                 </div>
-            </div> 
+            </div>  {% endcomment %}
         </div>
     </div>
     <!-- Table End -->

@@ -59,7 +59,18 @@
           <li><a href="{% url "index" %}">Home<br></a></li>
           <li><a href="{% url "about" %}">About</a></li>
           <li><a href="{% url "courses" %}">Courses</a></li>
-          <li><a href="{% url "trainers" %}">Trainers</a></li>
+          {% comment %} <li><a href="{% url "trainers" %}">Trainers</a></li> {% endcomment %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Tranning
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li><a class="dropdown-item" href="#">View Live Sessions</a></li>
+              <li><a class="dropdown-item" href="{% url "quiz_list" %}">Attempt Quiz</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="#">Something else here</a></li>
+            </ul>
+          </li>
           {% comment %} <li><a href="events.html">Events</a></li> {% endcomment %}
           {% if request.user.is_authenticated %}
           <li><a href="{% url "profile" %}">{{request.user}}</a></li>

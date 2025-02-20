@@ -27,9 +27,14 @@
                             {% csrf_token %}
                             <tr>
                                 <th rowspan="2">
-                                    <input type="text" name="question_id" class="form-control" value="{{ question_detail.id }}" readonly>
+                                    <input type="hidden" name="question_id" class="form-control" value="{{ question_detail.id }}" readonly>
+                                    {{forloop.counter}}
                                 </th>
-                                <td>{{ question_detail.quiz_question }}</td>
+                                <td>{{ question_detail.quiz_question }} <br>
+                                    {% if question_detail.quiz_question_summary %}
+                                        <pre>{{ question_detail.quiz_question_summary }}</pre>
+                                    {% endif %}
+                                </td>
                                 {% comment %} <td rowspan="2">
                                     <select name="answer" class="form-control">
                                         <option value="None">Select</option>
@@ -103,117 +108,24 @@
                         {% endfor %}
                     </tbody>
                 </table>
+
+                <div class="pagination d-flex align-items-center gap-4">
+                    {% if data.has_previous %}
+                        <a href="?page=1" class="btn btn-secondary">First</a>
+                        <a href="?page={{ data.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                    {% endif %}
+
+                    <span class="current-page">Page {{ data.number }} of {{ data.paginator.num_pages }}</span>
+
+                    {% if data.has_next %}
+                        <a href="?page={{ data.next_page_number }}" class="btn btn-secondary">Next</a>
+                        <a href="?page={{ data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
+                    {% endif %}
+                </div>
+
             </div>
         </div>
     </div>
 </div>
 
 {% endblock %}
-
-
-{% comment %} {% extends "devapp/master.html" %}
-{% load static %}
-{% block content %}
-
-    <div class="container-fluid pt-4 px-4">
-        <div class="row g-4">
-            <div class="col-sm-12 col-xl-12">
-                <div class="bg-light rounded h-100 p-4">
-                    <h6><a href="{% url "add_questions" %}"><i class="fa-solid fa-arrow-left"></i> Add Questions</a></h6>
-                    <h4 class="mb-4">Add Quiz Options</h4>
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th scope="col">Question ID</th>
-                                <th scope="col">Question</th>
-                                <th scope="col">Select Answer</th>
-                                <th scope="col">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for question_detail in data %}
-                            <form method="post">
-                                {% csrf_token %}
-                                <tr>
-                                    <th rowspan="2" scope="row">
-                                        <input type="text" name="question_id" class="form-control" value="{{ question_detail.id }}" readonly disable>
-                                    </th>
-                                    <td>{{question_detail.quiz_question}}</td>
-                                    <td rowspan="2">
-                                        <select name="answer" class="form-control" id="">
-                                            <option value="None">select</option>
-                                            {% for option in options %}
-                                            {% if option.question_id == question_detail %}
-                                                <option value="{{option.option_1}}">{{option.option_1}}</option>
-                                                <option value="{{option.option_2}}">{{option.option_2}}</option>
-                                                <option value="{{option.option_3}}">{{option.option_3}}</option>
-                                                <option value="{{option.option_4}}">{{option.option_4}}</option>
-                                            {% endif %}
-                                            {% endfor %}
-                                        </select>
-                                    </td>
-                                    <th rowspan="2" scope="row">
-                                        <div class="d-flex align-items-center justify-content-center flex-column gap-2">
-                                            <button type="submit" class="btn btn-secondary">Save</button>
-                                            <a href="#" class="btn btn-danger">Delete</a>
-                                        </div>
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center justify-content-center">
-                                            {% for option in options %}
-                                                {% if question_detail == option.question_id %}
-                                                    {% if question_detail.is_option_added == True %}
-                                                    <div class="d-flex align-items-center px-2 gap-1">
-                                                        <p class="pt-3">A</p>
-                                                        <input type="text" name="option_1" value="{{option.option_1}}" class="form-control" id="">
-                                                    </div>
-                                                    <div class="d-flex align-items-center px-2 gap-1">
-                                                        <p class="pt-3">B</p>
-                                                        <input type="text" name="option_2" value="{{option.option_2}}" class="form-control" id="">
-                                                    </div>
-                                                    <div class="d-flex align-items-center px-2 gap-1">
-                                                        <p class="pt-3">C</p>
-                                                        <input type="text" name="option_3" value="{{option.option_3}}" class="form-control" id="">
-                                                    </div>
-                                                    <div class="d-flex align-items-center px-2 gap-1">
-                                                        <p class="pt-3">D</p>
-                                                        <input type="text" name="option_4" value="{{option.option_4}}" class="form-control" id="">
-                                                    </div>
-                                                    
-                                                    {% elif question_detail.is_option_added == False %}
-                                                    {% for question_detail in data %}
-                                                        <div class="d-flex align-items-center px-2 gap-1">
-                                                            <p class="pt-3">A</p>
-                                                            <input type="text" name="option_1" class="form-control" id="">
-                                                        </div>
-                                                        <div class="d-flex align-items-center px-2 gap-1">
-                                                            <p class="pt-3">B</p>
-                                                            <input type="text" name="option_2" class="form-control" id="">
-                                                        </div>
-                                                        <div class="d-flex align-items-center px-2 gap-1">
-                                                            <p class="pt-3">C</p>
-                                                            <input type="text" name="option_3" class="form-control" id="">
-                                                        </div>
-                                                        <div class="d-flex align-items-center px-2 gap-1">
-                                                            <p class="pt-3">D</p>
-                                                            <input type="text" name="option_4" class="form-control" id="">
-                                                        </div>
-                                                    {% endfor %}
-                                                    {% endif %}
-                                                {% endif %}
-                                            {% endfor %}
-                                        </div>
-                                        </td>
-                                    </tr>
-                            </form>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-{% endblock %} {% endcomment %}
-

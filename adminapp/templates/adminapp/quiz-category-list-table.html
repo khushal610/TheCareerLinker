@@ -30,27 +30,27 @@
                                     <td>
                                         {% if quiz_detail.is_approved == False %}
                                             <p class="text-danger d-flex align-items-center gap-1">
-                                                <i class="fa-regular fa-circle-xmark"></i>Not Approved
+                                                <i class="fa-regular fa-circle-xmark"></i>Unpublished
                                             </p>
                                         {% else %}
                                             <p class="text-success d-flex align-items-center gap-1">
-                                                <i class="fa-regular fa-circle-check"></i>Approved   
+                                                <i class="fa-regular fa-circle-check"></i>Published   
                                             </p>
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if quiz_detail.is_approved == False %}
+                                        {% comment %} {% if quiz_detail.is_approved == False %}
                                             <a href="{% url "quiz_approve" quiz_detail.id %}">
                                                 <button class="btn btn-success">Approve</button>
-                                            </a>
+                                            </a> {% endcomment %}
                                             <a href="{% url "delete_quiz_category" quiz_detail.id %}">
                                                 <button class="btn btn-danger">Delete</button>
                                             </a>
-                                        {% else %}
+                                        {% comment %} {% else %}
                                             <a href="{% url "quiz_disapprove" quiz_detail.id %}">
                                                 <button class="btn btn-warning">Disapprove</button>
                                             </a>
-                                        {% endif %}
+                                        {% endif %} {% endcomment %}
                                     </td>
                                 </tr>
                             {% endfor %}

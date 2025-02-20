@@ -14,7 +14,10 @@
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <td scope="col">{{ questions.quiz_question }}</td>
+                                        <td scope="col">
+                                            {{ questions.quiz_question }} <br>
+                                            <pre class="px-3">{{ questions.quiz_question_summary }}</pre>
+                                        </td>
                                     </tr>
                                 </thead>
                                 <tbody>

@@ -4,6 +4,7 @@ from devapp import models as devModels
 from django.core.mail import send_mail
 from django.conf import settings
 from studentapp.models import User,Quiz_attempt
+from studentapp import models as studentModels
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.hashers import make_password
 from devapp import views as dev_views
@@ -44,8 +45,17 @@ def pricing(request):
 def profile(request):
     username = request.user
     data = User.objects.get(username=username)
+    quiz_attempted_data = Quiz_attempt.objects.filter(student_id=request.user)
+    total_questions_as_quiz_category = {}
+    for quiz_questions in quiz_attempted_data:
+        quiz_category_id = quiz_questions.quiz_category.id
+        total_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=quiz_category_id).count()
+        total_questions_as_quiz_category[quiz_category_id] = total_questions
+    print("----------------------->",total_questions_as_quiz_category)
     context = {
-        'userdata':data
+        'userdata':data,
+        'quiz_attempted_data':quiz_attempted_data,
+        'total_questions':total_questions_as_quiz_category
     }
     return render(request,'studentapp/profile.html',context=context)
 
@@ -180,9 +190,9 @@ def reset_password(request):
 
 
 def quiz_list(request):
-    quiz_data_list = devModels.QuizCategory.objects.all()
+    quiz_data_list = devModels.QuizCategory.objects.filter(is_approved=True)
     context = {
-        'data':quiz_data_list
+        'data':quiz_data_list,
     }
     return render(request,"studentapp/quiz-list.html",context=context)
 
@@ -190,32 +200,23 @@ def quiz_list(request):
 def quiz(request, id):
     quiz_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=id)
     quiz_questions_options = devModels.QuizOptions.objects.all()
-
     context = {
         'data': quiz_questions,
         'options': quiz_questions_options
     }
-
     if request.method == "POST":
-        score = 0  # Initialize score
+        score = 0
         total_questions = quiz_questions.count()
-
         for question in quiz_questions:
-            user_choice = request.POST.get(f"user_choice_{question.id}")  # Get user answer
+            user_choice = request.POST.get(f"user_choice_{question.id}")
             try:
                 quiz_answer = devModels.QuizOptions.objects.get(question_id=question.id)
-                
-                # Assuming option_1 is the correct answer (modify if needed)
                 correct_answer = quiz_answer.option_1
-
                 if user_choice == correct_answer:
-                    score += 1  # Increase score for correct answers
-                    
+                    score += 1
             except devModels.QuizOptions.DoesNotExist:
-                continue  # Skip if the question has no options
-        
+                continue
         quiz_category = devModels.QuizCategory.objects.get(id=id)
-
         quiz_attempt_form = forms.QuizAttemptForm(request.POST)
         if quiz_attempt_form.is_valid():
             quiz_attempt_obj = quiz_attempt_form.save(commit=False)
@@ -223,28 +224,72 @@ def quiz(request, id):
             quiz_attempt_obj.quiz_category = quiz_category
             quiz_attempt_obj.score = score
             quiz_attempt_obj.save()
+            send_quiz_score_to_email(request.user,id,score,total_questions)
             return redirect(score_card)
         else:
             print(quiz_attempt_form.errors)
-
-        # Pass the score to the template
         context["score"] = score
         context["total_questions"] = total_questions
-
     return render(request, "studentapp/quiz.html", context=context)
 
 
+def send_quiz_score_to_email(username,id,score,total_questions):
+    user_email = User.objects.get(username=username)
+    quiz_name = devModels.QuizCategory.objects.get(id=id)
+    # subject = "Your Quiz Score on The Career Linker"
+    subject = f"Your {quiz_name.quiz_category_name} Assessment Results"
+    message = f"""
+    Dear {user_email.username},
+    <p>I hope this message finds you well.
+
+    <h3>We are pleased to inform you that you have recently completed the {quiz_name.quiz_category_name} assessment on The Career Linker platform. Your score for the assessment is {score} / {total_questions}. Congratulations on your progress!</h3>
+
+    If you have any questions or would like to review your answers, please feel free to log in to your account at your convenience.
+    <br><br>
+    Thank you for your continued efforts, and we look forward to supporting you in your career development.
+    <br><br>
+    Best regards,<br>
+    The Career Linker Team</p>
+    """
+    from_email = settings.EMAIL_HOST_USER
+    to_email = user_email.email
+    send_mail(subject, '', from_email, [to_email],html_message=message)
+
+
+# def score_card(request):
+#     data = studentModels.Quiz_attempt.objects.get(student_id=request.user)
+#     findQuizCatName = devModels.QuizCategory.objects.get(id=data.quiz_category.id)
+#     totalQuestions = devModels.QuizQuestions.objects.filter(quiz_category_id=findQuizCatName).count()
+#     average = totalQuestions/data.score
+#     print("-------------------------------------------->",average)
+#     print(totalQuestions)
+#     context = {
+#         'data':data,
+#         'quiz_category':findQuizCatName,
+#         'totalQuestions':totalQuestions
+#     }
+#     return render(request,"studentapp/score-card.html",context=context)
+
 def score_card(request):
-    data = Quiz_attempt.objects.get(student_id=request.user)
+    try:
+        data = studentModels.Quiz_attempt.objects.filter(student_id=request.user).latest('date_time')
+    except studentModels.Quiz_attempt.DoesNotExist:
+        return render(request, "studentapp/score-card.html", {"error": "No quiz attempt found."})
     findQuizCatName = devModels.QuizCategory.objects.get(id=data.quiz_category.id)
     totalQuestions = devModels.QuizQuestions.objects.filter(quiz_category_id=findQuizCatName).count()
-    print(totalQuestions)
+    if data.score != 0:
+        average = totalQuestions / data.score
+    else:
+        average = 0
+    print("Average score:", average)
+    print("Total Questions:", totalQuestions)
     context = {
-        'data':data,
-        'quiz_category':findQuizCatName,
-        'totalQuestions':totalQuestions
+        'data': data,
+        'quiz_category': findQuizCatName,
+        'totalQuestions': totalQuestions,
+        'average': average
     }
-    return render(request,"studentapp/score-card.html",context=context)
+    return render(request, "studentapp/score-card.html", context=context)
 
 
 # def quiz(request,id):

@@ -3,19 +3,22 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
 from devapp import models as devModels
 from devapp import forms
-from studentapp.models import User
+from studentapp.models import User,Quiz_attempt
 from TheCareerLinker import views as TCL_views
 from devapp import views as dev_views
+from django.core.paginator import Paginator
 
 # Create your views here.
 def index(request):
     totalStudents = User.objects.filter(role="Student").count()
     totalDevelopers = User.objects.filter(role="Developer").count()
     totalQuiz = devModels.QuizCategory.objects.all().count()
+    totalQuizAttempts = Quiz_attempt.objects.all().count()
     context = {
         'totalStudents':totalStudents,
         'totalDevelopers':totalDevelopers,
         'totalQuiz':totalQuiz,
+        'totalQuizAttempts':totalQuizAttempts
     }
     return render(request,'adminapp/index.html',context=context)
 
@@ -100,18 +103,6 @@ def quiz_category_list_table(request):
     context = {'quiz_data':quiz_data}
     return render(request,"adminapp/quiz-category-list-table.html",context=context)
 
-def quiz_approve(request,id):
-    data = devModels.QuizCategory.objects.get(id=id)
-    data.is_approved = True
-    data.save()
-    return redirect(quiz_category_list_table)
-
-def quiz_disapprove(request,id):
-    data = devModels.QuizCategory.objects.get(id=id)
-    data.is_approved = False
-    data.save()
-    return redirect(quiz_category_list_table)
-
 def delete_quiz_category(request,id):
     data = devModels.QuizCategory.objects.get(id=id)
     if request.user.role == "Admin":
@@ -120,10 +111,37 @@ def delete_quiz_category(request,id):
     elif request.user.role == "Developer":
         data.delete()
         return redirect(dev_views.table)
-    
 
-# def quiz_review(request,id):
-#     quiz_category_data = devModels.QuizCategory.objects.get(id=id)
-#     quiz_questions_data = devModels.QuizQuestions.objects.filter(quiz_category_id=quiz_category_data.id)
-#     context = {'data':quiz_questions_data}
-#     return render(request,"adminapp/quiz-review-link.html",context=context)
+
+# def quiz_attempt_table(request):
+#     data = Quiz_attempt.objects.all()
+#     findTotalQuestions = devModels.QuizQuestions.objects.filter(quiz_category_id=data.quiz_category).count()
+#     print("--------------------------->",findTotalQuestions)
+#     context = {
+#         'data':data
+#     }
+#     return render(request,"adminapp/quiz-attempts-table.html",context=context)
+
+def quiz_attempt_table(request):
+    data = Quiz_attempt.objects.all()
+    total_questions_per_category = {}
+    for attempt in data:
+        quiz_category_id = attempt.quiz_category.id
+        total_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=quiz_category_id).count()
+        total_questions_per_category[quiz_category_id] = total_questions
+    print("--------------------------->", total_questions_per_category)
+    paginator = Paginator(data, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        # 'data': data,
+        'data': page_obj,
+        'total_questions_per_category': total_questions_per_category 
+    }
+    return render(request, "adminapp/quiz-attempts-table.html", context=context)
+
+
+def delete_quiz_attempt(request,id):
+    quiz_attempt_data = Quiz_attempt.objects.get(id=id)
+    quiz_attempt_data.delete()
+    return redirect(quiz_attempt_table)

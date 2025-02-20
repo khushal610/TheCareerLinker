@@ -1,0 +1,61 @@
+{% extends "adminapp/master.html" %}
+{% load static %}
+{% block content %}
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-sm-12 col-xl-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">Quiz Attempt Table</h6>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Student Name</th>
+                                <th scope="col">Quiz Category</th>
+                                <th scope="col">Date/Time</th>
+                                <th scope="col">Score</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for quiz_attempt in data %}
+                                <tr>
+                                    <th scope="row">{{quiz_attempt.id}}</th>
+                                    <td>{{quiz_attempt.student_id}}</td>
+                                    <td>{{quiz_attempt.quiz_category.quiz_category_name}} [ {{quiz_attempt.quiz_category.quiz_level}} ]</td>
+                                    <td>{{quiz_attempt.date_time}}</td>
+                                    <td>{{quiz_attempt.score}} / 
+                                        {% for category_id, total_questions in total_questions_per_category.items %}
+                                            {% if category_id == quiz_attempt.quiz_category.id %}
+                                                {{ total_questions }}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url "delete_quiz_attempt" quiz_attempt.id %}" class="btn btn-danger">Delete</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+
+                    <div class="pagination d-flex align-items-center gap-4">
+                        {% if data.has_previous %}
+                            <a href="?page=1" class="btn btn-secondary">First</a>
+                            <a href="?page={{ data.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                        {% endif %}
+
+                        <span class="current-page">Page {{ data.number }} of {{ data.paginator.num_pages }}</span>
+
+                        {% if data.has_next %}
+                            <a href="?page={{ data.next_page_number }}" class="btn btn-secondary">Next</a>
+                            <a href="?page={{ data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
+                        {% endif %}
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

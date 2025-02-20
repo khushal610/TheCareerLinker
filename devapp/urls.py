@@ -12,9 +12,11 @@ urlpatterns = [
     path('dev-profile-bio-forms/',views.dev_profile_bio_forms,name="dev_profile_bio_forms"),
     path('add-quiz-category/',views.add_quiz_category,name="add_quiz_category"),
     path('update-quiz-category/<int:id>',views.update_quiz_category,name="update_quiz_category"),
+    path('quiz-approve/<int:id>/',views.quiz_approve,name="quiz_approve"),
+    path('quiz-disapprove/<int:id>/',views.quiz_disapprove,name="quiz_disapprove"),
     path('add-questions/',views.add_questions,name="add_questions"),
     path('delete-question/<int:id>/',views.delete_question,name="delete_question"),
     path('add-options/<int:id>/',views.add_options,name="add_options"),
     path('update-options/<int:id>/',views.update_options,name="update_options"),
-    path('table/',views.table,name="table"),
+    path('quiz-category-table/',views.quiz_category_table,name="quiz_category_table"),
 ]

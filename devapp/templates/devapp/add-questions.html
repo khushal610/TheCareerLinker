@@ -14,6 +14,12 @@
                                 aria-describedby="emailHelp">
                             <span class="text-danger">{{question_error}}</span>
                         </div>
+
+                        <div class="mb-3">
+                            <label for="exampleInputEmail1" class="form-label">Question Summary</label>
+                            <textarea name="quiz_question_summary" rows="3" class="form-control" id=""></textarea>
+                        </div>
+
                         <div class="mb-3">
                             <label for="exampleInputPassword1" class="form-label">Select Quiz Category</label>
                             <select name="quiz_category_id" id="" class="form-control">
@@ -45,7 +51,8 @@
                         <tbody>
                             {% for quiz_cat_list in data %}
                                 <tr>
-                                    <th scope="row">{{quiz_cat_list.id}}</th>
+                                    {% comment %} <th scope="row">{{quiz_cat_list.id}}</th> {% endcomment %}
+                                    <th scope="row">{{ forloop.counter }}</th>
                                     <td>{{quiz_cat_list.quiz_category_name}}</td>
                                     <td>{{quiz_cat_list.quiz_level}}</td>
                                     <td>
@@ -56,6 +63,21 @@
                             {% endfor %}
                         </tbody>
                     </table>
+
+                    <div class="pagination d-flex align-items-center gap-4">
+                        {% if data.has_previous %}
+                            <a href="?page=1" class="btn btn-secondary">First</a>
+                            <a href="?page={{ data.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                        {% endif %}
+
+                        <span class="current-page">Page {{ data.number }} of {{ data.paginator.num_pages }}</span>
+
+                        {% if data.has_next %}
+                            <a href="?page={{ data.next_page_number }}" class="btn btn-secondary">Next</a>
+                            <a href="?page={{ data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
+                        {% endif %}
+                    </div>
+
                 </div>
             </div>
         </div>

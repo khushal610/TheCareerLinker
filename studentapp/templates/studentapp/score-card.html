@@ -17,11 +17,11 @@
                 <div class="ml-2 p-3">
                     {% comment %} <h6 class="heading1">PageSpeed Score</h6> {% endcomment %}
                     <h6 class="heading1">{{quiz_category.quiz_category_name}} [ {{quiz_category.quiz_level}} ]</h6>
-                    <span>The average page speed score is 75%</span> 
+                    <span>The average page speed score is {{average}}</span> 
                 </div>
             </div>
             <div>
-                <button class="btn btn-primary px-4 py-2">Find Another Quiz</button>
+                <a href="{% url "quiz_list" %}" class="btn btn-primary px-4 py-2">Find Another Quiz</a>
                 <a href="{% url "profile" %}" class="btn btn-primary px-4 py-2">View Profile</a>
             </div>
         </div>

@@ -3,6 +3,7 @@ from devapp import models,forms
 from studentapp.models import User
 from TheCareerLinker import views as TCL_views
 from django.contrib.auth import logout
+from django.core.paginator import Paginator
 
 # Create your views here.
 def index(request):
@@ -97,10 +98,14 @@ def add_quiz_category(request):
 
 def add_questions(request):
     data = models.QuizCategory.objects.filter(dev_id=request.user)
-    context = {'data':data}
+    paginator = Paginator(data, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {'data':page_obj}
     if request.method == "POST":
         quiz_question = request.POST.get('quiz_question')
         quiz_category_id = request.POST.get('quiz_category_id')
+        quiz_question_summary = request.POST.get('quiz_question_summary')
         if quiz_question == "":
             return render(request,"devapp/add-questions.html",{
                 'question_error':"Please enter the value",
@@ -116,6 +121,7 @@ def add_questions(request):
         if form_question.is_valid():
             form_question_obj = form_question.save(commit=False)
             form_question_obj.quiz_category_id = quiz_cat_id_instance
+            form_question_obj.quiz_question_summary = quiz_question_summary
             form_question_obj.save()
             return redirect(add_questions)
         else:
@@ -127,7 +133,6 @@ def add_questions(request):
 def add_options(request,id):
     questions = models.QuizQuestions.objects.filter(quiz_category_id=id)
     options = models.QuizOptions.objects.all()
-    # print(questions)
     if request.method == "POST":
         option_1 = request.POST.get('option_1')
         option_2 = request.POST.get('option_2')
@@ -148,8 +153,12 @@ def add_options(request,id):
             findQuestion.save()
         else:
             print(options_form.errors)
+    paginator = Paginator(questions, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
-        'data':questions,
+        # 'data':questions,
+        'data':page_obj,
         'options':options
         }
     return render(request,'devapp/add-options.html',context=context)
@@ -160,12 +169,14 @@ def update_options(request,id):
     options = models.QuizOptions.objects.get(question_id=question_data)
     if request.method == "POST":
         quiz_question = request.POST.get('quiz_question')
+        quiz_question_summary = request.POST.get('quiz_question_summary')
         option_1 = request.POST.get('option_1')
         option_2 = request.POST.get('option_2')
         option_3 = request.POST.get('option_3')
         option_4 = request.POST.get('option_4')
         print(quiz_question)
         question_data.quiz_question = quiz_question
+        question_data.quiz_question_summary = quiz_question_summary
         question_data.save()
         options.option_1 = option_1
         options.option_2 = option_2
@@ -175,7 +186,7 @@ def update_options(request,id):
         return redirect(add_questions)
     context = {
         'data':question_data,
-        'options':options
+        'options':options,
     }
     return render(request,"devapp/update-options.html",context=context)
 
@@ -194,10 +205,13 @@ def edit_profile(request,id):
     }
     return render(request,"devapp/update-profile.html",context=context)
 
-def table(request):
+def quiz_category_table(request):
     data = models.QuizCategory.objects.filter(dev_id=request.user)
-    context = {'data': data}
-    return render(request, "devapp/table.html", context=context)
+    paginator = Paginator(data, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {'data': page_obj}
+    return render(request, "devapp/quiz-category-table.html", context=context)
 
 
 def update_quiz_category(request,id):
@@ -227,7 +241,17 @@ def update_quiz_category(request,id):
         data.quiz_category_name = quiz_category_name
         data.quiz_level = quiz_level
         data.save()
-        return redirect(table)
+        return redirect(quiz_category_table)
     return render(request,"devapp/update-quiz-category.html",context=context)
 
-# def
+def quiz_approve(request,id):
+    data = models.QuizCategory.objects.get(id=id)
+    data.is_approved = True
+    data.save()
+    return redirect(quiz_category_table)
+
+def quiz_disapprove(request,id):
+    data = models.QuizCategory.objects.get(id=id)
+    data.is_approved = False
+    data.save()
+    return redirect(quiz_category_table)

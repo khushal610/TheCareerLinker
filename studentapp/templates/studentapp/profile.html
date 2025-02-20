@@ -31,7 +31,9 @@
                   </li>
                   <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
                     <h6 class="mb-0">Resume</h6>
-                    <span class="text-secondary">{{userdata.student_resume}}</span>
+                    <span class="text-secondary">
+                      {% comment %} <iframe src="{{ userdata.student_resume }}" style="width: 50%; height: 50%; border: none;" type="application/pdf"></iframe> {% endcomment %}
+                    {{userdata.student_resume}}</span>
                   </li>
                 </ul>
               </div>
@@ -115,32 +117,26 @@
                   <div class="card">
                     <div class="card-body">
                       <h6 class="d-flex align-items-center mb-3">Attempted Quiz</h6>
-                      <small>Web Design</small>
-                      <div class="progress mb-3" style="height: 5px">
-                        <div class="progress-bar bg-primary" role="progressbar" style="width: 80%" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                      <small>Website Markup</small>
-                      <div class="progress mb-3" style="height: 5px">
-                        <div class="progress-bar bg-primary" role="progressbar" style="width: 72%" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                      <small>One Page</small>
-                      <div class="progress mb-3" style="height: 5px">
-                        <div class="progress-bar bg-primary" role="progressbar" style="width: 89%" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                      <small>Mobile Template</small>
-                      <div class="progress mb-3" style="height: 5px">
-                        <div class="progress-bar bg-primary" role="progressbar" style="width: 55%" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                      <small>Backend API</small>
-                      <div class="progress mb-3" style="height: 5px">
-                        <div class="progress-bar bg-primary" role="progressbar" style="width: 66%" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
+                      {% if quiz_attempted_data %}
+                        {% for quiz_data in quiz_attempted_data %}
+                          <div class="d-flex flex-row align-items-center justify-content-between">
+                            <p>{{quiz_data.quiz_category.quiz_category_name}} [ {{quiz_data.quiz_category.quiz_level}} ]</p>
+                            <p>{{ quiz_data.score }} / 
+                              {% for quiz_category_id,total_questions in total_questions.items %}
+                                {% if quiz_category_id == quiz_data.quiz_category.id %}
+                                  {{total_questions}}
+                                {% endif %}
+                              {% endfor %}
+                            </p>
+                          </div>
+                        {% endfor %}
+                      {% else %}
+                      <p>Not attempted any quiz</p>
+                      {% endif %}
                     </div>
                   </div>
                 </div>
               </div>
-
-
 
             </div>
           </div>

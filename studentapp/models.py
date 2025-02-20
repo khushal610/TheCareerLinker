@@ -29,8 +29,8 @@ class User(AbstractUser):
 
 
 class Quiz_attempt(models.Model): # id
-    student_id = models.ForeignKey(User,on_delete=models.CASCADE)
-    quiz_category = models.ForeignKey("devapp.QuizCategory",on_delete=models.CASCADE)
+    student_id = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
+    quiz_category = models.ForeignKey("devapp.QuizCategory",on_delete=models.CASCADE,null=True,blank=True)
     score = models.IntegerField(null=True,blank=True,default=0)
-    date_time = models.DateTimeField(auto_now_add=True)
+    date_time = models.DateTimeField(auto_now_add=True,null=True,blank=True)
     # quiz_category = models.ForeignKey(QuizCategory,on_delete=models.CASCADE)

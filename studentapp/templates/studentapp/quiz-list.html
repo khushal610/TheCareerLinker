@@ -3,37 +3,99 @@
 {% block content %}
 <div class="container-fluid pt-4 px-4">
     <div class="row g-4 p-5 ">
+        
         {% for quiz_data in data %}
-        <div class="col-12 col-md-6 col-lg-4 col-xl-4">
-            <div class="bg-light rounded h-100 p-4">
-                {% comment %} <h6 class="mb-4">Company Name</h6> {% endcomment %}
-                <h6 class="mb-4">{{dev_data.company_name}}</h6>
-                <table class="table-borderless">
-                    <thead>
-                        <tr>
-                            <th scope="col">Quiz Name</th>
-                            <td scope="col">{{quiz_data.quiz_category_name}}</td>
-                        </tr>
-                        <tr>
-                            <th scope="col">Level</th>
-                            <td scope="col">{{quiz_data.quiz_level}}</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th>Questions</th>
-                            <td>Doe</td>
-                        </tr>
-                        <tr class="d-flex align-items-center gap-2">
-                            <td>
-                                <a href="{% url "quiz" quiz_data.id %}" class="btn btn-primary">Start Quiz</a>
-                            </td>
-                            <td>[{{quiz_data.dev_id}}]</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+            {% if quiz_data.quiz_level == "Easy" %}
+                <div class="col-12 col-md-6 col-lg-4 col-xl-4">
+                    <div class="bg-success text-black rounded h-100 p-4">
+                        <h6 class="mb-4">{{dev_data.company_name}}</h6>
+                        <table class="table-borderless">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Quiz Name</th>
+                                    <td scope="col">{{quiz_data.quiz_category_name}}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="col">Level</th>
+                                    <td scope="col">{{quiz_data.quiz_level}}</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>Questions</th>
+                                    <td>Doe</td>
+                                </tr>
+                                <tr class="d-flex align-items-center gap-2">
+                                    <td>
+                                        <a href="{% url "quiz" quiz_data.id %}" class="btn btn-light">Start Quiz</a>
+                                    </td>
+                                    <td>[{{quiz_data.dev_id}}]</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% elif quiz_data.quiz_level == "Medium" %}
+                <div class="col-12 col-md-6 col-lg-4 col-xl-4">
+                    <div class="bg-primary text-black rounded h-100 p-4">
+                        <h6 class="mb-4">{{dev_data.company_name}}</h6>
+                        <table class="table-borderless">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Quiz Name</th>
+                                    <td scope="col">{{quiz_data.quiz_category_name}}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="col">Level</th>
+                                    <td scope="col">{{quiz_data.quiz_level}}</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>Questions</th>
+                                    <td>Doe</td>
+                                </tr>
+                                <tr class="d-flex align-items-center gap-2">
+                                    <td>
+                                        <a href="{% url "quiz" quiz_data.id %}" class="btn btn-light">Start Quiz</a>
+                                    </td>
+                                    <td>[{{quiz_data.dev_id}}]</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12 col-md-6 col-lg-4 col-xl-4">
+                    <div class="bg-danger text-black rounded h-100 p-4">
+                        <h6 class="mb-4">{{dev_data.company_name}}</h6>
+                        <table class="table-borderless">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Quiz Name</th>
+                                    <td scope="col">{{quiz_data.quiz_category_name}}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="col">Level</th>
+                                    <td scope="col">{{quiz_data.quiz_level}}</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>Questions</th>
+                                    <td>Doe</td>
+                                </tr>
+                                <tr class="d-flex align-items-center gap-2">
+                                    <td>
+                                        <a href="{% url "quiz" quiz_data.id %}" class="btn btn-light">Start Quiz</a>
+                                    </td>
+                                    <td>[{{quiz_data.dev_id}}]</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
         {% endfor %}
     </div>
 </div>

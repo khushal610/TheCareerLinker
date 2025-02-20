@@ -12,6 +12,7 @@ class QuizCategory(models.Model): # id
 
 class QuizQuestions(models.Model):
     quiz_question = models.CharField(max_length=255,null=True,blank=True)
+    quiz_question_summary = models.TextField(null=True,blank=True)
     is_option_added = models.BooleanField(default=False)
     quiz_category_id = models.ForeignKey(QuizCategory,on_delete=models.CASCADE)
 

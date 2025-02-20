@@ -41,15 +41,15 @@
                     </a>
                 </div>
                 <div class="col-sm-6 col-xl-3">
-                    {% comment %} <a href="{% url "quiz_review" %}"> {% endcomment %}
+                    <a href="{% url "quiz_attempt_table" %}">
                         <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
                             <i class="fa-regular fa-file-lines fa-3x text-primary"></i>
                             <div class="ms-3">
-                                <p class="mb-2">Manage Quesions</p>
-                                <h6 class="mb-0">$1234</h6>
+                                <p class="mb-2">Manage Quiz Attempts</p>
+                                <h6 class="mb-0">{{totalQuizAttempts}}</h6>
                             </div>
                         </div>
-                    {% comment %} </a> {% endcomment %}
+                    </a>
                 </div>
             </div>
         </div>
