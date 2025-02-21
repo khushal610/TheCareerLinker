@@ -20,3 +20,10 @@ class QuizOptionsForm(forms.ModelForm):
         model = models.QuizOptions
         exclude = ['question_id']
         # fields = "__all__"
+
+
+# class OnlineSessionForm(forms.ModelForm):
+#     class Meta:
+#         model = models.Online_sessions
+#         exclude = ['dev_name','is_live']
+        # fields = "__all__"

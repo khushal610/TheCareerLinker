@@ -22,3 +22,14 @@ class QuizOptions(models.Model):
     option_3 = models.CharField(max_length=255,null=True,blank=True)
     option_4 = models.CharField(max_length=255,null=True,blank=True)
     question_id = models.ForeignKey(QuizQuestions,on_delete=models.CASCADE)
+
+class Online_sessions(models.Model): #id
+    dev_name = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    topic_name = models.CharField(max_length=255,null=True,blank=True)
+    meeting_link = models.URLField(null=True,blank=True)
+    start_time = models.TimeField(null=True,blank=True)
+    end_time = models.TimeField(null=True,blank=True)
+    is_live = models.BooleanField(default=False)
+    week_days = models.JSONField(default=list)
+    date_time = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+# class week_days(models.Model):

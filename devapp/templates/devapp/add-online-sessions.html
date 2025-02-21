@@ -1,0 +1,72 @@
+{% extends "devapp/master.html" %}
+{% load static %}
+{% block content %}
+{% comment %} links {% endcomment %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.css">
+<script src="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.js"></script>
+{% comment %} endlinks {% endcomment %}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-9">
+        <h4 class="mb-3">Create Online Class/Session</h4>
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="your-name" class="form-label">Topic name for session</label>
+              <input type="text" name="topic_name" class="form-control" id="your-name">
+            </div>
+            <div class="col-md-6">
+              <label for="your-surname" class="form-label">Meeting Link</label>
+              <input type="url" name="meeting_link" class="form-control" id="your-surname">
+            </div>
+            <div class="col-md-6">
+              <label for="your-email" class="form-label">Start Time</label>
+              <input type="time" name="start_time" class="form-control" id="your-email">
+            </div>
+            <div class="col-md-6">
+                <label for="your-email" class="form-label">End Time</label>
+                <input type="time" name="end_time" class="form-control" id="your-email">
+            </div>
+            <div class="col-12">
+                <div class="col-md-6">
+                  <label for="your-message" class="form-label">Select days to set weekly sessions</label> 
+                  <select id="choices-multiple-remove-button" name="week_days" placeholder="Select upto 7 Days" multiple>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thrusday">Thrusday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+                    <option value="Everyday">Everyday</option>
+                  </select> 
+                </div>
+            </div>
+            <div class="col-12">
+              {{alert}}
+              <div class="row">
+                <div class="col-md-6">
+                  <button type="submit" class="btn btn-dark w-100 fw-bold">Add</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>  
+
+  <script>
+    $(document).ready(function(){
+      var multipleCancelButton = new Choices('#choices-multiple-remove-button', {
+         removeItemButton: true,
+         maxItemCount:7,
+         searchResultLimit:7,
+         renderChoiceLimit:7
+       });  
+    });
+  </script>
+{% endblock %}

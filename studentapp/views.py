@@ -191,8 +191,10 @@ def reset_password(request):
 
 def quiz_list(request):
     quiz_data_list = devModels.QuizCategory.objects.filter(is_approved=True)
+    developer_data = User.objects.all()
     context = {
         'data':quiz_data_list,
+        'developer_data':developer_data
     }
     return render(request,"studentapp/quiz-list.html",context=context)
 

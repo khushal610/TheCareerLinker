@@ -130,7 +130,7 @@ def quiz_attempt_table(request):
         total_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=quiz_category_id).count()
         total_questions_per_category[quiz_category_id] = total_questions
     print("--------------------------->", total_questions_per_category)
-    paginator = Paginator(data, 5)
+    paginator = Paginator(data, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {

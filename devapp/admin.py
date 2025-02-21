@@ -5,3 +5,4 @@ from devapp import models
 admin.site.register(models.QuizCategory)
 admin.site.register(models.QuizQuestions)
 admin.site.register(models.QuizOptions)
+admin.site.register(models.Online_sessions)

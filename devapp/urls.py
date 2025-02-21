@@ -19,4 +19,11 @@ urlpatterns = [
     path('add-options/<int:id>/',views.add_options,name="add_options"),
     path('update-options/<int:id>/',views.update_options,name="update_options"),
     path('quiz-category-table/',views.quiz_category_table,name="quiz_category_table"),
+    path('add-online-session/',views.add_online_session,name="add_online_session"),
+    path('online-session-table/',views.online_session_table,name="online_session_table"),
+    path('update-online-sessions/<int:id>/',views.update_online_sessions,name="update_online_sessions"),
+    path('delete-online-session/<int:id>/',views.delete_online_session,name="delete_online_session"),
+    path('activate-online-session/<int:id>/',views.activate_online_session,name="activate_online_session"),
+    path('deactivate-online-session/<int:id>/',views.deactivate_online_session,name="deactivate_online_session"),
+    path('notify-students/<int:id>/',views.notify_students,name="notify_students"),
 ]

@@ -4,6 +4,8 @@ from studentapp.models import User
 from TheCareerLinker import views as TCL_views
 from django.contrib.auth import logout
 from django.core.paginator import Paginator
+from django.conf import settings
+from django.core.mail import send_mail
 
 # Create your views here.
 def index(request):
@@ -255,3 +257,123 @@ def quiz_disapprove(request,id):
     data.is_approved = False
     data.save()
     return redirect(quiz_category_table)
+
+
+def add_online_session(request):
+    if request.method == "POST":
+        dev_name = request.user
+        topic_name = request.POST.get('topic_name')
+        meeting_link = request.POST.get('meeting_link')
+        start_time = request.POST.get('start_time')
+        end_time = request.POST.get('end_time')
+        week_days = request.POST.getlist('week_days')
+
+        session = models.Online_sessions.objects.create(
+            dev_name=dev_name,
+            topic_name=topic_name,
+            meeting_link=meeting_link,
+            start_time=start_time,
+            end_time=end_time,
+            is_live=False,
+            week_days=week_days,
+        )
+        session.save()
+        return render(request,"devapp/add-online-sessions.html",{'alert':"Class created"})
+    return render(request,"devapp/add-online-sessions.html")
+
+
+def online_session_table(request):
+    class_data = models.Online_sessions.objects.all()
+    context = {
+        'class_data':class_data
+    }
+    return render(request,"devapp/online-session-table.html",context=context)
+
+
+def update_online_sessions(request,id):
+    online_session_data = models.Online_sessions.objects.get(id=id)
+    context = {
+        'class_data':online_session_data
+    }
+    if request.method == "POST":
+        topic_name = request.POST.get('topic_name')
+        meeting_link = request.POST.get('meeting_link')
+        start_time = request.POST.get('start_time')
+        end_time = request.POST.get('end_time')
+        week_days = request.POST.getlist('week_days')
+
+        online_session_data.topic_name = topic_name
+        online_session_data.meeting_link = meeting_link
+        online_session_data.start_time = start_time
+        online_session_data.end_time = end_time
+        online_session_data.week_days = week_days
+        online_session_data.save()
+        return redirect(online_session_table)
+    return render(request,"devapp/update-online-sessions.html",context=context)
+
+
+def delete_online_session(request,id):
+    session_data = models.Online_sessions.objects.get(id=id)
+    session_data.delete()
+    return redirect(online_session_table)
+
+
+def activate_online_session(request,id):
+    session_data = models.Online_sessions.objects.get(id=id)
+    session_data.is_live = True
+    session_data.save()
+    return redirect(online_session_table)
+
+def deactivate_online_session(request,id):
+    session_data = models.Online_sessions.objects.get(id=id)
+    session_data.is_live = False
+    session_data.save()
+    return redirect(online_session_table)
+
+
+
+
+def notify_students(request, id):
+    all_students = User.objects.filter(role="Student")
+    session_data = models.Online_sessions.objects.get(id=id)
+    company_data = User.objects.get(username=session_data.dev_name)
+    topic_name = session_data.topic_name
+    start_time = session_data.start_time
+    end_time = session_data.end_time
+    dev_name = session_data.dev_name
+    company_name = company_data.company_name
+    print(topic_name)
+    print(start_time)
+    print(end_time)
+    print("------------------->", dev_name)
+    print("------------------->", company_name)
+    print("--------------------------------->", all_students)
+    for student in all_students:
+        student_email = student.email
+        online_session_email_notification(student_email, topic_name, student.username, start_time, end_time, dev_name, company_name)
+        print(student.username, " -- ", student_email)
+    return redirect(online_session_table)
+
+
+def online_session_email_notification(student_email, topic_name, student_name, start_time, end_time, dev_name, company_name):
+    subject = f"Reminder - {topic_name}"
+    message = f"""
+    <p>Dear {student_name},</p>
+
+    <p>I hope this message finds you well.</p>
+
+    <p>I am writing to remind you about the upcoming session scheduled to start within the next 5 minutes or soon. Please find the session details below:</p>
+
+    <h4>{topic_name} Session starts at {start_time} and will end at {end_time}. This session is scheduled by {dev_name} from {company_name}.</h4>
+
+    <p>Instructions for the Student: Please stay active and check for notifications to find and join suitable online sessions according to your needs. It is essential to ensure that you are prepared and ready to join the session promptly.</p>
+
+    <p>Thank you for your attention to this matter. Should you have any questions or require further assistance, please do not hesitate to reach out.</p>
+    <br>
+    Best regards,<br>
+    The Career Linker Team
+    </p>
+    """
+    from_email = settings.EMAIL_HOST_USER
+    to_email = student_email
+    send_mail(subject, '', from_email, [to_email], html_message=message)

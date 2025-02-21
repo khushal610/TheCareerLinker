@@ -20,7 +20,7 @@
                         <tbody>
                             {% for quiz_attempt in data %}
                                 <tr>
-                                    <th scope="row">{{quiz_attempt.id}}</th>
+                                    <th scope="row">{{forloop.counter}}</th>
                                     <td>{{quiz_attempt.student_id}}</td>
                                     <td>{{quiz_attempt.quiz_category.quiz_category_name}} [ {{quiz_attempt.quiz_category.quiz_level}} ]</td>
                                     <td>{{quiz_attempt.date_time}}</td>

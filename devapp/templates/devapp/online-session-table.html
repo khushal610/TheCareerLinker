@@ -1,0 +1,68 @@
+{% extends "devapp/master.html" %}
+{% load static %}
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4 d-flex align-items-center justify-content-center p-3">
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Bordered Table</h6>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">Id</th>
+                            <th scope="col">Topic Name</th>
+                            <th scope="col">Start Time</th>
+                            <th scope="col">End Time</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">WeekDays</th>
+                            <th scope="col">Accessiblities</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in class_data %}
+                            <tr>
+                                <th scope="row">{{forloop.counter}}</th>
+                                <td>{{data.topic_name}}</td>
+                                <td>{{data.start_time}}</td>
+                                <td>{{data.end_time}}</td>
+                                <td>{{data.is_live}}</td>
+                                {% comment %} <td>{{data.weekdays}}</td> {% endcomment %}
+                                <td>
+                                    {% for day in data.week_days %}
+                                        {% if day == "Everyday" %}Everyday{% endif %}
+                                        {% if day == "Monday" %}Monday{% endif %}
+                                        {% if day == "Tuesday" %}Tuesday{% endif %}
+                                        {% if day == "Wednesday" %}Wednesday{% endif %}
+                                        {% if day == "Thursday" %}Thursday{% endif %}
+                                        {% if day == "Friday" %}Friday{% endif %}
+                                        {% if day == "Saturday" %}Saturday{% endif %}
+                                        {% if day == "Sunday" %}Sunday{% endif %}
+                                        {% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url "update_online_sessions" data.id %}" class="btn btn-secondary">Edit</a>
+                                        <a href="{% url "delete_online_session" data.id %}" class="btn btn-danger">Delete</a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url "notify_students" data.id %}" class="btn btn-primary">Notify Students</a>
+                                        {% if data.is_live == False %}
+                                            <a href="{% url "activate_online_session" data.id %}" class="btn btn-success">Active</a>
+                                        {% else %}
+                                            <a href="{% url "deactivate_online_session" data.id %}" class="btn btn-warning">Inactive</a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

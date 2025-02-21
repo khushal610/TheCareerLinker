@@ -1,0 +1,72 @@
+{% extends "devapp/master.html" %}
+{% load static %}
+{% block content %}
+{% comment %} links {% endcomment %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.css">
+<script src="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.js"></script>
+{% comment %} endlinks {% endcomment %}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-9">
+        <h4 class="mb-3">Update Online Class/Session</h4>
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="your-name" class="form-label">Topic name for session</label>
+              <input type="text" name="topic_name" value="{{class_data.topic_name}}" class="form-control" id="your-name">
+            </div>
+            <div class="col-md-6">
+              <label for="your-surname" class="form-label">Meeting Link</label>
+              <input type="url" name="meeting_link" value="{{class_data.meeting_link}}" class="form-control" id="your-surname">
+            </div>
+            <div class="col-md-6">
+              <label for="your-email" class="form-label">Start Time</label>
+              <input type="time" name="start_time" value="{{ class_data.start_time|date:'H:i' }}" class="form-control" id="your-email">
+            </div>
+            <div class="col-md-6">
+                <label for="your-email" class="form-label">End Time</label>
+                <input type="time" name="end_time" value="{{ class_data.end_time|date:'H:i' }}" class="form-control" id="your-email">
+            </div>
+            <div class="col-12">
+                <div class="col-md-6">
+                  <label for="your-message" class="form-label">Select days to set weekly sessions</label> 
+                  <select id="choices-multiple-remove-button" name="week_days" placeholder="Select upto 7 Days" multiple>
+                    <option value="Monday" {% if "Monday" in class_data.week_days %}selected{% endif %}>Monday</option>
+                    <option value="Tuesday" {% if "Tuesday" in class_data.week_days %}selected{% endif %}>Tuesday</option>
+                    <option value="Wednesday" {% if "Wednesday" in class_data.week_days %}selected{% endif %}>Wednesday</option>
+                    <option value="Thrusday" {% if "Thrusday" in class_data.week_days %}selected{% endif %}>Thrusday</option>
+                    <option value="Friday" {% if "Friday" in class_data.week_days %}selected{% endif %}>Friday</option>
+                    <option value="Saturday" {% if "Saturday" in class_data.week_days %}selected{% endif %}>Saturday</option>
+                    <option value="Sunday" {% if "Sunday" in class_data.week_days %}selected{% endif %}>Sunday</option>
+                    <option value="Everyday" {% if "Everyday" in class_data.week_days %}selected{% endif %}>Everyday</option>
+                  </select> 
+                </div>
+            </div>
+            <div class="col-12">
+              {{alert}}
+              <div class="row">
+                <div class="col-md-6">
+                  <button type="submit" class="btn btn-dark w-100 fw-bold">Save Changes</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>  
+
+  <script>
+    $(document).ready(function(){
+      var multipleCancelButton = new Choices('#choices-multiple-remove-button', {
+         removeItemButton: true,
+         maxItemCount:7,
+         searchResultLimit:7,
+         renderChoiceLimit:7
+       });  
+    });
+  </script>
+{% endblock %}
