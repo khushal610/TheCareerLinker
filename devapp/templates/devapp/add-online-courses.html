@@ -1,0 +1,66 @@
+{% extends "devapp/master.html" %}
+{% load static %}
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-9">
+        <h4 class="mb-3">Create Online Certification Course</h4>
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="your-name" class="form-label">Course Name</label>
+              <input type="text" name="course_name" class="form-control" id="your-name">
+            </div>
+            <div class="col-md-6">
+              <label for="your-surname" class="form-label">Course Duration</label>
+              <select name="course_duration" class="form-control" id="">
+                <option value="None">select</option>
+                <option value="1 Month">1 Month</option>
+                <option value="1.5 Month">1.5 Month</option>
+                <option value="2 Month">2 Month</option>
+                <option value="2.5 Month">2.5 Month</option>
+                <option value="3 Month">3 Month</option>
+                <option value="4 Month">4 Month</option>
+                <option value="5 Month">5 Month</option>
+                <option value="6 Month">6 Month</option>
+                <option value="10 Month">10 Month</option>
+                <option value="1 Year">1 Year</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="your-email" class="form-label">Course Type</label>
+              <select name="course_type" class="form-control" id="">
+                <option value="None">select</option>
+                <option value="Free">Free</option>
+                <option value="Paid">Paid</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+                <label for="your-email" class="form-label">Charges</label>
+                <select name="course_charges" class="form-control" id="">
+                    <option value="None">select</option>
+                    <option value="0">0₹</option>
+                    <option value="499">499₹</option>
+                    <option value="599">599₹</option>
+                    <option value="799">799₹</option>
+                    <option value="899">899₹</option>
+                    <option value="999">999₹</option>
+                    <option value="1499">1499₹</option>
+                    <option value="1999">1999₹</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <span class="text-success">{{alert}}</span>
+              <div class="row">
+                <div class="col-md-6">
+                  <button type="submit" class="btn btn-dark w-100 fw-bold">Add Course</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>  
+{% endblock %}

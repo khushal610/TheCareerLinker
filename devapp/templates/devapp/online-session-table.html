@@ -5,7 +5,7 @@
     <div class="row g-4 d-flex align-items-center justify-content-center p-3">
         <div class="col-sm-12 col-xl-12">
             <div class="bg-light rounded h-100 p-4">
-                <h6 class="mb-4">Bordered Table</h6>
+                <h6 class="mb-4">Manage Online Classes</h6>
                 <table class="table table-bordered">
                     <thead>
                         <tr>
@@ -15,6 +15,7 @@
                             <th scope="col">End Time</th>
                             <th scope="col">Status</th>
                             <th scope="col">WeekDays</th>
+                            <th scope="col">View Session Attempted Students</th>
                             <th scope="col">Accessiblities</th>
                             <th scope="col">Action</th>
                         </tr>
@@ -40,6 +41,9 @@
                                         {% if day == "Sunday" %}Sunday{% endif %}
                                         {% if not forloop.last %}, {% endif %}
                                     {% endfor %}
+                                </td>
+                                <td>
+                                    <a href="{% url "view_attempted_session_student" data.id %}">View Details</a>
                                 </td>
                                 <td>
                                     <div class="d-grid gap-2">

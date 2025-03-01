@@ -1,11 +1,15 @@
 from django.shortcuts import render,HttpResponse,redirect
 from devapp import models,forms
-from studentapp.models import User
+from studentapp.models import User,Attempted_session,Quiz_attempt
 from TheCareerLinker import views as TCL_views
 from django.contrib.auth import logout
 from django.core.paginator import Paginator
 from django.conf import settings
 from django.core.mail import send_mail
+from django.contrib import messages
+from django.urls import reverse
+# for celery worker
+# from devapp.tasks import send_online_session_email
 
 # Create your views here.
 def index(request):
@@ -283,7 +287,7 @@ def add_online_session(request):
 
 
 def online_session_table(request):
-    class_data = models.Online_sessions.objects.all()
+    class_data = models.Online_sessions.objects.filter(dev_name=request.user)
     context = {
         'class_data':class_data
     }
@@ -331,8 +335,6 @@ def deactivate_online_session(request,id):
     return redirect(online_session_table)
 
 
-
-
 def notify_students(request, id):
     all_students = User.objects.filter(role="Student")
     session_data = models.Online_sessions.objects.get(id=id)
@@ -377,3 +379,337 @@ def online_session_email_notification(student_email, topic_name, student_name, s
     from_email = settings.EMAIL_HOST_USER
     to_email = student_email
     send_mail(subject, '', from_email, [to_email], html_message=message)
+
+
+# # for celery worker 
+# def notify_students(request, id):
+#     all_students = User.objects.filter(role="Student")
+#     session_data = models.Online_sessions.objects.get(id=id)
+#     company_data = User.objects.get(username=session_data.dev_name)
+#     topic_name = session_data.topic_name
+#     start_time = str(session_data.start_time)
+#     end_time = str(session_data.end_time)
+#     dev_name = str(session_data.dev_name)
+#     company_name = str(company_data.company_name)
+
+#     for student in all_students:
+#         # Send the email task asynchronously
+#         send_online_session_email.delay(student.email, topic_name, student.username, start_time, end_time, dev_name, company_name)
+
+#     messages.success(request, "Notifications sent successfully.")
+#     return redirect('online_session_table')
+
+
+def view_attempted_session_student(request,id):
+    session_data = models.Online_sessions.objects.get(id=id)
+    attempted_session_data = Attempted_session.objects.filter(session_id=id)
+    paginator = Paginator(attempted_session_data, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'attempted_session_data':page_obj,
+        'session_data':session_data
+    }
+    return render(request,"devapp/attempted-session-table.html",context=context)
+
+
+def view_quiz_attempted_student(request,id):
+    quiz_data = models.QuizCategory.objects.get(id=id)
+    attempted_quiz_data = Quiz_attempt.objects.filter(quiz_category=id)
+    total_questions = models.QuizQuestions.objects.filter(quiz_category_id=id).count()
+    paginator = Paginator(attempted_quiz_data, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'attempted_quiz_data':page_obj,
+        'quiz_data':quiz_data,
+        'total_questions':total_questions
+    }
+    return render(request,"devapp/quiz-attempted-students-table.html",context=context)
+
+
+def shortlisting_student(request):
+    student_data = User.objects.filter(role="Student")    
+    paginator = Paginator(student_data, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'student_data':page_obj,
+    }
+    return render(request,"devapp/shortlisting-table.html",context=context)
+
+def student_quiz_attempts(request,id):
+    username = User.objects.get(id=id)
+    quiz_attempted_data = Quiz_attempt.objects.filter(student_id=username.id)
+    totalQuestions = {}
+    for attempt in quiz_attempted_data:
+        quiz_category_id = attempt.quiz_category
+        total_questions = models.QuizQuestions.objects.filter(quiz_category_id=quiz_category_id).count()
+        totalQuestions[quiz_category_id] = total_questions
+    print("--------------------------->", totalQuestions)
+    paginator = Paginator(quiz_attempted_data, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'student_quiz_data':page_obj,
+        'totalQuestions':totalQuestions,
+    }
+    return render(request,"devapp/specific-student-quiz-attempt.html",context=context)
+
+
+def student_session_attempts(request,id):
+    username = User.objects.get(id=id)
+    print("------------------------------------->",username)
+    session_attempted_data = Attempted_session.objects.filter(student_name=username)
+    print("=============================================>",session_attempted_data)
+    paginator = Paginator(session_attempted_data, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'session_attempted_data':page_obj
+    }
+    return render(request,"devapp/specific-student-session-attempt.html",context=context)
+
+def shortlisting_student_selection(request,id):
+    dev_name = request.user
+    user_data = User.objects.get(username=dev_name)
+    company_name = user_data.company_name
+    student_data = User.objects.get(id=id)
+    print("------------------------------------------->",student_data) # 20 student id
+    print("------------------------------------------->",company_name) # dev_company_name
+    if student_data.is_selected == False:
+        student_data.is_selected = True
+        student_data.company_name = company_name
+        student_data.save()
+        send_shortlisting_email_to_student(student_data.email,student_data.username,company_name)
+    else:
+        student_data.is_selected = False
+        student_data.company_name = ""
+        student_data.save()
+    return redirect(shortlisting_student)
+
+
+def send_shortlisting_email_to_student(student_email,student_name,company_name):
+    subject = f"Congratulations! You Have Been Selected by {company_name}"
+    message = f"""
+    <p>Dear {student_name},
+    <br><br>
+    We are pleased to inform you that you have been selected by <b>{company_name}</b> for an opportunity within their organization. After careful evaluation, the developer from <b>{company_name}</b> has chosen you based on your skills and performance.
+    <br><br>
+    Next Steps:
+    <br><br>
+    • You will receive further communication from the company regarding the onboarding process.<br><br>
+    • Please ensure that you check your email regularly for any updates.<br><br>
+    • If you have any questions, feel free to reach out.<br><br>
+    <br><br>
+    Congratulations once again! We wish you great success in your new journey.
+    <br><br>
+    Best Regards,<br>
+    The Career Linker Team
+    </p>
+    """
+    from_email = settings.EMAIL_HOST_USER
+    to_email = student_email
+    send_mail(subject, '', from_email, [to_email], html_message=message)
+    return
+
+
+def add_online_courses(request):
+    if request.method == "POST":
+        course_type = request.POST.get('course_type')
+        course_charges = request.POST.get('course_charges')
+        if course_type == "Free":
+            if course_charges != "0":
+                return render(request,"devapp/update-certification-course.html",{"error":"You cannot select any charges for free course"})
+            
+        if course_type == "Paid":
+            if course_charges == "0":
+                return render(request,"devapp/update-certification-course.html",{"error":"You cannot select 0 rupee for paid course"})
+            
+        course_form = forms.CourseForm(request.POST)
+        if course_form.is_valid():
+            course_form_obj = course_form.save(commit=False)
+            course_form_obj.dev_id = request.user
+            course_form_obj.save()
+            return redirect(certification_course_list)
+        else:
+            print(course_form.errors)
+    return render(request,"devapp/add-online-courses.html")
+
+def update_certification_course(request,id):
+    course_data = models.Online_Certification_Course.objects.get(id=id)
+    context = {
+        'course_data':course_data
+    }
+    if request.method == "POST":
+        course_name = request.POST.get('course_name')
+        course_duration = request.POST.get('course_duration')
+        course_type = request.POST.get('course_type')
+        course_charges = request.POST.get('course_charges')
+        if course_type == "Free":
+            if course_charges != "0":
+                return render(request,"devapp/update-certification-course.html",{"error":"You cannot select any charges for free course",'course_data':course_data})
+            
+        if course_type == "Paid":
+            if course_charges == "0":
+                return render(request,"devapp/update-certification-course.html",{"error":"You cannot select 0 rupee for paid course",'course_data':course_data})
+
+        course_data.course_name = course_name
+        course_data.course_duration = course_duration
+        course_data.course_type = course_type
+        course_data.course_charges = course_charges
+        course_data.save()
+        return redirect(certification_course_list)
+    return render(request,"devapp/update-certification-course.html",context=context)
+
+def delete_online_certification_course(request,id):
+    course_data = models.Online_Certification_Course.objects.get(id=id)
+    course_data.delete()
+    return redirect(certification_course_list)
+
+def certification_course_list(request):
+    course_data = models.Online_Certification_Course.objects.filter(dev_id=request.user)
+    paginator = Paginator(course_data, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'course_data':page_obj
+    }
+    return render(request,"devapp/certification-course-table.html",context=context)
+
+
+def add_course_module(request,course_id):
+    module_data = models.Module_list.objects.filter(course_id=course_id,dev_id=request.user)
+    course_data = models.Online_Certification_Course.objects.get(id=course_id,dev_id=request.user)
+    context = {
+        'module_data':module_data,
+        'course_data':course_data,
+    }
+    if request.method == "POST":
+        module_name = request.POST.get('module_name')
+        module_name_list = ['Module 1', 'Module 2', 'Module 3', 'Module 4', 'Module 5', 'Module 6', 'Module 7', 'Module 8', 'Module 9', 'Module 10']
+        get_course_data = models.Online_Certification_Course.objects.get(id=course_id)
+        if module_name not in module_name_list:
+            return render(request, "devapp/add-course-modules.html", {"check_name": "Give valid module name",'module_data':module_data})
+        try:
+            get_existing_module_name = models.Module_list.objects.filter(module_name=module_name, dev_id=request.user, course_id=course_id)
+            if get_existing_module_name.exists():
+                return render(request, "devapp/add-course-modules.html", {"module_exist": "That module name already exists",'module_data':module_data})
+            add_new_module = models.Module_list.objects.create(
+                module_name=module_name,
+                course_id=get_course_data,
+                dev_id=request.user
+            )
+            add_new_module.save()
+            return render(request, "devapp/add-course-modules.html", {"module_alert": "New module added",'module_data':module_data})
+        
+        except Exception as e:
+            return render(request, "devapp/add-course-modules.html", {"error_message": str(e),'module_data':module_data})
+    return render(request, "devapp/add-course-modules.html",context=context)
+
+def delete_course_module(request,id):
+    course_module_data = models.Module_list.objects.get(id=id)
+    course_id = course_module_data.course_id.id
+    course_module_data.delete()
+    return redirect(reverse('add_course_module', args=[course_id]))
+    # return redirect(add_course_module)
+
+
+def add_module_stages(request, module_id):
+    module_data = models.Module_list.objects.get(id=module_id, dev_id=request.user)
+    module_stage_data = models.Module_Stage.objects.filter(module_id=module_id, dev_id=request.user)
+    context = {
+        'module_stage_data': module_stage_data,
+        'module_data': module_data,
+    }
+    if request.method == "POST":
+        stage_name = request.POST.get('stage_name')
+        if models.Module_Stage.objects.filter(stage_name=stage_name, module_id=module_id, dev_id=request.user).exists():
+            context['stage_exist'] = "That stage name already exists."
+            return render(request, "devapp/add-module-stages.html", context)
+        models.Module_Stage.objects.create(
+            stage_name=stage_name,
+            module_id=module_data,
+            dev_id=request.user
+        )
+        context['stage_alert'] = "New Stage added successfully"
+        return render(request, "devapp/add-module-stages.html", context)
+    return render(request, "devapp/add-module-stages.html", context)
+
+def delete_module_stage(request,id):
+    module_stage_data = models.Module_Stage.objects.get(id=id)
+    module_id = module_stage_data.module_id.id
+    module_stage_data.delete()
+    return redirect(reverse('add_module_stages', args=[module_id]))
+
+def add_course_items(request,stage_id):
+    module_stage_data = models.Module_Stage.objects.get(id=stage_id,dev_id=request.user)
+    course_module_content_data = models.Course_Module_Content.objects.filter(stage_id=stage_id,dev_id=request.user)
+    context = {
+        'module_stage_data':module_stage_data,
+        'course_module_content_data':course_module_content_data
+    }
+    if request.method == "POST":
+        documentation_name = request.POST.get('documentation_name')
+        course_documentation = request.POST.get('course_documentation')
+        course_images = request.FILES.get('course_images')
+        course_pdf = request.FILES.get('course_pdf')
+        course_video = request.FILES.get('course_video')
+        if models.Course_Module_Content.objects.filter(documentation_name=documentation_name,stage_id=stage_id, dev_id=request.user).exists():
+            return render(request, "devapp/add-course-contents.html", {
+                'exist_doc':"That documentation name already exists.",
+                'module_stage_data':module_stage_data,
+                'course_module_content_data':course_module_content_data
+            })
+        models.Course_Module_Content.objects.create(
+            documentation_name=documentation_name,
+            course_documentation=course_documentation,
+            course_images=course_images,
+            course_pdf=course_pdf,
+            course_video=course_video,
+            stage_id=module_stage_data,
+            dev_id=request.user
+        )
+        return render(request,"devapp/add-course-contents.html",{
+            'alert':"New course module docmentation created",
+            'module_stage_data':module_stage_data,
+            'course_module_content_data':course_module_content_data
+        })
+    return render(request,"devapp/add-course-contents.html",context=context)
+
+
+def update_course_items(request,id):
+    course_content_data = models.Course_Module_Content.objects.get(id=id)
+    stage_id = course_content_data.stage_id.id
+    context = {
+        'course_content_data':course_content_data
+    }
+    if request.method == "POST":
+        documentation_name = request.POST.get('documentation_name')
+        course_documentation = request.POST.get('course_documentation')
+        course_images = request.FILES.get('course_images')
+        course_pdf = request.FILES.get('course_pdf')
+        course_video = request.FILES.get('course_video')
+        
+        course_content_data.documentation_name = documentation_name
+        course_content_data.course_documentation = course_documentation
+        course_content_data.course_images = course_images
+        course_content_data.course_pdf = course_pdf
+        course_content_data.course_video = course_video
+        course_content_data.save()
+        return redirect(reverse('add_course_items', args=[stage_id]))
+    return render(request,"devapp/update-course-content.html",context=context)
+
+
+def delete_course_items(request,id):
+    course_module_content_data = models.Course_Module_Content.objects.get(id=id)
+    stage_id = course_module_content_data.stage_id.id
+    course_module_content_data.delete()
+    return redirect(reverse('add_course_items', args=[stage_id]))
+
+def detailedview_course_module_content(request,id):
+    module_content_data = models.Course_Module_Content.objects.get(id=id,dev_id=request.user)
+    context = {
+        'module_content_data':module_content_data
+    }
+    return render(request,"devapp/course-module-content-review.html",context=context)

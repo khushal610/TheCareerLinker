@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
 from devapp import models as devModels
 from devapp import forms
-from studentapp.models import User,Quiz_attempt
+from studentapp.models import User,Quiz_attempt,Attempted_session
 from TheCareerLinker import views as TCL_views
 from devapp import views as dev_views
 from django.core.paginator import Paginator
@@ -13,12 +13,12 @@ def index(request):
     totalStudents = User.objects.filter(role="Student").count()
     totalDevelopers = User.objects.filter(role="Developer").count()
     totalQuiz = devModels.QuizCategory.objects.all().count()
-    totalQuizAttempts = Quiz_attempt.objects.all().count()
+    totalOnlineClasses = devModels.Online_sessions.objects.all().count()
     context = {
         'totalStudents':totalStudents,
         'totalDevelopers':totalDevelopers,
         'totalQuiz':totalQuiz,
-        'totalQuizAttempts':totalQuizAttempts
+        'totalOnlineClasses':totalOnlineClasses,
     }
     return render(request,'adminapp/index.html',context=context)
 
@@ -122,26 +122,47 @@ def delete_quiz_category(request,id):
 #     }
 #     return render(request,"adminapp/quiz-attempts-table.html",context=context)
 
-def quiz_attempt_table(request):
-    data = Quiz_attempt.objects.all()
-    total_questions_per_category = {}
-    for attempt in data:
-        quiz_category_id = attempt.quiz_category.id
-        total_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=quiz_category_id).count()
-        total_questions_per_category[quiz_category_id] = total_questions
-    print("--------------------------->", total_questions_per_category)
-    paginator = Paginator(data, 10)
+def quiz_attempt_table(request,id):
+    data = Quiz_attempt.objects.filter(quiz_category=id)
+    quiz_data = devModels.QuizCategory.objects.get(id=id)
+    total_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=id).count()
+    paginator = Paginator(data, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {
-        # 'data': data,
         'data': page_obj,
-        'total_questions_per_category': total_questions_per_category 
+        'quiz_data':quiz_data,
+        'total_questions':total_questions,
     }
     return render(request, "adminapp/quiz-attempts-table.html", context=context)
 
 
 def delete_quiz_attempt(request,id):
     quiz_attempt_data = Quiz_attempt.objects.get(id=id)
-    quiz_attempt_data.delete()
-    return redirect(quiz_attempt_table)
+    if request.user.role == "Admin":
+        quiz_attempt_data.delete()
+        return redirect(quiz_category_list_table)
+    if request.user.role == "Developer":
+        quiz_attempt_data.delete()
+        return redirect(dev_views.quiz_category_table)
+
+
+def manage_online_session_table(request):
+    session_data = devModels.Online_sessions.objects.all()
+    paginator = Paginator(session_data, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'session_data':page_obj
+    }
+    return render(request,"adminapp/manage-online-session-table.html",context=context)
+
+def session_attempted_student(request,id):
+    session_attempted_data = Attempted_session.objects.filter(session_id=id)
+    session_data = devModels.Online_sessions.objects.get(id=id)
+    session_name = session_data.topic_name
+    context = {
+        'session_data':session_attempted_data,
+        'session_name':session_name
+    }
+    return render(request,"adminapp/session-attempted-student.html",context=context)

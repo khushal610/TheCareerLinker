@@ -14,7 +14,7 @@
                                 <th scope="col">Quiz Category Name</th>
                                 <th scope="col">Quiz Level</th>
                                 <th scope="col">Developer Name</th>
-                                {% comment %} <th scope="col">Review</th> {% endcomment %}
+                                <th scope="col">View Quiz Attempted Students</th>
                                 <th scope="col">Status</th>
                                 <th scope="col">Action</th>
                             </tr>
@@ -26,7 +26,7 @@
                                     <td>{{quiz_detail.quiz_category_name}}</td>
                                     <td>{{quiz_detail.quiz_level}}</td>
                                     <td>{{quiz_detail.dev_id}}</td>
-                                    {% comment %} <td><a href="{% url "quiz_review" quiz_detail.id %}">View Quiz<a></td> {% endcomment %}
+                                    <td><a href="{% url "quiz_attempt_table" quiz_detail.id %}">View Details<a></td>
                                     <td>
                                         {% if quiz_detail.is_approved == False %}
                                             <p class="text-danger d-flex align-items-center gap-1">

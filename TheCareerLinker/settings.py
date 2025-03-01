@@ -76,6 +76,14 @@ AUTH_USER_MODEL = 'studentapp.User'
 
 WSGI_APPLICATION = 'TheCareerLinker.wsgi.application'
 
+# celery settings
+# CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Redis URL
+# # CELERY_BROKER_URL = 'redis://:yourpassword@localhost:6379/0'
+# CELERY_ACCEPT_CONTENT = ['application/json']
+# CELERY_RESULT_SERIALIZER = 'json'
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_TIMEZONE = 'Asia/Kolkata'
+
 
 # AUTH_USER_MODEL = 'studentapp.User'
 

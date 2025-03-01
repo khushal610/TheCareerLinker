@@ -11,6 +11,8 @@ from devapp import views as dev_views
 from adminapp import views as admin_views
 import math,random
 from TheCareerLinker import views as TCL_views
+from django.core.paginator import Paginator
+import datetime
 
 # Create your views here.
 # index page 
@@ -89,10 +91,34 @@ def registration(request):
                     course=course,
                     role=User.STUDENT
                 )
+                send_email_after_registration(username,email)
                 return redirect(loginview)
             else:
                 return render(request,"studentapp/registration.html",{'error':"Password Doesn't Match"})
     return render(request,'studentapp/registration.html')
+
+def send_email_after_registration(username,email):
+    subject = "Welcome to TCL – Your Journey to Success Begins!"
+    message = f"""
+    <p>Dear {username},
+        <br><br>
+        Congratulations! 🎉 You have successfully registered on The Career Linker (TCL) platform. We are excited to have you on board and look forward to helping you enhance your skills and career prospects.
+        <br><br>
+        At TCL, you can:<br>
+        ✅ Attempt quizzes to test and improve your knowledge.<br>
+        ✅ Join online sessions conducted by industry experts.<br>
+        ✅ Access various resources to develop your skills and stay ahead in your career.<br>
+        <br>
+        Start exploring the platform today and make the most of the opportunities available to you! 🚀
+        <br><br>
+        If you have any questions or need assistance, feel free to reach out to us.
+        <br><br>
+        Best Regards,<br>
+        The Career Linker Team<p>
+    """
+    from_email = settings.EMAIL_HOST_USER
+    to_email = email
+    send_mail(subject, '', from_email, [to_email],html_message=message)
 
 # login
 def loginview(request):
@@ -318,3 +344,69 @@ def score_card(request):
 #     return render(request,"studentapp/quiz.html",context=context)
 
 
+def live_sessions(request):
+    session_data = devModels.Online_sessions.objects.all()
+    company_filter = request.GET.get('company_filter')
+    # bookmarked_data = {}
+    # for session in session_data:
+    #     bookmarked_data[session.id] = studentModels.Bookmarked_session.objects.filter(
+    #         session_id=session, student_id=request.user
+    #     ).first()
+
+    if company_filter and company_filter != 'all':
+        session_data = session_data.filter(dev_name__company_name=company_filter)
+
+    company_data = User.objects.filter(role="Developer")
+    # company_data = company_data.union(User.objects.none())
+    paginator = Paginator(session_data, 2)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'session_data': page_obj,
+        'company_data': company_data,
+        'selected_company': company_filter,
+        # 'bookmarked_data': bookmarked_data,
+    }
+    return render(request, "studentapp/live-sessions.html", context)
+
+def join_session(request, id):
+    session = devModels.Online_sessions.objects.get(id=id)
+    meeting_link = session.meeting_link
+    attempted_session_data = studentModels.Attempted_session.objects.filter(
+        session_id=id, 
+        student_name=request.user,
+        is_attempted=True
+    ).first()
+    if attempted_session_data:
+        if attempted_session_data.is_attempted:
+            attempted_session_data.date_time = datetime.datetime.now()
+            attempted_session_data.save()
+    else:
+        new_attempted_session_data = studentModels.Attempted_session.objects.create(
+            session_id=session,
+            student_name=request.user,
+            is_attempted=True,
+            date_time=datetime.datetime.now()
+        )
+        new_attempted_session_data.save()
+    return redirect(meeting_link)
+
+def bookmark_session(request, id):
+    session_data = devModels.Online_sessions.objects.get(id=id)
+    print("-------------------->", session_data)
+
+    existing_bookmark = studentModels.Bookmarked_session.objects.filter(
+        session_id=session_data, student_id=request.user
+    ).first()
+
+    if existing_bookmark:
+        existing_bookmark.is_bookmarked = not existing_bookmark.is_bookmarked
+        existing_bookmark.save()
+    else:
+        add_new_bookmark = studentModels.Bookmarked_session.objects.create(
+            session_id=session_data,
+            student_id=request.user,
+            is_bookmarked=True
+        )
+        add_new_bookmark.save()
+    return redirect(live_sessions)

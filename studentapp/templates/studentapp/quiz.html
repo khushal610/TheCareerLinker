@@ -16,7 +16,9 @@
                                     <tr>
                                         <td scope="col">
                                             {{ questions.quiz_question }} <br>
+                                            {% if questions.quiz_question_summary %}
                                             <pre class="px-3">{{ questions.quiz_question_summary }}</pre>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                 </thead>

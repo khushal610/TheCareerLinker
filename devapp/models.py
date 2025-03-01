@@ -32,4 +32,31 @@ class Online_sessions(models.Model): #id
     is_live = models.BooleanField(default=False)
     week_days = models.JSONField(default=list)
     date_time = models.DateTimeField(auto_now_add=True,null=True,blank=True)
-# class week_days(models.Model):
+
+class Online_Certification_Course(models.Model):
+    course_name = models.CharField(max_length=255,null=True,blank=True)
+    course_duration = models.CharField(max_length=255,null=True,blank=True)
+    course_type = models.CharField(max_length=255,null=True,blank=True)
+    course_charges = models.CharField(max_length=255,null=True,blank=True)
+    dev_id = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+
+class Module_list(models.Model):
+    module_name = models.CharField(max_length=255,null=True,blank=True)
+    course_id = models.ForeignKey(Online_Certification_Course,on_delete=models.CASCADE)
+    dev_id = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+
+class Module_Stage(models.Model):
+    stage_name = models.CharField(max_length=255,null=True,blank=True)
+    module_id = models.ForeignKey(Module_list,on_delete=models.CASCADE)
+    dev_id = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+
+
+class Course_Module_Content(models.Model):
+    documentation_name = models.CharField(max_length=255,null=True,blank=True)
+    course_documentation = models.TextField(null=True,blank=True)
+    course_images = models.FileField(upload_to='course_images/',null=True,blank=True)
+    course_pdf = models.FileField(upload_to='course_pdf/',null=True,blank=True)
+    course_video = models.FileField(upload_to='course_video/',null=True,blank=True)
+    stage_id = models.ForeignKey(Module_Stage,on_delete=models.CASCADE)
+    dev_id = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    # small quiz reference

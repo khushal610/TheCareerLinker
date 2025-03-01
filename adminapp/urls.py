@@ -17,6 +17,8 @@ urlpatterns = [
     path('authorize-dev/<int:id>/',views.authorize_dev,name="authorize_dev"),
     path('unauthorize-dev/<int:id>/',views.unauthorize_dev,name="unauthorize_dev"),
     path('delete-dev/<int:id>/',views.deleteDev,name="deleteDev"),
-    path('quiz-attempt-table/',views.quiz_attempt_table,name="quiz_attempt_table"),
+    path('quiz-attempt-table/<int:id>/',views.quiz_attempt_table,name="quiz_attempt_table"),
     path('delete-quiz-attempt/<int:id>/',views.delete_quiz_attempt,name="delete_quiz_attempt"),
+    path('manage-online-session-table/',views.manage_online_session_table,name="manage_online_session_table"),
+    path('session-attempted-student/<int:id>/',views.session_attempted_student,name="session_attempted_student"),
 ]

@@ -22,8 +22,8 @@ class QuizOptionsForm(forms.ModelForm):
         # fields = "__all__"
 
 
-# class OnlineSessionForm(forms.ModelForm):
-#     class Meta:
-#         model = models.Online_sessions
-#         exclude = ['dev_name','is_live']
-        # fields = "__all__"
+class CourseForm(forms.ModelForm):
+    class Meta:
+        model = models.Online_Certification_Course
+        fields = ['course_name','course_duration','course_type','course_charges']
+        exclude = ['dev_id']

@@ -70,7 +70,7 @@
                             <a href="{% url "add_quiz_category" %}" class="dropdown-item">Add Quiz Category</a>
                             <a href="{% url "add_questions" %}" class="dropdown-item">Add Questions</a>
                             <a href="{% url "add_online_session" %}" class="dropdown-item">Add Online Sessions</a>
-                            {% comment %} <a href="{% url "add_options" %}" class="dropdown-item">Add Options</a> {% endcomment %}
+                            <a href="{% url "add_online_courses" %}" class="dropdown-item">Add Online Course</a>
                         </div>
                     </div>
                     <a href="{% url "dev_widget" %}" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Widgets</a>
@@ -85,8 +85,9 @@
                     </div>
                     <a href="{% url "quiz_category_table" %}" class="nav-item nav-link"><i class="fa fa-table me-2"></i>Quiz Category</a>
                     <a href="{% url "online_session_table" %}" class="nav-item nav-link"><i class="fa fa-table me-2"></i>Manage Classes</a>
-                    <a href="chart.html" class="nav-item nav-link"><i class="fa fa-chart-bar me-2"></i>Charts</a>
-                    <div class="nav-item dropdown">
+                    <a href="{% url "shortlisting_student" %}" class="nav-item nav-link"><i class="fa fa-table me-2"></i>Student Selection</a>
+                    <a href="{% url "certification_course_list" %}" class="nav-item nav-link"><i class="fa fa-table me-2"></i>Manage Certification Courses</a>
+                    {% comment %} <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="far fa-file-alt me-2"></i>Pages</a>
                         <div class="dropdown-menu bg-transparent border-0">
                             <a href="signin.html" class="dropdown-item">Sign In</a>
@@ -94,7 +95,7 @@
                             <a href="404.html" class="dropdown-item">404 Error</a>
                             <a href="blank.html" class="dropdown-item">Blank Page</a>
                         </div>
-                    </div>
+                    </div> {% endcomment %}
                 </div>
             </nav>
         </div>

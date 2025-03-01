@@ -50,6 +50,7 @@
                                 <th scope="col">Quiz Category Name</th>
                                 <th scope="col">Quiz Level</th>
                                 <th scope="col">Status</th>
+                                <th scope="col">View Quiz Attempted Students</th>
                                 <th scope="col">Action</th>
                             </tr>
                         </thead>
@@ -69,6 +70,9 @@
                                                 <i class="fa-regular fa-circle-check"></i>Published   
                                             </p>
                                         {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url "view_quiz_attempted_student" quiz_data.id %}">View Detail</a>
                                     </td>
                                     <td class="d-flex gap-2">
                                         {% if quiz_data.is_approved == False %}

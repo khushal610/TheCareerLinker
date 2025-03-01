@@ -1,0 +1,71 @@
+{% extends "devapp/master.html" %}
+{% load static %}
+{% block content %}
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4 d-flex align-items-center justify-content-center p-5">
+            <div class="col-sm-12 col-xl-8">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">
+                        <a href="{% url "certification_course_list" %}"><i class="fa-solid fa-arrow-left"></i> Back</a></h6>
+                    <h4 class="mb-4">Add Modules in Certification Course</h4>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="module_name" class="form-label">Module Name</label>
+                            <input type="text" name="module_name" class="form-control" id="module_name" placeholder="Give module name as [Module 1,Module 2,Module 3 etc..]"
+                                aria-describedby="emailHelp">
+                                <span class="text-danger fw-bold">{{check_name}}{{module_exist}}</span>
+                        </div>
+                        <button type="submit" class="btn btn-dark text-light">Add Module</button>
+                    </form>
+                </div>
+            </div>
+
+
+            <div class="col-sm-12 col-xl-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">{{course_data.course_name}} Certification Course</h6>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Module Name</th>
+                                <th scope="col">Add/View Stages</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for module in module_data %}
+                                <tr>
+                                    <th scope="row">{{forloop.counter}}</th>
+                                    <td>{{module.module_name}}</td>
+                                    <td><a href="{% url "add_module_stages" module.id %}">Add/View Stages</a></td>
+                                    <td class="d-flex gap-2">
+                                        <a href="{% url "delete_course_module" module.id %}" class="btn btn-danger">Delete</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+    
+                    <div class="pagination d-flex align-items-center gap-4">
+                        {% if module_data.has_previous %}
+                            <a href="?page=1" class="btn btn-secondary">First</a>
+                            <a href="?page={{ module_data.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                        {% endif %}
+    
+                        <span class="current-page">Page {{ module_data.number }} of {{ module_data.paginator.num_pages }}</span>
+    
+                        {% if module_data.has_next %}
+                            <a href="?page={{ module_data.next_page_number }}" class="btn btn-secondary">Next</a>
+                            <a href="?page={{ module_data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
+                        {% endif %}
+                    </div>
+    
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+{% endblock %}

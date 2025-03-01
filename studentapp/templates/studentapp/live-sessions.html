@@ -1,0 +1,227 @@
+{% extends "studentapp/master.html" %}
+{% load static %}
+{% block content %}
+<head>
+    {% comment %} links {% endcomment %}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.css">
+        <script src="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.js"></script>
+    {% comment %} endlinks {% endcomment %}
+    <style>
+        /* Custom Styles for Session Cards */
+        .card__hero {
+            border-radius: 0.5rem 0.5rem 0 0;
+            padding: 1.5rem;
+            font-size: 0.875rem;
+        }
+        .card__hero-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 700;
+        }
+        .card__hero-header span, .card__hero-header .card__icon {
+            display: inline-block;
+        }
+        .card__job-title {
+            margin: 2rem 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .card__footer {
+            padding: 0.75rem;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+        .card__footer .card__job-summary {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .card__footer .card__job-icon img {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+        }
+        .card__btn {
+            width: 100%;
+            padding: 0.5rem 1.25rem;
+            border-radius: 1rem;
+            background-color: #141417;
+            color: #fff;
+            font-size: 1rem;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+        }
+        /* Flexbox Layout */
+        .row-flex {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Responsive Styles */
+        @media (min-width: 576px) {
+            .card__footer {
+                flex-direction: row;
+                justify-content: space-between;
+                gap: 1rem;
+            }
+            .card__footer .card__job-summary {
+                flex-direction: row;
+            }
+        }
+        @media (min-width: 992px) {
+            .card__footer {
+                flex-direction: row;
+            }
+        }
+
+        /* New Styles to Adjust Table Size and Text */
+        /* Style for table */
+        .table {
+            font-size: 0.8rem; /* Smaller font size */
+            width: 100%;
+        }
+
+        .table th, .table td {
+            padding: 0.5rem 1rem; /* Reduced padding */
+        }
+
+        .table td {
+            font-size: 0.8rem; /* Smaller text size for table data */
+        }
+
+        /* Small text for specific content */
+        .card__job-title {
+            font-size: 1rem; /* Smaller text for job titles */
+        }
+
+        .pagination .btn {
+            font-size: 0.8rem; /* Smaller text size for pagination buttons */
+        }
+    </style>
+</head>
+
+<div class="container-fluid p-4">
+    <div class="row-flex">
+        <!-- Filter Section -->
+        <div class="filter-container col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        <div class="mb-3">
+                            <label for="companyFilter" class="form-label">Session Filter</label>
+                            <select class="form-select" id="companyFilter" name="company_filter">
+                                <option value="all" {% if selected_company == 'all' %}selected{% endif %}>All Companies</option>
+                                {% for company in company_data %}
+                                    <option value="{{ company.company_name }}" 
+                                        {% if company.company_name == selected_company %}selected{% endif %}>
+                                        {{ company.company_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            
+                        </div> 
+                        <div class="d-flex flex-column gap-2">
+                            <a class="btn btn-dark w-100">View Bookmarked Sessions</a>    
+                            <button type="submit" class="btn btn-dark w-100">Apply Filter</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sessions Table Section -->
+        <div class="sessions-container col-md-8">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Sessions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in session_data %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <tr>
+                            <td>
+                                <div class="card mb-4">
+                                    <section class="card__hero bg-light">
+                                        <div class="card__hero-header">
+                                            <span><i class="fa-solid fa-clock"></i> Time [{{session.start_time}}]</span>
+                                            <div class="card__icon">
+                                                <a href="{% url 'bookmark_session' session.id %}" class="text-dark">
+                                                    <i class="fa-regular fa-bookmark"></i>
+                                                </a>
+                                            </div>
+                                                                                       
+                                        </div>
+                                        <p class="card__job-title">{{session.topic_name}}</p>
+                                    </section>
+
+                                    <div class="card__footer">
+                                        <div class="card__job-summary">
+                                            <div class="card__job-icon">
+                                                <img src="{{session.dev_name.dev_img.url}}" alt="Dev Image">
+                                            </div>
+                                            <div class="card__job">
+                                                <p class="card__job-title">
+                                                    {{session.dev_name}} [ {{session.dev_name.bio_title}} ]<br>
+                                                    {{session.dev_name.company_name}}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-4">
+                                            {% if session.is_live %}
+                                                <a href="{% url "join_session" session.id %}" class="btn btn-success" target="_blank">Join Session</a>
+                                                <p>{% for days in session.week_days %} [ {{days}} ] {% endfor %}</p>
+                                            {% else %}
+                                                <input type="text" value="Not Active" class="text-center w-25 bg-danger form-control cursor-pointer" readonly>
+                                                <p>{% for days in session.week_days %} [ {{days}} ] {% endfor %}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </form>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Pagination Section -->
+            <div class="pagination d-flex align-items-center gap-4">
+                {% if session_data.has_previous %}
+                    <a href="?page=1&company_filter={{ selected_company }}" class="btn btn-secondary">First</a>
+                    <a href="?page={{ session_data.previous_page_number }}&company_filter={{ selected_company }}" class="btn btn-secondary">Previous</a>
+                {% endif %}
+            
+                <span class="current-page">Page {{ session_data.number }} of {{ session_data.paginator.num_pages }}</span>
+            
+                {% if session_data.has_next %}
+                    <a href="?page={{ session_data.next_page_number }}&company_filter={{ selected_company }}" class="btn btn-secondary">Next</a>
+                    <a href="?page={{ session_data.paginator.num_pages }}&company_filter={{ selected_company }}" class="btn btn-secondary">Last</a>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    $(document).ready(function(){
+      var multipleCancelButton = new Choices('#choices-multiple-remove-button', {
+         removeItemButton: true,
+         maxItemCount:7,
+         searchResultLimit:7,
+         renderChoiceLimit:7
+       });  
+    });
+</script>
+
+{% endblock %}

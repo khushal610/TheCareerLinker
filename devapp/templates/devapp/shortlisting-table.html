@@ -1,0 +1,76 @@
+{% extends "devapp/master.html" %}
+{% load static %}
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4 d-flex align-items-center justify-content-center p-3">
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Shortlisting [ Student Selection ]</h6>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Student Name</th>
+                            <th scope="col">Student Email</th>
+                            <th scope="col">Attempted Quiz</th>
+                            <th scope="col">Attempted Session</th>
+                            <th scope="col">Student Resume</th>
+                            <th scope="col">Student Marksheet</th>
+                            <th scope="col">Institute Name</th>
+                            <th scope="col">Course</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for students in student_data %}
+                            {% if students.is_selected == False %}
+                                <tr>
+                                    <th scope="row">{{forloop.counter}}</th>
+                                    <td>{{students.username}}</td>
+                                    <td>{{students.email}}</td>
+                                    <td>
+                                        <a href="{% url "student_quiz_attempts" students.id %}">View Attempted Quiz</a>
+                                    </td>
+                                    <td>
+                                        <a href="{% url "student_session_attempts" students.id %}">View Attempted Sessions</a>
+                                    </td>
+                                    <td>
+                                        <a href="{{ students.student_resume.url }}" target="_blank">View Resume</a>
+                                    </td>
+                                    <td>
+                                        <a href="{{ students.last_sem_marksheet.url }}" target="_blank">View Marksheet</a>
+                                    </td>                                
+                                    <td>{{students.institute_name}}</td>
+                                    <td>{{students.course}}</td>
+                                    <td class="d-flex gap-2">
+                                        {% if students.is_selected %}
+                                            <a href="{% url "shortlisting_student_selection" students.id %}" class="btn btn-warning">Deselect</a>
+                                        {% else %}
+                                            <a href="{% url "shortlisting_student_selection" students.id %}" class="btn btn-primary">Select</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="pagination d-flex align-items-center gap-4">
+                    {% if student_data.has_previous %}
+                        <a href="?page=1" class="btn btn-secondary">First</a>
+                        <a href="?page={{ student_data.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                    {% endif %}
+
+                    <span class="current-page">Page {{ student_data.number }} of {{ student_data.paginator.num_pages }}</span>
+
+                    {% if student_data.has_next %}
+                        <a href="?page={{ student_data.next_page_number }}" class="btn btn-secondary">Next</a>
+                        <a href="?page={{ student_data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
