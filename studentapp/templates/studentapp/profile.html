@@ -118,18 +118,20 @@
                     <div class="card-body">
                       <h6 class="d-flex align-items-center mb-3">Attempted Quiz</h6>
                       {% if quiz_attempted_data %}
-                        {% for quiz_data in quiz_attempted_data %}
-                          <div class="d-flex flex-row align-items-center justify-content-between">
-                            <p>{{quiz_data.quiz_category.quiz_category_name}} [ {{quiz_data.quiz_category.quiz_level}} ]</p>
-                            <p>{{ quiz_data.score }} / 
-                              {% for quiz_category_id,total_questions in total_questions.items %}
-                                {% if quiz_category_id == quiz_data.quiz_category.id %}
-                                  {{total_questions}}
-                                {% endif %}
-                              {% endfor %}
-                            </p>
-                          </div>
-                        {% endfor %}
+                          {% for quiz_data in quiz_attempted_data %}
+                            {% if quiz_data.quiz_category.is_course_quiz == False %}
+                              <div class="d-flex flex-row align-items-center justify-content-between">
+                                <p>{{quiz_data.quiz_category.quiz_category_name}} [ {{quiz_data.quiz_category.quiz_level}} ]</p>
+                                <p>{{ quiz_data.score }} / 
+                                  {% for quiz_category_id,total_questions in total_questions.items %}
+                                    {% if quiz_category_id == quiz_data.quiz_category.id %}
+                                      {{total_questions}}
+                                    {% endif %}
+                                  {% endfor %}
+                                </p>
+                              </div>
+                            {% endif %}
+                          {% endfor %}
                       {% else %}
                       <p>Not attempted any quiz</p>
                       {% endif %}

@@ -5,7 +5,7 @@
     <div class="row justify-content-center">
       <div class="col-lg-9">
         <h4 class="mb-3">Update Online Certification Course</h4>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
           <div class="row g-3">
             <div class="col-md-6">
@@ -13,9 +13,23 @@
               <input type="text" name="course_name" value="{{course_data.course_name}}" class="form-control" id="your-name">
             </div>
             <div class="col-md-6">
+              <label for="your-name" class="form-label">Course Thumbnail Image</label>
+              <input type="file" name="course_thumbnail_image" value="{{course_data.course_thumbnail_image}}" class="form-control" id="your-name">
+            </div>
+            <div class="col-md-12">
+              <label for="your-name" class="form-label">Course Summary</label>
+              <textarea name="course_summary" rows="3" class="form-control" id="">{{course_data.course_summary}}</textarea>
+            </div>
+            <div class="col-md-6">
               <label for="your-surname" class="form-label">Course Duration</label>
               <select name="course_duration" class="form-control" id="">
                 <option value="None">select</option>
+                <option {% if course_data.course_duration == "1 Hour" %}selected{% endif %} value="1 Hour">1 Hour</option>
+                <option {% if course_data.course_duration == "2 Hour" %}selected{% endif %} value="2 Hour">2 Hour</option>
+                <option {% if course_data.course_duration == "3 Hour" %}selected{% endif %} value="3 Hour">3 Hour</option>
+                <option {% if course_data.course_duration == "4 Hour" %}selected{% endif %} value="4 Hour">4 Hour</option>
+                <option {% if course_data.course_duration == "5 Hour" %}selected{% endif %} value="5 Hour">5 Hour</option>
+                <option {% if course_data.course_duration == "6 Hour" %}selected{% endif %} value="6 Hour">6 Hour</option>
                 <option {% if course_data.course_duration == "1 Month" %}selected{% endif %} value="1 Month">1 Month</option>
                 <option {% if course_data.course_duration == "1.5 Month" %}selected{% endif %} value="1.5 Month">1.5 Month</option>
                 <option {% if course_data.course_duration == "2 Month" %}selected{% endif %} value="2 Month">2 Month</option>

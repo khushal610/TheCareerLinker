@@ -1,0 +1,45 @@
+{% extends "studentapp/course-enrollments.html" %}
+{% load static %}
+{% block course_content %}
+
+<div class="p-4 border rounded border-light shadow-lg">
+    <h3>{{course_document_content_data.documentation_name}}</h3>
+    <b>Course Documentation</b>
+    <p>{{course_document_content_data.course_documentation}}</p>
+    <p>
+        {% if course_document_content_data.course_images %}
+            <div class="d-flex align-items-center justify-content-center">
+                <img src="{{course_document_content_data.course_images.url}}" width="350px" alt="">
+            </div>
+        {% endif %}    
+    </p>
+    <p>
+        {% if course_document_content_data.course_video %}
+            <div class="d-flex align-items-center justify-content-center w-full">
+                <video src="{{course_document_content_data.course_video.url}}" width="100%" alt="" type="video/mp4" controls>
+            </div>
+        {% endif %}    
+    </p>
+    <p>
+        {% if course_document_content_data.course_quiz %}
+        <div class="d-flex align-items-center justify-content-center">
+            <a href="{% url "quiz" course_document_content_data.course_quiz.id %}" class="btn btn-primary w-50 p-2">Attept Quiz</a>
+        </div>
+        {% endif %}
+        {% comment %} {% if course_document_content_data.course_quiz %}
+            questions
+        {% endif %} {% endcomment %}
+    </p>
+    <div class="d-flex align-items-center justify-content-between">
+        {% comment %} <a href="{% url "previous_documentation" course_data_id course_document_content_data.id %}" class="btn btn-secondary">Prev</a> {% endcomment %}
+            {% if not is_first_content %}
+            <a href="{% url "previous_documentation" course_data_id course_document_content_data.id %}" class="btn btn-secondary">Prev</a>
+            {% endif %}
+            {% if not is_last_content %}
+                <a href="{% url "next_documentation" course_data_id course_document_content_data.id %}" class="btn btn-success">Next</a>
+            {% endif %}
+        {% comment %} <a href="{% url "next_documentation" course_data_id course_document_content_data.id %}" class="btn btn-success">Next</a> {% endcomment %}
+    </div>
+</div>
+
+{% endblock %}

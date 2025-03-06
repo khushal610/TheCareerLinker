@@ -29,6 +29,18 @@
                             <label for="formFileSm" class="form-label">Upload Video</label>
                             <input type="file" value="{{course_content_data.course_video}}" name="course_video" class="form-control" id="formFileSm">
                         </div>
+                        <div class="mb-3">
+                            <label for="formFileSm" class="form-label">Select Course Quiz</label>
+                            <select name="course_quiz" class="form-control">
+                                <option value="None">Select</option>
+                                {% for quiz_data in quiz_category_data %}
+                                    <option value="{{ quiz_data.id }}" {% if course_quiz == quiz_data.id %}selected{% endif %}>
+                                        {{ quiz_data.quiz_category_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
                         <span class="text-success">{{alert}}</span>
                         <div class="pt-4">
                             <button class="btn btn-dark">Save Changes</button>

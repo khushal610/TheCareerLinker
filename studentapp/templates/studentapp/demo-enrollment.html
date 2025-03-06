@@ -1,0 +1,124 @@
+{% extends "studentapp/master.html" %}
+{% load static %}
+{% block content %}
+<head>
+    <style>
+        {% comment %} .sidebar {
+            width: 250px;
+            {% comment %} min-height: 100vh; 
+            {% comment %} position: fixed; 
+            overflow-y: auto;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+        } {% endcomment %}
+        pre{
+            {% comment %} font-family: cursive; {% endcomment %}
+            {% comment %} font-family: time-new-roman; {% endcomment %}
+            font-family: Poppins;
+        }
+        .sidebar h5 {
+            text-align: center;
+            font-weight: bold;
+            color: #fff;
+        }
+        .sidebar .nav-link {
+            color: #fff;
+            padding: 10px;
+            transition: 0.3s;
+        }
+        .sidebar .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .sidebar ul li {
+            padding: 5px 10px;
+        }
+        {% comment %} .sidebar ul .collapse li {
+            padding-left: 20px;
+            font-size: 14px;
+            color: #f8f9fa;
+        } {% endcomment %}
+        .content {
+            margin-left: 260px;
+            padding: 20px;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                z-index: 1000;
+            }
+            .content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<div class="container-fluid d-flex p-0">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar p-3 bg-primary text-light col-xl-3">
+        <h5>{{ course_data.course_name }}</h5>
+        <ul class="nav flex-column">
+            {% for module_data in course_module_data %}
+                <li class="nav-item">
+                    <!-- Module Name (Collapsible) -->
+                    <a href="#" class="nav-link fw-bold" data-bs-toggle="collapse" data-bs-target="#module{{ module_data.id }}">
+                        <i class="fa fa-laptop me-2"></i>{{ module_data.module_name }}
+                    </a>
+
+                    <!-- Stage List -->
+                    <ul id="module{{ module_data.id }}" class="collapse list-unstyled ps-3">
+                        {% if module_data.id in module_stage_data %}
+                            {% for module_id, stages in module_stage_data.items %}
+                                {% if module_id == module_data.id %}
+                                    {% for stage in stages %}
+                                        <li>
+                                            <!-- Stage Name (Collapsible) -->
+                                            <a href="#" class="text-dark fw-semibold" data-bs-toggle="collapse" data-bs-target="#stage{{ stage.id }}">
+                                                {{ stage.stage_name }}
+                                            </a>
+                                            <!-- Documentation List -->
+                                            <ul id="stage{{ stage.id }}" class="collapse list-unstyled ps-4">
+                                                {% if stage.id in module_content_data %}
+                                                    {% for stage_id,doc in module_content_data.items %}
+                                                        {% if stage_id == stage.id %}
+                                                            {% for docs in doc %}
+                                                                <li class="text-dark">
+                                                                    <a href="{% url "demo_course_details" course_data.id docs.id %}" class="doc-link text-dark">
+                                                                        {{ docs.documentation_name }}
+                                                                    </a>
+                                                                </li>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <li class="text-dark">No documentation available.</li>
+                                                {% endif %}
+                                            </ul>
+                                        </li>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <li class="text-muted">No stages available</li>
+                        {% endif %}
+                    </ul>
+                </li>
+            {% endfor %}
+
+        </ul>
+    </nav>
+
+    <div class="container col-xl-8 p-5">
+        {% block course_content %}
+
+        {% endblock %}
+    </div>
+</div>
+{% endblock %}

@@ -14,6 +14,7 @@
                         <tr>
                             <th scope="col">ID</th>
                             <th scope="col">Course Name</th>
+                            <th scope="col">Course Thumbnail</th>
                             <th scope="col">Course Duration</th>
                             <th scope="col">Course Type</th>
                             <th scope="col">Course Charges</th>
@@ -26,6 +27,13 @@
                             <tr>
                                 <th scope="row">{{forloop.counter}}</th>
                                 <td>{{course.course_name}}</td>
+                                <td>
+                                    {% if course.course_thumbnail_image %}
+                                        <img src="{{ course.course_thumbnail_image.url }}" alt="{{ course.course_name }}" width="100">
+                                    {% else %}
+                                        No Image
+                                    {% endif %}
+                                </td>
                                 <td>{{course.course_duration}}</td>
                                 <td>{{course.course_type}}</td>
                                 <td>{{course.course_charges}}</td>
@@ -35,6 +43,11 @@
                                 <td class="d-flex gap-2">
                                     <a href="{% url "update_certification_course" course.id %}" class="btn btn-secondary">Edit</a>
                                     <a href="{% url "delete_online_certification_course" course.id %}" class="btn btn-danger">Delete</a>
+                                    {% if course.is_launched %}
+                                        <a href="{% url "unlaunch_course" course.id %}" class="btn btn-warning">Unlaunch Course</a>
+                                    {% else %}
+                                        <a href="{% url "launch_course" course.id %}" class="btn btn-success">Launch Course</a>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}

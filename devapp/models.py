@@ -7,8 +7,8 @@ class QuizCategory(models.Model): # id
     quiz_category_name = models.CharField(max_length=100,null=True,blank=True)
     quiz_level = models.CharField(max_length=15,null=True,blank=True)
     is_approved = models.BooleanField(default=False)
+    is_course_quiz = models.BooleanField(default=False)
     dev_id = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
-    # dev_id = models.ForeignKey(User,on_delete=models.CASCADE)
 
 class QuizQuestions(models.Model):
     quiz_question = models.CharField(max_length=255,null=True,blank=True)
@@ -35,9 +35,12 @@ class Online_sessions(models.Model): #id
 
 class Online_Certification_Course(models.Model):
     course_name = models.CharField(max_length=255,null=True,blank=True)
+    course_thumbnail_image = models.FileField(upload_to='course_thumbnail_images/',null=True,blank=True)
+    course_summary = models.TextField(null=True,blank=True)
     course_duration = models.CharField(max_length=255,null=True,blank=True)
     course_type = models.CharField(max_length=255,null=True,blank=True)
     course_charges = models.CharField(max_length=255,null=True,blank=True)
+    is_launched = models.BooleanField(default=False)
     dev_id = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
 
 class Module_list(models.Model):
@@ -51,12 +54,12 @@ class Module_Stage(models.Model):
     dev_id = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
 
 
-class Course_Module_Content(models.Model):
+class Course_Module_Content(models.Model): #id
     documentation_name = models.CharField(max_length=255,null=True,blank=True)
     course_documentation = models.TextField(null=True,blank=True)
     course_images = models.FileField(upload_to='course_images/',null=True,blank=True)
     course_pdf = models.FileField(upload_to='course_pdf/',null=True,blank=True)
     course_video = models.FileField(upload_to='course_video/',null=True,blank=True)
+    course_quiz = models.ForeignKey(QuizCategory,on_delete=models.CASCADE,null=True,blank=True)
     stage_id = models.ForeignKey(Module_Stage,on_delete=models.CASCADE)
     dev_id = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
-    # small quiz reference

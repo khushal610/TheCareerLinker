@@ -13,6 +13,8 @@ import math,random
 from TheCareerLinker import views as TCL_views
 from django.core.paginator import Paginator
 import datetime
+from django.urls import reverse
+from django.http import Http404
 
 # Create your views here.
 # index page 
@@ -29,11 +31,79 @@ def contact(request):
 
 # courses page
 def courses(request):
-    return render(request,'studentapp/courses.html')
+    course_data = devModels.Online_Certification_Course.objects.filter(is_launched=True)
+    course_enrollment_data = studentModels.Course_Enrollment.objects.filter(student_id=request.user)
+    context = {
+        'course_data':course_data,
+        'course_enrollment_data':course_enrollment_data,
+    }
+    return render(request,'studentapp/courses.html',context=context)
 
 # course-details page
-def courseDetails(request):
-    return render(request,'studentapp/course-details.html')
+def course_details(request, id):
+    course_details = devModels.Online_Certification_Course.objects.get(id=id, is_launched=True)
+    dev_id = course_details.dev_id
+    course_module_data = devModels.Module_list.objects.filter(course_id=id, dev_id=dev_id)
+
+    module_stage_data_details = {}
+    for module_data in course_module_data:
+        module_id = module_data.id
+        module_stage_data = list(devModels.Module_Stage.objects.filter(module_id=module_id, dev_id=dev_id))  
+        if module_stage_data:
+            module_stage_data_details[module_id] = module_stage_data
+            print("=============================>",module_stage_data_details)
+
+    context = {
+        'course_details': course_details,
+        'course_module_data': course_module_data,
+        'module_stage_data': module_stage_data_details
+    }
+    return render(request, 'studentapp/course-details.html', context)
+
+
+def course_enrollment(request, id):
+    course_data = devModels.Online_Certification_Course.objects.get(id=id)
+    dev_id = course_data.dev_id
+    course_module_data = devModels.Module_list.objects.filter(course_id=id, dev_id=dev_id)
+
+    module_stage_data_details = {}
+    module_content_data_details = {}
+
+    for module_data in course_module_data:
+        module_id = module_data.id
+        module_stage_data = list(devModels.Module_Stage.objects.filter(module_id=module_id, dev_id=dev_id))
+        if module_stage_data:
+            module_stage_data_details[module_id] = module_stage_data
+
+            for stage in module_stage_data:
+                stage_id = stage.id
+                course_module_content_data = list(devModels.Course_Module_Content.objects.filter(stage_id=stage_id,dev_id=dev_id))
+                # quiz_id = course_module_content_data.course_quiz
+                # quiz_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=quiz_id)
+                # print("---------quiz questions--------------------------------------->",quiz_questions)
+                if course_module_content_data:
+                    module_content_data_details[stage_id] = course_module_content_data
+                print("------content_data---------------------------------------->\n",course_module_content_data)
+                print("===module_content_data_details=====================>\n",module_content_data_details)
+                print("===stage_id=====================>\n",module_content_data_details.keys())
+                print("===content_data=====================>\n",module_content_data_details.values())
+                print("===items()=====================>\n",module_content_data_details.items())
+
+    context = {
+        'course_data': course_data,
+        'course_module_data': course_module_data,
+        'module_stage_data': module_stage_data_details,
+        'module_content_data': module_content_data_details,
+    }
+    if studentModels.Course_Enrollment.objects.filter(student_id=request.user,course_id=id).exists():
+        return render(request, "studentapp/course-enrollments.html",context=context)
+    studentModels.Course_Enrollment.objects.create(
+        student_id=request.user,
+        course_id=course_data,
+        is_payment_received=False
+    )
+    return render(request, "studentapp/course-enrollments.html", context=context)
+
 
 # trainers page
 def trainers(request):
@@ -216,7 +286,7 @@ def reset_password(request):
 
 
 def quiz_list(request):
-    quiz_data_list = devModels.QuizCategory.objects.filter(is_approved=True)
+    quiz_data_list = devModels.QuizCategory.objects.filter(is_approved=True,is_course_quiz=False)
     developer_data = User.objects.all()
     context = {
         'data':quiz_data_list,
@@ -226,6 +296,7 @@ def quiz_list(request):
 
 
 def quiz(request, id):
+    quiz_category_data = devModels.QuizCategory.objects.get(id=id)
     quiz_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=id)
     quiz_questions_options = devModels.QuizOptions.objects.all()
     context = {
@@ -252,7 +323,8 @@ def quiz(request, id):
             quiz_attempt_obj.quiz_category = quiz_category
             quiz_attempt_obj.score = score
             quiz_attempt_obj.save()
-            send_quiz_score_to_email(request.user,id,score,total_questions)
+            if quiz_category_data.is_course_quiz == False:
+                send_quiz_score_to_email(request.user,id,score,total_questions)
             return redirect(score_card)
         else:
             print(quiz_attempt_form.errors)
@@ -264,7 +336,6 @@ def quiz(request, id):
 def send_quiz_score_to_email(username,id,score,total_questions):
     user_email = User.objects.get(username=username)
     quiz_name = devModels.QuizCategory.objects.get(id=id)
-    # subject = "Your Quiz Score on The Career Linker"
     subject = f"Your {quiz_name.quiz_category_name} Assessment Results"
     message = f"""
     Dear {user_email.username},
@@ -283,20 +354,6 @@ def send_quiz_score_to_email(username,id,score,total_questions):
     to_email = user_email.email
     send_mail(subject, '', from_email, [to_email],html_message=message)
 
-
-# def score_card(request):
-#     data = studentModels.Quiz_attempt.objects.get(student_id=request.user)
-#     findQuizCatName = devModels.QuizCategory.objects.get(id=data.quiz_category.id)
-#     totalQuestions = devModels.QuizQuestions.objects.filter(quiz_category_id=findQuizCatName).count()
-#     average = totalQuestions/data.score
-#     print("-------------------------------------------->",average)
-#     print(totalQuestions)
-#     context = {
-#         'data':data,
-#         'quiz_category':findQuizCatName,
-#         'totalQuestions':totalQuestions
-#     }
-#     return render(request,"studentapp/score-card.html",context=context)
 
 def score_card(request):
     try:
@@ -320,44 +377,13 @@ def score_card(request):
     return render(request, "studentapp/score-card.html", context=context)
 
 
-# def quiz(request,id):
-#     quiz_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=id)
-#     quiz_questions_options = devModels.QuizOptions.objects.all()
-#     context = {
-#         'data':quiz_questions,
-#         'options':quiz_questions_options
-#     }
-
-#     if request.method == "POST":
-#         user_choice = request.POST.get('user_choice')
-#         question_id = request.POST.get('question_id')
-#         print("user_choice==================================>",user_choice)
-#         print("question_id==================================>",question_id)
-#         quiz_answer = devModels.QuizOptions.objects.get(question_id=question_id)
-#         print("================quiz_answer==================>",quiz_answer)
-#         if user_choice == quiz_answer.option_1:
-#             print("score increase by 1")
-#             return render(request,"studentapp/quiz.html",context=context)
-#         else:
-#             print("incorrect answer")
-#             return render(request,"studentapp/quiz.html",context=context)
-#     return render(request,"studentapp/quiz.html",context=context)
-
-
 def live_sessions(request):
     session_data = devModels.Online_sessions.objects.all()
     company_filter = request.GET.get('company_filter')
-    # bookmarked_data = {}
-    # for session in session_data:
-    #     bookmarked_data[session.id] = studentModels.Bookmarked_session.objects.filter(
-    #         session_id=session, student_id=request.user
-    #     ).first()
 
     if company_filter and company_filter != 'all':
         session_data = session_data.filter(dev_name__company_name=company_filter)
-
     company_data = User.objects.filter(role="Developer")
-    # company_data = company_data.union(User.objects.none())
     paginator = Paginator(session_data, 2)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -365,7 +391,6 @@ def live_sessions(request):
         'session_data': page_obj,
         'company_data': company_data,
         'selected_company': company_filter,
-        # 'bookmarked_data': bookmarked_data,
     }
     return render(request, "studentapp/live-sessions.html", context)
 
@@ -410,3 +435,197 @@ def bookmark_session(request, id):
         )
         add_new_bookmark.save()
     return redirect(live_sessions)
+
+
+def course_document_content(request,course_data_id,id):
+    course_data = devModels.Online_Certification_Course.objects.get(id=course_data_id)
+    dev_id = course_data.dev_id
+    course_module_data = devModels.Module_list.objects.filter(course_id=course_data_id, dev_id=dev_id)
+
+    module_stage_data_details = {}
+    module_content_data_details = {}
+    for module_data in course_module_data:
+        module_id = module_data.id
+        module_stage_data = list(devModels.Module_Stage.objects.filter(module_id=module_id, dev_id=dev_id))
+        if module_stage_data:
+            module_stage_data_details[module_id] = module_stage_data
+
+            for stage in module_stage_data:
+                stage_id = stage.id
+                course_module_content_data = list(devModels.Course_Module_Content.objects.filter(stage_id=stage_id,dev_id=dev_id))
+                if course_module_content_data:
+                    module_content_data_details[stage_id] = course_module_content_data
+                print("------content_data---------------------------------------->\n",course_module_content_data)
+                print("===module_content_data_details=====================>\n",module_content_data_details)
+                print("===stage_id=====================>\n",module_content_data_details.keys())
+                print("===content_data=====================>\n",module_content_data_details.values())
+                print("===items()=====================>\n",module_content_data_details.items())
+
+    course_document_content_data = devModels.Course_Module_Content.objects.get(id=id)
+    context = {
+        "course_document_content_data":course_document_content_data,
+        'course_data': course_data,
+        'course_data_id':course_data.id,
+        'stage_data_id':stage_id,
+        'course_module_data': course_module_data,
+        'module_stage_data': module_stage_data_details,
+        'module_content_data': module_content_data_details,
+    }
+    return render(request,"studentapp/course-document-content.html",context=context)
+
+
+def next_documentation(request, course_data_id, id):
+    course_data = devModels.Online_Certification_Course.objects.get(id=course_data_id)
+    dev_id = course_data.dev_id
+    course_module_data = devModels.Module_list.objects.filter(course_id=course_data_id, dev_id=dev_id)
+    
+    module_stage_data_details = {}
+    module_content_data_details = {}
+
+    for module_data in course_module_data:
+        module_id = module_data.id
+        module_stage_data = list(devModels.Module_Stage.objects.filter(module_id=module_id, dev_id=dev_id))
+        if module_stage_data:
+            module_stage_data_details[module_id] = module_stage_data
+
+            for stage in module_stage_data:
+                stage_id = stage.id
+                course_module_content_data = list(devModels.Course_Module_Content.objects.filter(stage_id=stage_id, dev_id=dev_id))
+                if course_module_content_data:
+                    module_content_data_details[stage_id] = course_module_content_data
+
+    try:
+        course_document_content_data = devModels.Course_Module_Content.objects.get(id=id)
+    except devModels.Course_Module_Content.DoesNotExist:
+        raise Http404("Content not found")
+
+    # ✅ Extract stage_id properly
+    stage_id = course_document_content_data.stage_id.id  
+
+    # Get the last stage and last content of the course
+    last_stage = devModels.Module_Stage.objects.filter(
+        module_id__in=course_module_data.values_list('id', flat=True), dev_id=dev_id
+    ).order_by('-id').first()
+
+    last_content = devModels.Course_Module_Content.objects.filter(
+        stage_id=stage_id, dev_id=dev_id
+    ).order_by('-id').first()
+
+    # Check if the current content is the last in the course
+    is_last_content = (course_document_content_data.id == last_content.id) and (stage_id == last_stage.id)
+
+    # Find the next content
+    next_content = devModels.Course_Module_Content.objects.filter(
+        stage_id=stage_id, dev_id=dev_id, id__gt=id
+    ).order_by('id').first()
+
+    if not next_content:
+        # If no next content, move to the first content of the next stage
+        next_stage = devModels.Module_Stage.objects.filter(id__gt=stage_id, dev_id=dev_id).order_by('id').first()
+        if next_stage:
+            next_content = devModels.Course_Module_Content.objects.filter(
+                stage_id=next_stage.id, dev_id=dev_id
+            ).order_by('id').first()
+
+    if next_content:
+        id = next_content.id  # Update to the next content's ID
+    else:
+        # If no next content exists, stay on the same page
+        return redirect(reverse('course_document_content', args=[course_data_id, id]))
+
+    context = {
+        "course_document_content_data": course_document_content_data,
+        'course_data': course_data,
+        'course_data_id': course_data.id,
+        'stage_data_id': stage_id,
+        'course_module_data': course_module_data,
+        'module_stage_data': module_stage_data_details,
+        'module_content_data': module_content_data_details,
+        'is_last_content': is_last_content,
+    }
+
+    # add student id ,course id, document id to database
+    if studentModels.Course_Progress_Tracker.objects.filter(student_id=request.user,course_id=course_data_id,document_id=course_document_content_data).exists():
+        return redirect(reverse('course_document_content', args=[course_data_id, id]))
+    studentModels.Course_Progress_Tracker.objects.create(
+        student_id=request.user,
+        course_id=course_data,
+        document_id=course_document_content_data,
+        is_completed=True
+    )
+
+    return redirect(reverse('course_document_content', args=[course_data_id, id]))
+
+
+
+def previous_documentation(request, course_data_id, id):
+    course_data = devModels.Online_Certification_Course.objects.get(id=course_data_id)
+    dev_id = course_data.dev_id
+    course_module_data = devModels.Module_list.objects.filter(course_id=course_data_id, dev_id=dev_id)
+
+    module_stage_data_details = {}
+    module_content_data_details = {}
+
+    for module_data in course_module_data:
+        module_id = module_data.id
+        module_stage_data = list(devModels.Module_Stage.objects.filter(module_id=module_id, dev_id=dev_id))
+        if module_stage_data:
+            module_stage_data_details[module_id] = module_stage_data
+
+            for stage in module_stage_data:
+                stage_id = stage.id
+                course_module_content_data = list(devModels.Course_Module_Content.objects.filter(stage_id=stage_id, dev_id=dev_id))
+                if course_module_content_data:
+                    module_content_data_details[stage_id] = course_module_content_data
+
+    try:
+        course_document_content_data = devModels.Course_Module_Content.objects.get(id=id)
+    except devModels.Course_Module_Content.DoesNotExist:
+        raise Http404("Content not found")
+
+    # ✅ Extract stage_id properly
+    stage_id = course_document_content_data.stage_id.id  
+
+    # Get the first stage and first content of the course
+    first_stage = devModels.Module_Stage.objects.filter(
+        module_id__in=course_module_data.values_list('id', flat=True), dev_id=dev_id
+    ).order_by('id').first()
+
+    first_content = devModels.Course_Module_Content.objects.filter(
+        stage_id=stage_id, dev_id=dev_id
+    ).order_by('id').first()
+
+    # Check if the current content is the first in the stage
+    is_first_content = (course_document_content_data.id == first_content.id) and (stage_id == first_stage.id)
+
+    # Find the previous content
+    prev_content = devModels.Course_Module_Content.objects.filter(
+        stage_id=stage_id, dev_id=dev_id, id__lt=id
+    ).order_by('-id').first()
+
+    if not prev_content:
+        # If there is no previous content, move to the last content of the previous stage
+        prev_stage = devModels.Module_Stage.objects.filter(id__lt=stage_id, dev_id=dev_id).order_by('-id').first()
+        if prev_stage:
+            prev_content = devModels.Course_Module_Content.objects.filter(
+                stage_id=prev_stage.id, dev_id=dev_id
+            ).order_by('-id').first()
+
+    if prev_content:
+        id = prev_content.id  # Update to the previous content's ID
+    else:
+        # If no previous content exists, stay on the same page
+        return redirect(reverse('course_document_content', args=[course_data_id, id]))
+
+    context = {
+        "course_document_content_data": course_document_content_data,
+        'course_data': course_data,
+        'course_data_id': course_data.id,
+        'stage_data_id': stage_id,
+        'course_module_data': course_module_data,
+        'module_stage_data': module_stage_data_details,
+        'module_content_data': module_content_data_details,
+        'is_first_content': is_first_content,
+    }
+    return redirect(reverse('course_document_content', args=[course_data_id, id]))
+

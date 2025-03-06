@@ -1,6 +1,13 @@
 {% extends "devapp/master.html" %}
 {% load static %}
 {% block content %}
+<head>
+    <style>
+        pre{
+            font-family: Poppins;
+        }
+    </style>
+</head>
 <div class="container-fluid pt-4 px-4">
     <div class="row g-4 d-flex align-items-center justify-content-center p-3">
         <div class="col-sm-12 col-xl-10">
@@ -15,8 +22,8 @@
                             <th>Course Documentation</th>
                             <td>
                                 {% if module_content_data.course_documentation %}
-                                    <pre class="text-wrap">
-                                        {{module_content_data.course_documentation}}
+                                    <pre>
+                                        <textarea class="form-control" rows="15" readonly>{{module_content_data.course_documentation}}</textarea>
                                     </pre>
                                 {% else %}
                                 No Documentation Found
@@ -27,7 +34,7 @@
                             <th>Course Images</th>
                             <td>
                                 {% if module_content_data.course_images %}
-                                    {{module_content_data.course_images}}
+                                    <img src="{{module_content_data.course_images.url}}" width="450px">
                                 {% else %}
                                     No Image Found
                                 {% endif %}
@@ -47,9 +54,21 @@
                             <th>Course Video</th>
                             <td>
                                 {% if module_content_data.course_video %}
-                                    {{module_content_data.course_video}}
+                                    <video class="w-75" controls>
+                                        <source src="{{module_content_data.course_video.url}}" type="video/mp4">
+                                    </video>
                                 {% else %}
                                 No Video Found
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Course Quiz</th>
+                            <td>
+                                {% if module_content_data.course_quiz %}
+                                    <a href="{% url "add_options" module_content_data.course_quiz.id %}">{{module_content_data.course_quiz.quiz_category_name}}</a>
+                                {% else %}
+                                No Quiz Found
                                 {% endif %}
                             </td>
                         </tr>

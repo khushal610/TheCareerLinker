@@ -262,6 +262,17 @@ def quiz_disapprove(request,id):
     data.save()
     return redirect(quiz_category_table)
 
+def add_to_course_quiz(request,id):
+    data = models.QuizCategory.objects.get(id=id)
+    data.is_course_quiz = True
+    data.save()
+    return redirect(quiz_category_table)
+
+def remove_from_course_quiz(request,id):
+    data = models.QuizCategory.objects.get(id=id)
+    data.is_course_quiz = False
+    data.save()
+    return redirect(quiz_category_table)
 
 def add_online_session(request):
     if request.method == "POST":
@@ -543,6 +554,8 @@ def update_certification_course(request,id):
     }
     if request.method == "POST":
         course_name = request.POST.get('course_name')
+        course_thumbnail_image = request.FILES.get('course_thumbnail_image')
+        course_summary = request.POST.get('course_summary')
         course_duration = request.POST.get('course_duration')
         course_type = request.POST.get('course_type')
         course_charges = request.POST.get('course_charges')
@@ -555,6 +568,8 @@ def update_certification_course(request,id):
                 return render(request,"devapp/update-certification-course.html",{"error":"You cannot select 0 rupee for paid course",'course_data':course_data})
 
         course_data.course_name = course_name
+        course_data.course_thumbnail_image = course_thumbnail_image
+        course_data.course_summary = course_summary
         course_data.course_duration = course_duration
         course_data.course_type = course_type
         course_data.course_charges = course_charges
@@ -577,6 +592,17 @@ def certification_course_list(request):
     }
     return render(request,"devapp/certification-course-table.html",context=context)
 
+def launch_course(request,id):
+    course_data = models.Online_Certification_Course.objects.get(id=id,dev_id=request.user)
+    course_data.is_launched = True
+    course_data.save()
+    return redirect(certification_course_list)
+
+def unlaunch_course(request,id):
+    course_data = models.Online_Certification_Course.objects.get(id=id,dev_id=request.user)
+    course_data.is_launched = False
+    course_data.save()
+    return redirect(certification_course_list)
 
 def add_course_module(request,course_id):
     module_data = models.Module_list.objects.filter(course_id=course_id,dev_id=request.user)
@@ -645,9 +671,11 @@ def delete_module_stage(request,id):
 def add_course_items(request,stage_id):
     module_stage_data = models.Module_Stage.objects.get(id=stage_id,dev_id=request.user)
     course_module_content_data = models.Course_Module_Content.objects.filter(stage_id=stage_id,dev_id=request.user)
+    quiz_category_data = models.QuizCategory.objects.filter(is_course_quiz=True,dev_id=request.user)
     context = {
         'module_stage_data':module_stage_data,
-        'course_module_content_data':course_module_content_data
+        'course_module_content_data':course_module_content_data,
+        'quiz_category_data':quiz_category_data,
     }
     if request.method == "POST":
         documentation_name = request.POST.get('documentation_name')
@@ -655,11 +683,15 @@ def add_course_items(request,stage_id):
         course_images = request.FILES.get('course_images')
         course_pdf = request.FILES.get('course_pdf')
         course_video = request.FILES.get('course_video')
+        course_quiz_id = request.POST.get('course_quiz')
+        course_quiz = models.QuizCategory.objects.get(id=course_quiz_id,dev_id=request.user)
+        print("------------------------------>",course_quiz)
         if models.Course_Module_Content.objects.filter(documentation_name=documentation_name,stage_id=stage_id, dev_id=request.user).exists():
             return render(request, "devapp/add-course-contents.html", {
                 'exist_doc':"That documentation name already exists.",
                 'module_stage_data':module_stage_data,
-                'course_module_content_data':course_module_content_data
+                'course_module_content_data':course_module_content_data,
+                'quiz_category_data':quiz_category_data,
             })
         models.Course_Module_Content.objects.create(
             documentation_name=documentation_name,
@@ -667,38 +699,60 @@ def add_course_items(request,stage_id):
             course_images=course_images,
             course_pdf=course_pdf,
             course_video=course_video,
+            course_quiz=course_quiz,
             stage_id=module_stage_data,
             dev_id=request.user
         )
         return render(request,"devapp/add-course-contents.html",{
             'alert':"New course module docmentation created",
             'module_stage_data':module_stage_data,
-            'course_module_content_data':course_module_content_data
+            'course_module_content_data':course_module_content_data,
+            'quiz_category_data':quiz_category_data,
         })
     return render(request,"devapp/add-course-contents.html",context=context)
 
 
-def update_course_items(request,id):
+def update_course_items(request, id):
     course_content_data = models.Course_Module_Content.objects.get(id=id)
+    quiz_category_data = models.QuizCategory.objects.filter(is_course_quiz=True, dev_id=request.user)
     stage_id = course_content_data.stage_id.id
+
+    # Ensure course_quiz is passed correctly
+    course_quiz_id = course_content_data.course_quiz.id if course_content_data.course_quiz else None
+
     context = {
-        'course_content_data':course_content_data
+        'course_content_data': course_content_data,
+        'quiz_category_data': quiz_category_data,
+        'course_quiz': course_quiz_id,  # Pass only the ID for comparison
     }
+
     if request.method == "POST":
         documentation_name = request.POST.get('documentation_name')
         course_documentation = request.POST.get('course_documentation')
         course_images = request.FILES.get('course_images')
         course_pdf = request.FILES.get('course_pdf')
         course_video = request.FILES.get('course_video')
-        
+        course_quiz_id = request.POST.get('course_quiz')
+
         course_content_data.documentation_name = documentation_name
         course_content_data.course_documentation = course_documentation
-        course_content_data.course_images = course_images
-        course_content_data.course_pdf = course_pdf
-        course_content_data.course_video = course_video
+        if course_images:
+            course_content_data.course_images = course_images
+        if course_pdf:
+            course_content_data.course_pdf = course_pdf
+        if course_video:
+            course_content_data.course_video = course_video
+
+        # Update course_quiz if selected
+        if course_quiz_id and course_quiz_id != "None":
+            course_content_data.course_quiz = models.QuizCategory.objects.get(id=course_quiz_id)
+        else:
+            course_content_data.course_quiz = None
+
         course_content_data.save()
         return redirect(reverse('add_course_items', args=[stage_id]))
-    return render(request,"devapp/update-course-content.html",context=context)
+
+    return render(request, "devapp/update-course-content.html", context)
 
 
 def delete_course_items(request,id):
@@ -709,7 +763,10 @@ def delete_course_items(request,id):
 
 def detailedview_course_module_content(request,id):
     module_content_data = models.Course_Module_Content.objects.get(id=id,dev_id=request.user)
+    course_quiz_id = module_content_data.course_quiz
+    course_quiz_questions = models.QuizQuestions.objects.filter(quiz_category_id=course_quiz_id)
     context = {
-        'module_content_data':module_content_data
+        'module_content_data':module_content_data,
+        'course_quiz_questions':course_quiz_questions,
     }
     return render(request,"devapp/course-module-content-review.html",context=context)

@@ -25,5 +25,5 @@ class QuizOptionsForm(forms.ModelForm):
 class CourseForm(forms.ModelForm):
     class Meta:
         model = models.Online_Certification_Course
-        fields = ['course_name','course_duration','course_type','course_charges']
+        fields = ['course_name','course_thumbnail_image','course_summary','course_duration','course_type','course_charges']
         exclude = ['dev_id']

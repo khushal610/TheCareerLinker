@@ -35,6 +35,15 @@
                             <label for="formFileSm" class="form-label">Upload Video</label>
                             <input type="file" name="course_video" class="form-control" id="formFileSm">
                         </div>
+                        <div class="mb-3">
+                            <label for="formFileSm" class="form-label">Select Course Quiz</label>
+                            <select name="course_quiz" id="" class="form-control">
+                                <option value="None">select</option>
+                                {% for quiz_data in quiz_category_data %}
+                                    <option value="{{quiz_data.id}}">{{quiz_data.quiz_category_name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         <span class="text-success">{{alert}}</span>
                         <div class="pt-4">
                             <button class="btn btn-dark">Add Details</button>

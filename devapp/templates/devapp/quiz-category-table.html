@@ -40,7 +40,7 @@
                 </div>
             </div> {% endcomment %}
 
-            <div class="col-sm-12 col-xl-10">
+            <div class="col-sm-12 col-xl-12">
                 <div class="bg-light rounded h-100 p-4">
                     <h6 class="mb-4">Quiz List</h6>
                     <table class="table table-striped">
@@ -75,15 +75,22 @@
                                         <a href="{% url "view_quiz_attempted_student" quiz_data.id %}">View Detail</a>
                                     </td>
                                     <td class="d-flex gap-2">
-                                        {% if quiz_data.is_approved == False %}
+                                        {% if quiz_data.is_approved == False and quiz_data.is_course_quiz == False %}
                                             <a href="{% url "quiz_approve" quiz_data.id %}" class="btn btn-success">Publish</a>
-                                            <a href="{% url "update_quiz_category" quiz_data.id %}" class="btn btn-secondary">Edit</a>
-                                            <a href="{% url "delete_quiz_category" quiz_data.id %}" class="btn btn-danger">Delete</a>
+                                            <a href="{% url "add_to_course_quiz" quiz_data.id %}" class="btn btn-primary">Add to Course Quiz</a>
+                                        {% elif quiz_data.is_course_quiz != False %}
+                                            <a href="{% url "remove_from_course_quiz" quiz_data.id %}" class="btn btn-warning">Remove From Course Quiz</a>
                                         {% else %}
-                                            <a href="{% url "update_quiz_category" quiz_data.id %}" class="btn btn-secondary">Edit</a>
                                             <a href="{% url "quiz_disapprove" quiz_data.id %}" class="btn btn-warning">Unpublish</a>
                                         {% endif %}
-                                    </td>
+                                        {% comment %} {% if quiz_data.is_course_quiz == False %}
+                                            <a href="{% url "add_to_course_quiz" quiz_data.id %}" class="btn btn-primary">Add to Course Quiz</a>
+                                        {% else %}
+                                            <a href="{% url "remove_from_course_quiz" quiz_data.id %}" class="btn btn-warning">Remove From Course Quiz</a>
+                                        {% endif %} {% endcomment %}
+                                            <a href="{% url "update_quiz_category" quiz_data.id %}" class="btn btn-secondary">Edit</a>
+                                            <a href="{% url "delete_quiz_category" quiz_data.id %}" class="btn btn-danger">Delete</a>
+                                        </td>
                                 </tr>
                             {% endfor %}
                         </tbody>

@@ -16,6 +16,16 @@ class AttemptedSessionAdmin(admin.ModelAdmin):
     readonly_fields = ('date_time',)
 admin.site.register(models.Attempted_session, AttemptedSessionAdmin)
 
+class CourseEnrollmentAdmin(admin.ModelAdmin):
+    list_display = ('student_id', 'course_id', 'is_payment_received', 'date_time')  
+    readonly_fields = ('date_time',)
+admin.site.register(models.Course_Enrollment, CourseEnrollmentAdmin)
+
+class CourseProgressTrackerAdmin(admin.ModelAdmin):
+    list_display = ('student_id', 'course_id', 'document_id', 'is_completed', 'date_time')
+    readonly_fields = ('date_time',)
+admin.site.register(models.Course_Progress_Tracker, CourseProgressTrackerAdmin)
+
 # @admin.register(models.Quiz_attempt)
 # class Quiz_attempt(admin.ModelAdmin):
 #     list_display = ['student_id','quiz_category','score','date_time']

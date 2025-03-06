@@ -8,7 +8,8 @@ urlpatterns = [
     path('trainers/',views.trainers,name="trainers"),
     path('pricing/',views.pricing,name="pricing"),
     path('courses/',views.courses,name="courses"),
-    path('course-details/',views.courseDetails,name="course-details"),
+    path('course-details/<int:id>/',views.course_details,name="course_details"),
+    path('course-enrollment/<int:id>/',views.course_enrollment,name="course_enrollment"),
     path('profile/',views.profile,name="profile"),
     path('login/',views.loginview,name="login"),
     path('student/registration/',views.registration,name="registration"),
@@ -22,4 +23,7 @@ urlpatterns = [
     path('live-sessions/',views.live_sessions,name="live_sessions"),
     path('join-session/<int:id>/',views.join_session,name="join_session"),
     path('bookmark-session/<int:id>/',views.bookmark_session,name="bookmark_session"),
+    path('<int:course_data_id>/course-document-content/<int:id>/',views.course_document_content,name="course_document_content"),
+    path('<int:course_data_id>/next_documentation/<int:id>/',views.next_documentation,name="next_documentation"),
+    path('<int:course_data_id>/previous_documentation/<int:id>/',views.previous_documentation,name="previous_documentation"),
 ]

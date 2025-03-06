@@ -7,23 +7,43 @@
             <div>
                 <h1>Congratulations {{request.user}}</h1>
             </div>
-            <div class="d-flex align-items-center">
-                <div class="p-1 px-4 d-flex flex-column align-items-center score rounded">
-                    <span class="d-block char text-success">Score</span>
-                    <span class="text-success">{{data.score}} / {{totalQuestions}}</span>
-                </div>
+            {% if data.quiz_category.is_course_quiz == False %}
+                <div class="d-flex align-items-center">
+                    <div class="p-1 px-4 d-flex flex-column align-items-center score rounded">
+                        <span class="d-block char text-success">Score</span>
+                        <span class="text-success">{{data.score}} / {{totalQuestions}}</span>
+                    </div>
 
 
-                <div class="ml-2 p-3">
-                    {% comment %} <h6 class="heading1">PageSpeed Score</h6> {% endcomment %}
-                    <h6 class="heading1">{{quiz_category.quiz_category_name}} [ {{quiz_category.quiz_level}} ]</h6>
-                    <span>The average page speed score is {{average}}</span> 
+                    <div class="ml-2 p-3">
+                        {% comment %} <h6 class="heading1">PageSpeed Score</h6> {% endcomment %}
+                        <h6 class="heading1">{{quiz_category.quiz_category_name}} [ {{quiz_category.quiz_level}} ]</h6>
+                        <span>The average page speed score is {{average}}</span> 
+                    </div>
                 </div>
-            </div>
-            <div>
-                <a href="{% url "quiz_list" %}" class="btn btn-primary px-4 py-2">Find Another Quiz</a>
-                <a href="{% url "profile" %}" class="btn btn-primary px-4 py-2">View Profile</a>
-            </div>
+                <div>
+                    <a href="{% url "quiz_list" %}" class="btn btn-primary px-4 py-2">Find Another Quiz</a>
+                    <a href="{% url "profile" %}" class="btn btn-primary px-4 py-2">View Profile</a>
+                </div>
+            {% else %}
+                <div class="d-flex align-items-center">
+                    <div class="p-1 px-4 d-flex flex-column align-items-center score rounded">
+                        <span class="d-block char text-success">Score</span>
+                        <span class="text-success">{{data.score}} / {{totalQuestions}}</span>
+                    </div>
+
+
+                    <div class="ml-2 p-3">
+                        {% comment %} <h6 class="heading1">PageSpeed Score</h6> {% endcomment %}
+                        <h6 class="heading1">{{quiz_category.quiz_category_name}} [ {{quiz_category.quiz_level}} ]</h6>
+                        <span>The average page speed score is {{average}}</span> 
+                    </div>
+                </div>
+                <div>
+                    <a href="#" class="btn btn-primary px-4 py-2">View Certificate</a>
+                    <a href="{% url "profile" %}" class="btn btn-primary px-4 py-2">View Profile</a>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

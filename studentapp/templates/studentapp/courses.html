@@ -1,119 +1,56 @@
 {% extends "studentapp/master.html" %}
 {% load static %}
 {% block content %}
-
-    <!-- Page Title -->
     <div class="page-title" data-aos="fade">
       <div class="heading">
         <div class="container">
           <div class="row d-flex justify-content-center text-center">
             <div class="col-lg-8">
               <h1>Courses</h1>
-              <p class="mb-0">Odio et unde deleniti. Deserunt numquam exercitationem. Officiis quo odio sint voluptas consequatur ut a odio voluptatem. Sit dolorum debitis veritatis natus dolores. Quasi ratione sint. Sit quaerat ipsum dolorem.</p>
+              <p class="mb-0">Are you ready to take your skills to the next level? The Career Linker (TCL) brings you exclusive Online Certification Courses designed to equip you with industry-relevant expertise from top professionals. Whether you're a student, job seeker, or working professional, our courses provide the perfect platform to learn, grow, and succeed from anywhere in the world!</p>
             </div>
           </div>
         </div>
       </div>
-      {% comment %} <nav class="breadcrumbs">
-        <div class="container">
-          <ol>
-            <li><a href="index.html">Home</a></li>
-            <li class="current">Courses</li>
-          </ol>
-        </div>
-      </nav> {% endcomment %}
-    </div><!-- End Page Title -->
-
-    <!-- Courses Section -->
+    </div>
     <section id="courses" class="courses section">
-
       <div class="container">
+      {% if course_enrollment_data %}
+        <h4>Enrolled Courses</h4>
+        <div class="row">
+          {% for enrolled_course in course_enrollment_data %}
+            <div class="col-lg-4 col-md-6 d-flex align-items-stretch p-2" data-aos="zoom-in" data-aos-delay="100">
+              <div class="course-item">
+                <img src="{{enrolled_course.course_id.course_thumbnail_image.url}}" class="img-fluid rounded" alt="...">
+                <div class="course-content">
+                  <h3><a href="{% url "course_enrollment" enrolled_course.course_id.id %}">{{enrolled_course.course_id.course_name}}</a></h3>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <p class="price">{{enrolled_course.course_id.course_type}} ₹{{enrolled_course.course_id.course_charges}}/-</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
 
         <div class="row">
-
-          <div class="col-lg-4 col-md-6 d-flex align-items-stretch" data-aos="zoom-in" data-aos-delay="100">
-            <div class="course-item">
-              <img src="{% static 'assets/img/course-1.jpg' %}" class="img-fluid" alt="...">
-              <div class="course-content">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <p class="category">Enroll Now</p>
-                  <p class="price">$169</p>
-                </div>
-
-                <h3><a href="{% url "course-details" %}">Web Development</a></h3>
-                <p class="description">Et architecto provident deleniti facere repellat nobis iste. Id facere quia quae dolores dolorem tempore.</p>
-                <div class="trainer d-flex justify-content-between align-items-center">
-                  <div class="trainer-profile d-flex align-items-center">
-                    <img src="{% static 'assets/img/trainers/trainer-1-2.jpg' %}" class="img-fluid" alt="">
-                    <a href="" class="trainer-link">Antonio</a>
-                  </div>
-                  <div class="trainer-rank d-flex align-items-center">
-                    <i class="bi bi-person user-icon"></i>&nbsp;50
-                    &nbsp;&nbsp;
-                    <i class="bi bi-heart heart-icon"></i>&nbsp;65
+          {% for course in course_data %}
+            <div class="col-lg-4 col-md-6 d-flex align-items-stretch p-2" data-aos="zoom-in" data-aos-delay="100">
+              <div class="course-item">
+                <img src="{{course.course_thumbnail_image.url}}" class="img-fluid rounded" alt="...">
+                <div class="course-content">
+                  <h3><a href="#">{{course.course_name}}</a></h3>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <a href="{% url "course_details" course.id %}" class="btn category">More Info</a>
+                    <p class="price">{{course.course_type}} ₹{{course.course_charges}}/-</p>
                   </div>
                 </div>
               </div>
             </div>
-          </div> <!-- End Course Item-->
-
-          <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4 mt-md-0" data-aos="zoom-in" data-aos-delay="200">
-            <div class="course-item">
-              <img src="{% static 'assets/img/course-2.jpg' %}" class="img-fluid" alt="...">
-              <div class="course-content">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <p class="category">Enroll Now</p>
-                  <p class="price">$250</p>
-                </div>
-
-                <h3><a href="{% url "course-details" %}">Cloud Computing</a></h3>
-                <p class="description">Et architecto provident deleniti facere repellat nobis iste. Id facere quia quae dolores dolorem tempore.</p>
-                <div class="trainer d-flex justify-content-between align-items-center">
-                  <div class="trainer-profile d-flex align-items-center">
-                    <img src="{% static 'assets/img/trainers/trainer-2-2.jpg' %}" class="img-fluid" alt="">
-                    <a href="" class="trainer-link">Lana</a>
-                  </div>
-                  <div class="trainer-rank d-flex align-items-center">
-                    <i class="bi bi-person user-icon"></i>&nbsp;35
-                    &nbsp;&nbsp;
-                    <i class="bi bi-heart heart-icon"></i>&nbsp;42
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div> <!-- End Course Item-->
-
-          <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4 mt-lg-0" data-aos="zoom-in" data-aos-delay="300">
-            <div class="course-item">
-              <img src="{% static 'assets/img/course-3.jpg' %}" class="img-fluid" alt="...">
-              <div class="course-content">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <p class="category">Enroll Now</p>
-                  <p class="price">$180</p>
-                </div>
-
-                <h3><a href="{% url "course-details" %}">Application Development</a></h3>
-                <p class="description">Et architecto provident deleniti facere repellat nobis iste. Id facere quia quae dolores dolorem tempore.</p>
-                <div class="trainer d-flex justify-content-between align-items-center">
-                  <div class="trainer-profile d-flex align-items-center">
-                    <img src="{% static 'assets/img/trainers/trainer-3-2.jpg' %}" class="img-fluid" alt="">
-                    <a href="" class="trainer-link">Brandon</a>
-                  </div>
-                  <div class="trainer-rank d-flex align-items-center">
-                    <i class="bi bi-person user-icon"></i>&nbsp;20
-                    &nbsp;&nbsp;
-                    <i class="bi bi-heart heart-icon"></i>&nbsp;85
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div> <!-- End Course Item-->
-
+          {% endfor %}
         </div>
 
       </div>
-
-    </section><!-- /Courses Section -->
-
-
+    </section>
   {% endblock %}
