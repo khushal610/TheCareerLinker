@@ -63,3 +63,8 @@ class Course_Module_Content(models.Model): #id
     course_quiz = models.ForeignKey(QuizCategory,on_delete=models.CASCADE,null=True,blank=True)
     stage_id = models.ForeignKey(Module_Stage,on_delete=models.CASCADE)
     dev_id = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+
+class Certificate_Details(models.Model):
+    company_logo = models.FileField(upload_to="company_logo/")
+    dev_signature = models.FileField(upload_to="dev_signature/")
+    dev_id = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True,blank=True)

@@ -52,10 +52,13 @@ class Course_Enrollment(models.Model):
     course_id = models.ForeignKey("devapp.Online_Certification_Course",on_delete=models.CASCADE,null=True,blank=True)
     is_payment_received = models.BooleanField(default=False)
     date_time = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+    is_course_completed = models.BooleanField(default=False)
 
 class Course_Progress_Tracker(models.Model):
     student_id = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
     course_id = models.ForeignKey("devapp.Online_Certification_Course",on_delete=models.CASCADE,null=True,blank=True)
     document_id = models.ForeignKey("devapp.Course_Module_Content",on_delete=models.CASCADE,null=True,blank=True)
+    quiz_id = models.ForeignKey("devapp.QuizCategory",on_delete=models.CASCADE,null=True,blank=True)
     is_completed = models.BooleanField(default=False)
     date_time = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+    

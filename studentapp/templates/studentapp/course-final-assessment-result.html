@@ -1,0 +1,29 @@
+{% extends "studentapp/course-enrollments.html" %}
+{% load static %}
+{% block course_content %}
+
+<div class="p-4 border rounded border-light shadow-lg">
+    <div class="border p-3 rounded d-flex flex-column align-items-center">
+        <div>
+            <h1>Congratulations {{request.user}}</h1>
+        </div>
+        <div class="d-flex align-items-center">
+            <div class="p-1 px-4 d-flex flex-column align-items-center score rounded">
+                <span class="d-block char text-success">Score</span>
+                <span class="text-success">{{data.score}} / {{totalQuestions}}</span>
+            </div>
+
+
+            <div class="ml-2 p-3">
+                {% comment %} <h6 class="heading1">PageSpeed Score</h6> {% endcomment %}
+                <h6 class="heading1">{{quiz_category.quiz_category_name}} [ {{quiz_category.quiz_level}} ]</h6>
+                <span>The average page speed score is {{average}}</span> 
+            </div>
+        </div>
+        <div class="col-lg-12 d-flex align-items-center justify-content-center">
+            <a href="{% url "view_certificate" course_data_id %}" class="btn btn-primary px-4 py-2 w-50">View Certificate</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

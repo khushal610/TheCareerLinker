@@ -17,12 +17,12 @@ class AttemptedSessionAdmin(admin.ModelAdmin):
 admin.site.register(models.Attempted_session, AttemptedSessionAdmin)
 
 class CourseEnrollmentAdmin(admin.ModelAdmin):
-    list_display = ('student_id', 'course_id', 'is_payment_received', 'date_time')  
+    list_display = ('student_id', 'course_id', 'is_payment_received', 'is_course_completed', 'date_time')  
     readonly_fields = ('date_time',)
 admin.site.register(models.Course_Enrollment, CourseEnrollmentAdmin)
 
 class CourseProgressTrackerAdmin(admin.ModelAdmin):
-    list_display = ('student_id', 'course_id', 'document_id', 'is_completed', 'date_time')
+    list_display = ('student_id', 'course_id', 'document_id', 'quiz_id', 'is_completed', 'date_time')
     readonly_fields = ('date_time',)
 admin.site.register(models.Course_Progress_Tracker, CourseProgressTrackerAdmin)
 

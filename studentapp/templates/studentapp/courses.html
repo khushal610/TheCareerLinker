@@ -26,6 +26,9 @@
                   <h3><a href="{% url "course_enrollment" enrolled_course.course_id.id %}">{{enrolled_course.course_id.course_name}}</a></h3>
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <p class="price">{{enrolled_course.course_id.course_type}} ₹{{enrolled_course.course_id.course_charges}}/-</p>
+                    {% if enrolled_course.is_course_completed %}
+                      <a href="{% url "view_certificate" enrolled_course.course_id.id %}" class="btn btn-primary">View Certificate</a>
+                    {% endif %}
                   </div>
                 </div>
               </div>

@@ -89,11 +89,15 @@
                                                     {% for stage_id,doc in module_content_data.items %}
                                                         {% if stage_id == stage.id %}
                                                             {% for docs in doc %}
-                                                                <li class="text-dark">
-                                                                    <a href="{% url "course_document_content" course_data.id docs.id %}" class="doc-link text-dark">
-                                                                        {{ docs.documentation_name }}
-                                                                    </a>
-                                                                </li>
+                                                                {% comment %} {% if docs.id in course_progress_tracker_data.document_id %} {% endcomment %}
+                                                                    {% comment %} {% for finished_doc in course_progress_tracker_data %} {% endcomment %}
+                                                                        <li class="text-dark">
+                                                                            <a href="{% url "course_document_content" course_data.id docs.id %}" class="doc-link text-dark">
+                                                                                {{ docs.documentation_name }}
+                                                                            </a>
+                                                                        </li>
+                                                                    {% comment %} {% endfor %} {% endcomment %}
+                                                                {% comment %} {% endif %} {% endcomment %}
                                                             {% endfor %}
                                                         {% endif %}
                                                     {% endfor %}

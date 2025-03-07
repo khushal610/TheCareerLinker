@@ -8,6 +8,9 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.urls import reverse
+import base64
+import uuid
+from django.core.files.base import ContentFile
 # for celery worker
 # from devapp.tasks import send_online_session_email
 
@@ -684,8 +687,9 @@ def add_course_items(request,stage_id):
         course_pdf = request.FILES.get('course_pdf')
         course_video = request.FILES.get('course_video')
         course_quiz_id = request.POST.get('course_quiz')
-        course_quiz = models.QuizCategory.objects.get(id=course_quiz_id,dev_id=request.user)
-        print("------------------------------>",course_quiz)
+        if course_quiz_id != "None":
+            course_quiz = models.QuizCategory.objects.get(id=course_quiz_id,dev_id=request.user)
+            print("------------------------------>",course_quiz)
         if models.Course_Module_Content.objects.filter(documentation_name=documentation_name,stage_id=stage_id, dev_id=request.user).exists():
             return render(request, "devapp/add-course-contents.html", {
                 'exist_doc':"That documentation name already exists.",
@@ -693,22 +697,39 @@ def add_course_items(request,stage_id):
                 'course_module_content_data':course_module_content_data,
                 'quiz_category_data':quiz_category_data,
             })
-        models.Course_Module_Content.objects.create(
-            documentation_name=documentation_name,
-            course_documentation=course_documentation,
-            course_images=course_images,
-            course_pdf=course_pdf,
-            course_video=course_video,
-            course_quiz=course_quiz,
-            stage_id=module_stage_data,
-            dev_id=request.user
-        )
-        return render(request,"devapp/add-course-contents.html",{
-            'alert':"New course module docmentation created",
-            'module_stage_data':module_stage_data,
-            'course_module_content_data':course_module_content_data,
-            'quiz_category_data':quiz_category_data,
-        })
+        if course_quiz_id == "None":
+            models.Course_Module_Content.objects.create(
+                documentation_name=documentation_name,
+                course_documentation=course_documentation,
+                course_images=course_images,
+                course_pdf=course_pdf,
+                course_video=course_video,
+                stage_id=module_stage_data,
+                dev_id=request.user
+            )
+            return render(request,"devapp/add-course-contents.html",{
+                'alert':"New course module docmentation created",
+                'module_stage_data':module_stage_data,
+                'course_module_content_data':course_module_content_data,
+                'quiz_category_data':quiz_category_data,
+            })
+        else:
+            models.Course_Module_Content.objects.create(
+                documentation_name=documentation_name,
+                course_documentation=course_documentation,
+                course_images=course_images,
+                course_pdf=course_pdf,
+                course_video=course_video,
+                course_quiz=course_quiz,    
+                stage_id=module_stage_data,
+                dev_id=request.user
+            )
+            return render(request,"devapp/add-course-contents.html",{
+                'alert':"New course module docmentation created",
+                'module_stage_data':module_stage_data,
+                'course_module_content_data':course_module_content_data,
+                'quiz_category_data':quiz_category_data,
+            })
     return render(request,"devapp/add-course-contents.html",context=context)
 
 
@@ -770,3 +791,56 @@ def detailedview_course_module_content(request,id):
         'course_quiz_questions':course_quiz_questions,
     }
     return render(request,"devapp/course-module-content-review.html",context=context)
+
+
+def add_certificate_details(request):
+    if models.Certificate_Details.objects.filter(dev_id=request.user).exists():
+        certificate_data = models.Certificate_Details.objects.get(dev_id=request.user)
+        print("----------------------------->",certificate_data)
+
+    if request.method == "POST":
+        company_logo = request.FILES.get("company_logo")
+        signature_data = request.POST.get("dev_signature")
+
+        # Convert base64 signature to an image file
+        format, imgstr = signature_data.split(';base64,') if signature_data else (None, None)
+        if imgstr:
+            ext = format.split('/')[-1] if format else 'png'
+            signature_file = ContentFile(base64.b64decode(imgstr), name=f"signature_{uuid.uuid4()}.{ext}")
+        else:
+            signature_file = None
+
+        # Save data in the database
+        certificate = models.Certificate_Details(
+            company_logo=company_logo,
+            dev_signature=signature_file,
+            dev_id=request.user
+        )
+        certificate.save()
+
+        return redirect("add_certificate_details")  # Redirect to the same page after saving
+    context = {
+        'certificate_data':certificate_data
+    }
+    return render(request, "devapp/add-certificate-details.html",context=context)
+
+
+def update_certificate_details(request,id):
+    if request.method == "POST":
+        company_logo = request.FILES.get("company_logo")
+        signature_data = request.POST.get("dev_signature")
+
+        format, imgstr = signature_data.split(';base64,') if signature_data else (None, None)
+        if imgstr:
+            ext = format.split('/')[-1] if format else 'png'
+            signature_file = ContentFile(base64.b64decode(imgstr), name=f"signature_{uuid.uuid4()}.{ext}")
+        else:
+            signature_file = None
+
+        certificate_detail_data = models.Certificate_Details.objects.get(id=id)
+        certificate_detail_data.company_logo = company_logo
+        certificate_detail_data.dev_signature = signature_file
+        certificate_detail_data.save()
+        return redirect(add_certificate_details)
+
+    return render(request,"devapp/update-certificate-details.html")

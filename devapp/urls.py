@@ -48,4 +48,6 @@ urlpatterns = [
     path('update-course-items/<int:id>/',views.update_course_items,name="update_course_items"),
     path('delete-course-items/<int:id>/',views.delete_course_items,name="delete_course_items"),
     path('detailedview-course-module-content/<int:id>/',views.detailedview_course_module_content,name="detailedview_course_module_content"),
+    path('add-certificate-details/',views.add_certificate_details,name="add_certificate_details"),
+    path('update-certificate-details/<int:id>/',views.update_certificate_details,name="update_certificate_details"),
 ]

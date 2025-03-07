@@ -24,6 +24,8 @@ urlpatterns = [
     path('join-session/<int:id>/',views.join_session,name="join_session"),
     path('bookmark-session/<int:id>/',views.bookmark_session,name="bookmark_session"),
     path('<int:course_data_id>/course-document-content/<int:id>/',views.course_document_content,name="course_document_content"),
+    path('<int:course_data_id>/course-final-assessment-result/<int:id>/',views.course_final_assessment_result,name="course_final_assessment_result"),
     path('<int:course_data_id>/next_documentation/<int:id>/',views.next_documentation,name="next_documentation"),
     path('<int:course_data_id>/previous_documentation/<int:id>/',views.previous_documentation,name="previous_documentation"),
+    path('view-certificate/<int:course_data_id>',views.view_certificate,name="view_certificate"),
 ]

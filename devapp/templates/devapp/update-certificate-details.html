@@ -1,0 +1,102 @@
+{% extends "devapp/master.html" %}
+{% load static %}
+{% block content %}
+<head>
+    <style>
+    #sig-canvas {
+        border: 2px dotted #CCCCCC;
+        border-radius: 15px;
+        cursor: crosshair;
+    }
+    </style>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.css">
+<script src="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.js"></script>
+
+<div class="container my-5">
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+    <h4 class="mb-3">Update Certificate Details</h4>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="col-md-8">
+            <label for="company_logo" class="form-label">Your Company Logo</label>
+            <input type="file" name="company_logo" class="form-control" id="company_logo" required>
+        </div>
+    
+        <div class="col-md-8">
+            <h5>E-Signature</h5>
+            <p>Sign in the canvas below and save your signature as an image!</p>
+        </div>          
+    
+        <div class="col-md-8">
+            <canvas id="sig-canvas" class="border rounded" width="500" height="160"></canvas>
+        </div>     
+    
+        <div class="col-md-8">
+            <button type="button" class="btn btn-primary" id="sig-submitBtn">Submit Signature</button>
+            <button type="button" class="btn btn-secondary" id="sig-clearBtn">Clear Signature</button>
+        </div>
+    
+        <!-- Hidden input to store the signature image -->
+        <input type="hidden" name="dev_signature" id="sig-data-url">
+    
+        <div class="col-md-8">
+            <img id="sig-image" src="" alt="Your signature will go here!" />
+        </div>
+    
+        <div class="col-md-8">
+            <button type="submit" class="btn btn-success">Save Changes</button>
+        </div>
+    </form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    var canvas = document.getElementById("sig-canvas");
+    var ctx = canvas.getContext("2d");
+    var drawing = false;
+    var mousePos = { x: 0, y: 0 };
+    var lastPos = mousePos;
+
+    function getMousePos(canvasDom, mouseEvent) {
+        var rect = canvasDom.getBoundingClientRect();
+        return {
+            x: mouseEvent.clientX - rect.left,
+            y: mouseEvent.clientY - rect.top,
+        };
+    }
+
+    canvas.addEventListener("mousedown", function (e) {
+        drawing = true;
+        lastPos = getMousePos(canvas, e);
+    });
+
+    canvas.addEventListener("mouseup", function () {
+        drawing = false;
+    });
+
+    canvas.addEventListener("mousemove", function (e) {
+        if (drawing) {
+            ctx.beginPath();
+            ctx.moveTo(lastPos.x, lastPos.y);
+            ctx.lineTo(getMousePos(canvas, e).x, getMousePos(canvas, e).y);
+            ctx.stroke();
+            lastPos = getMousePos(canvas, e);
+        }
+    });
+
+    document.getElementById("sig-submitBtn").addEventListener("click", function () {
+        var dataUrl = canvas.toDataURL("image/png");
+        document.getElementById("sig-image").setAttribute("src", dataUrl);
+        document.getElementById("sig-data-url").value = dataUrl;
+    });
+
+    document.getElementById("sig-clearBtn").addEventListener("click", function () {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById("sig-image").setAttribute("src", "");
+        document.getElementById("sig-data-url").value = "";
+    });
+});
+</script>
+{% endblock %}
