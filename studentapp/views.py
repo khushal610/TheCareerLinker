@@ -9,28 +9,43 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.hashers import make_password
 from devapp import views as dev_views
 from adminapp import views as admin_views
-import math,random
+import math,random,string
 from TheCareerLinker import views as TCL_views
 from django.core.paginator import Paginator
 import datetime
 from django.urls import reverse
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+import tempfile
+import os
 
 # Create your views here.
-# index page 
 def home(request):
     return render(request,'studentapp/index.html')
 
-# about page
 def about(request):
     return render(request,'studentapp/about.html')
 
-# contact page
+def chat(request):
+    return render(request,'studentapp/chat.html')
+
 def contact(request):
+    if request.method == "POST":
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+        contact_us_data = studentModels.Contact_us.objects.create(
+            student_id=request.user,
+            subject=subject,
+            message=message
+        )
+        contact_us_data.save()
+        print("-------------------------------------------data saved to contact us page")
+        return render(request,'studentapp/contact.html',{'alert':"Your data send successfully"})
     return render(request,'studentapp/contact.html')
 
-# courses page
 def courses(request):
     course_data = devModels.Online_Certification_Course.objects.filter(is_launched=True)
     course_enrollment_data = studentModels.Course_Enrollment.objects.filter(student_id=request.user)
@@ -40,7 +55,6 @@ def courses(request):
     }
     return render(request,'studentapp/courses.html',context=context)
 
-# course-details page
 def course_details(request, id):
     course_details = devModels.Online_Certification_Course.objects.get(id=id, is_launched=True)
     dev_id = course_details.dev_id
@@ -105,15 +119,12 @@ def course_enrollment(request, id):
     return render(request, "studentapp/course-enrollments.html", context=context)
 
 
-# trainers page
 def trainers(request):
     return render(request,'studentapp/trainers.html')
 
-# pricing page
 def pricing(request):
     return render(request,'studentapp/pricing.html')
 
-# student profile page
 def profile(request):
     username = request.user
     data = User.objects.get(username=username)
@@ -131,7 +142,6 @@ def profile(request):
     }
     return render(request,'studentapp/profile.html',context=context)
 
-# student registration page
 def registration(request):
     if request.method == "POST":
         username = request.POST.get('username')
@@ -190,7 +200,6 @@ def send_email_after_registration(username,email):
     to_email = email
     send_mail(subject, '', from_email, [to_email],html_message=message)
 
-# login
 def loginview(request):
     if request.method == "POST":
         username = request.POST.get('username')
@@ -213,12 +222,10 @@ def loginview(request):
             return render(request,'studentapp/login.html',{'error':"User doesn't exist"})
     return render(request,'studentapp/login.html')
 
-# logout
 def signout(request):
     logout(request)
     return redirect(TCL_views.main_login)
 
-# forgot password
 def forgot_password(request):
     if request.method == "POST":
         user_email = request.POST.get('email')
@@ -234,7 +241,6 @@ def forgot_password(request):
         
     return render(request,"studentapp/forgot-password.html")
 
-# otp email sending method
 def send_otp_email(user_email):
     OTP = generate_otp()
     subject = "Reset Password"
@@ -245,7 +251,6 @@ def send_otp_email(user_email):
     send_mail(subject, message, from_email, [to_email])
     return OTP
 
-# otp generating method
 def generate_otp():
     numbers = "0123456789"
     OTP = ""
@@ -253,7 +258,6 @@ def generate_otp():
         OTP += numbers[math.floor(random.random() * 10)]
     return OTP
 
-# comparison of otp
 def compare_otp(request):
     if request.method == "POST":
         user_otp = request.POST.get('user_otp')
@@ -265,7 +269,6 @@ def compare_otp(request):
         print("compare_otp page --------------------------->",system_otp)
     return render(request,"studentapp/compare-otp.html")
 
-# changing the password
 def reset_password(request):
     if request.method == "POST":
         new_pass = request.POST.get('new_pass')
@@ -395,16 +398,28 @@ def live_sessions(request):
 
     if company_filter and company_filter != 'all':
         session_data = session_data.filter(dev_name__company_name=company_filter)
+    current_user = request.user
+    bookmarked_sessions = studentModels.Bookmarked_session.objects.filter(student_id=current_user, is_bookmarked=True).values_list('session_id', flat=True)
+    bookmarked_sessions_data = devModels.Online_sessions.objects.filter(id__in=bookmarked_sessions)
     company_data = User.objects.filter(role="Developer")
+
     paginator = Paginator(session_data, 2)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
+    paginator1 = Paginator(bookmarked_sessions_data, 1)
+    page_number1 = request.GET.get('page')
+    page_obj1 = paginator1.get_page(page_number1)
+
     context = {
         'session_data': page_obj,
+        'bookmarked_sessions_data': page_obj1,
         'company_data': company_data,
         'selected_company': company_filter,
     }
+    
     return render(request, "studentapp/live-sessions.html", context)
+
 
 def join_session(request, id):
     session = devModels.Online_sessions.objects.get(id=id)
@@ -457,9 +472,9 @@ def course_document_content(request, course_data_id, id):
 
     module_stage_data_details = {}
     module_content_data_details = {}
-    course_quiz_id = None  # Initialize course_quiz_id
-    quiz_questions = []  # Initialize to prevent reference errors
-    quiz_options = []  # Initialize to prevent reference errors
+    course_quiz_id = None 
+    quiz_questions = [] 
+    quiz_options = [] 
 
     for module_data in course_module_data:
         module_id = module_data.id
@@ -473,9 +488,9 @@ def course_document_content(request, course_data_id, id):
                 if course_module_content_data:
                     module_content_data_details[stage_id] = course_module_content_data
 
-                    # Extract course_quiz ID (Assuming it exists in Course_Module_Content)
+            
                     for content in course_module_content_data:
-                        if hasattr(content, 'course_quiz_id'):  # Ensure the attribute exists
+                        if hasattr(content, 'course_quiz_id'):
                             course_quiz_id = content.course_quiz_id
                             quiz_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=course_quiz_id)
                             quiz_options = devModels.QuizOptions.objects.all()
@@ -496,11 +511,9 @@ def course_document_content(request, course_data_id, id):
             except devModels.QuizOptions.DoesNotExist:
                 continue
         
-        # Ensure course_quiz_id exists before querying
         if course_quiz_id:
             quiz_category = devModels.QuizCategory.objects.get(id=course_quiz_id)
 
-            # Track course progress
             if quiz_category.is_course_quiz:
                 course_progress_tracker_data, created = studentModels.Course_Progress_Tracker.objects.get_or_create(
                     student_id=request.user, quiz_id=quiz_category
@@ -508,7 +521,6 @@ def course_document_content(request, course_data_id, id):
                 course_progress_tracker_data.is_completed = True
                 course_progress_tracker_data.save()
             
-            # Save Quiz Attempt
             quiz_attempt_form = forms.QuizAttemptForm(request.POST)
             if quiz_attempt_form.is_valid():
                 quiz_attempt_obj = quiz_attempt_form.save(commit=False)
@@ -546,9 +558,9 @@ def course_final_assessment_result(request, course_data_id, id):
 
     module_stage_data_details = {}
     module_content_data_details = {}
-    course_quiz_id = None  # Initialize course_quiz_id
-    quiz_questions = []  # Prevent errors if quiz_questions is undefined
-    quiz_options = []  # Prevent errors if quiz_options is undefined
+    course_quiz_id = None
+    quiz_questions = []
+    quiz_options = []
 
     for module_data in course_module_data:
         module_id = module_data.id
@@ -562,13 +574,13 @@ def course_final_assessment_result(request, course_data_id, id):
                 if course_module_content_data:
                     module_content_data_details[stage_id] = course_module_content_data
 
-                    # Extract course_quiz ID (Assuming it exists in Course_Module_Content)
+
                     for content in course_module_content_data:
-                        if hasattr(content, 'course_quiz_id'):  # Ensure the attribute exists
+                        if hasattr(content, 'course_quiz_id'):
                             course_quiz_id = content.course_quiz_id
                             quiz_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=course_quiz_id)
                             quiz_options = devModels.QuizOptions.objects.all()
-                            break  # Stop searching once found
+                            break
 
     course_document_content_data = devModels.Course_Module_Content.objects.get(id=id)
 
@@ -629,10 +641,8 @@ def next_documentation(request, course_data_id, id):
     except devModels.Course_Module_Content.DoesNotExist:
         raise Http404("Content not found")
 
-    # ✅ Extract stage_id properly
     stage_id = course_document_content_data.stage_id.id  
 
-    # Get the last stage and last content of the course
     last_stage = devModels.Module_Stage.objects.filter(
         module_id__in=course_module_data.values_list('id', flat=True), dev_id=dev_id
     ).order_by('-id').first()
@@ -641,18 +651,15 @@ def next_documentation(request, course_data_id, id):
         stage_id=stage_id, dev_id=dev_id
     ).order_by('-id').first()
 
-    # Check if the current content is the last in the course and module
     is_last_content = (course_document_content_data.id == last_content.id) and (stage_id == last_stage.id)
 
-    # Find the next content within the current stage (same course and module)
     next_content = devModels.Course_Module_Content.objects.filter(
         stage_id=stage_id, dev_id=dev_id, id__gt=id
     ).order_by('id').first()
 
     if not next_content:
-        # If no next content, move to the first content of the next stage in the same module
         next_stage = devModels.Module_Stage.objects.filter(
-            module_id=course_module_data.first().id,  # Ensure it is from the current module
+            module_id=course_module_data.first().id,
             dev_id=dev_id, id__gt=stage_id
         ).order_by('id').first()
         
@@ -661,9 +668,8 @@ def next_documentation(request, course_data_id, id):
                 stage_id=next_stage.id, dev_id=dev_id
             ).order_by('id').first()
 
-    # If no next content exists (or if you are at the last content of the course), stay on the same page
     if next_content:
-        id = next_content.id  # Update to the next content's ID
+        id = next_content.id 
     else:
         return redirect(reverse('course_document_content', args=[course_data_id, id]))
 
@@ -678,7 +684,6 @@ def next_documentation(request, course_data_id, id):
         'is_last_content': is_last_content,
     }
 
-    # Add student id, course id, document id to the database
     if studentModels.Course_Progress_Tracker.objects.filter(
         student_id=request.user, course_id=course_data_id, document_id=course_document_content_data
     ).exists():
@@ -699,7 +704,6 @@ def previous_documentation(request, course_data_id, id):
     dev_id = course_data.dev_id
     course_module_data = devModels.Module_list.objects.filter(course_id=course_data_id, dev_id=dev_id)
 
-    # Initialize dictionaries for stage and content data
     module_stage_data_details = {}
     module_content_data_details = {}
 
@@ -720,24 +724,19 @@ def previous_documentation(request, course_data_id, id):
     except devModels.Course_Module_Content.DoesNotExist:
         raise Http404("Content not found")
 
-    # ✅ Extract stage_id properly
     stage_id = course_document_content_data.stage_id.id  
 
-    # Get the first content of the current stage
     first_content = devModels.Course_Module_Content.objects.filter(
         stage_id=stage_id, dev_id=dev_id
     ).order_by('id').first()
 
-    # Check if the current content is the first content in the stage
     is_first_content = (course_document_content_data.id == first_content.id)
 
-    # Find the previous content within the current stage (same course and module)
     prev_content = devModels.Course_Module_Content.objects.filter(
         stage_id=stage_id, dev_id=dev_id, id__lt=id
     ).order_by('-id').first()
 
     if not prev_content:
-        # If there is no previous content, move to the last content of the previous stage within the same course module
         prev_stage = devModels.Module_Stage.objects.filter(
             module_id__in=course_module_data.values_list('id', flat=True), dev_id=dev_id, id__lt=stage_id
         ).order_by('-id').first()
@@ -747,11 +746,9 @@ def previous_documentation(request, course_data_id, id):
                 stage_id=prev_stage.id, dev_id=dev_id
             ).order_by('-id').first()
 
-    # If previous content exists, update id to that content and show the page
     if prev_content:
-        id = prev_content.id  # Update to the previous content's ID
+        id = prev_content.id
     else:
-        # If no previous content exists, stay on the same page
         return redirect(reverse('course_document_content', args=[course_data_id, id]))
 
     context = {
@@ -765,7 +762,6 @@ def previous_documentation(request, course_data_id, id):
         'is_first_content': is_first_content,
     }
     
-    # Add student progress tracking (if needed)
     if studentModels.Course_Progress_Tracker.objects.filter(
         student_id=request.user, course_id=course_data_id, document_id=course_document_content_data
     ).exists():
@@ -780,23 +776,79 @@ def previous_documentation(request, course_data_id, id):
 
     return redirect(reverse('course_document_content', args=[course_data_id, id]))
 
-def view_certificate(request,course_data_id):
-    # Get all course progress records for the logged-in student
-    course_progress_tracker_data = studentModels.Course_Progress_Tracker.objects.filter(student_id=request.user)
 
-    # Retrieve the latest related course (assuming the latest course is determined by the highest ID)
-    course_data = devModels.Online_Certification_Course.objects.get(id=course_data_id)
-
-    # Fetch Certificate Details (Company Logo & Developer Signature)
-    certificate_details = devModels.Certificate_Details.objects.get(dev_id=course_data.dev_id)
-
-    # Pass the data to the template
+def view_certificate(request, course_data_id):
+    try:
+        course_data = devModels.Online_Certification_Course.objects.get(id=course_data_id)
+    except devModels.Online_Certification_Course.DoesNotExist:
+        return render(request, "studentapp/view-certificate.html", {"message": "Course not found"})
+    try:
+        certificate_details = devModels.Certificate_Details.objects.get(dev_id=course_data.dev_id)
+    except devModels.Certificate_Details.DoesNotExist:
+        return render(request, "studentapp/view-certificate.html", {"message": "Certificate details not found"})
+    issued_certificate = devModels.Issued_Certificate.objects.filter(student_id=request.user, course_id=course_data).first()
+    if issued_certificate:
+        digital_signature = issued_certificate.digital_signature
+    else:
+        digital_signature = dev_views.generate_digital_signature(request.user, course_data_id, certificate_details.id)
     context = {
-        "student_name": request.user.username,  # Get student's username
-        "course": course_data,  # Pass only the latest course
+        "student_name": request.user.username,
+        "course": course_data,
+        "course_id": course_data.id,
         "company_logo": certificate_details.company_logo.url if certificate_details.company_logo else "",
         "dev_signature": certificate_details.dev_signature.url if certificate_details.dev_signature else "",
         "dev_name": certificate_details.dev_id.username,
+        "digital_signature": digital_signature,
+    }
+    return render(request, "studentapp/view-certificate.html", context)
+
+
+def generate_certificate_pdf(request, course_data_id):
+    try:
+        course_data = devModels.Online_Certification_Course.objects.get(id=course_data_id)
+    except devModels.Online_Certification_Course.DoesNotExist:
+        return HttpResponse("Course not found", status=404)
+
+    try:
+        certificate_details = devModels.Certificate_Details.objects.get(dev_id=course_data.dev_id)
+    except devModels.Certificate_Details.DoesNotExist:
+        return HttpResponse("Certificate details not found", status=404)
+
+    issued_certificate = devModels.Issued_Certificate.objects.filter(
+        student_id=request.user, course_id=course_data
+    ).first()
+
+    if issued_certificate:
+        digital_signature = issued_certificate.digital_signature
+    else:
+        digital_signature = dev_views.generate_digital_signature(
+            request.user, course_data_id, certificate_details.id
+        )
+
+    def get_file_url(media_file):
+        if media_file:
+            abs_path = os.path.join(settings.MEDIA_ROOT, str(media_file))
+            abs_path = abs_path.replace("\\", "/") 
+            return f"file:///{abs_path}"
+        return ""
+
+    context = {
+        "student_name": request.user.username,
+        "course_name": course_data.course_name,
+        "course_id": course_data.id,
+        "company_logo": get_file_url(certificate_details.company_logo),
+        "dev_signature": get_file_url(certificate_details.dev_signature),
+        "dev_name": certificate_details.dev_id.username,
+        "digital_signature": digital_signature,
+        "certificate_id": issued_certificate.id if issued_certificate else "Not Issued",
     }
 
-    return render(request, "studentapp/view-certificate.html", context)
+    print("dev_signature path =>", context["dev_signature"])  # Check the path
+
+    html_string = render_to_string('studentapp/certificate_pdf.html', context)
+
+    pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri('/')).write_pdf()
+
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{request.user.username}_certificate.pdf"'
+    return response

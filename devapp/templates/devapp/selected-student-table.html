@@ -1,0 +1,58 @@
+{% extends "devapp/master.html" %}
+{% load static %}
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4 d-flex align-items-center justify-content-center p-3">
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Selected Students Data</h6>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Student Name</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Contact</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for students in selected_student_data %}
+                            <tr>
+                                <th scope="row">{{forloop.counter}}</th>
+                                <td>{{students.username}}</td>
+                                <td>{{students.email}}</td>
+                                <td>{{students.contact}}</td>
+                                <td>
+                                    {% if students.is_selected %}
+                                        <i class="fa-solid fa-circle-check text-success"></i>
+                                    {% endif %} 
+                                </td>
+                                <td>
+                                    <a href="{% url "unselect_student" students.id %}" class="btn btn-warning">Deselect</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="pagination d-flex align-items-center gap-4">
+                    {% if selected_student_data.has_previous %}
+                        <a href="?page=1" class="btn btn-secondary">First</a>
+                        <a href="?page={{ selected_student_data.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                    {% endif %}
+
+                    <span class="current-page">Page {{ selected_student_data.number }} of {{ selected_student_data.paginator.num_pages }}</span>
+
+                    {% if selected_student_data.has_next %}
+                        <a href="?page={{ selected_student_data.next_page_number }}" class="btn btn-secondary">Next</a>
+                        <a href="?page={{ selected_student_data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

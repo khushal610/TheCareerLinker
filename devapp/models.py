@@ -68,3 +68,9 @@ class Certificate_Details(models.Model):
     company_logo = models.FileField(upload_to="company_logo/")
     dev_signature = models.FileField(upload_to="dev_signature/")
     dev_id = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True,blank=True)
+
+class Issued_Certificate(models.Model):
+    student_id = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True,blank=True)
+    course_id = models.ForeignKey(Online_Certification_Course,on_delete=models.CASCADE,null=True,blank=True)
+    certificate_details = models.ForeignKey(Certificate_Details,on_delete=models.CASCADE,null=True,blank=True)
+    digital_signature = models.CharField(max_length=255,null=True,blank=True)

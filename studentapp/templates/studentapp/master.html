@@ -32,7 +32,6 @@
 
   <!-- Font Awesome cdn -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
   <!-- =======================================================
   * Template Name: Mentor
   * Template URL: https://bootstrapmade.com/mentor-free-education-bootstrap-theme/
@@ -40,6 +39,23 @@
   * Author: BootstrapMade.com
   * License: https://bootstrapmade.com/license/
   ======================================================== -->
+  <style>
+    .custom-div-holder{
+      height:200px;
+      width: 50px;
+      position:fixed;
+      top:50%;
+      left:0%;
+      z-index: 99;
+    }
+    .text-position-holder{
+      transform: rotate(-90deg);
+      position: absolute;
+      bottom:10%;
+      font-family:cursive;
+      {% comment %} font-family:sans-serif; {% endcomment %}
+    }
+  </style>
 </head>
 
 <body class="index-page">
@@ -48,9 +64,6 @@
     <div class="container-fluid container-xl position-relative d-flex align-items-center">
 
       <a href="{% url "index" %}" class="logo d-flex align-items-center me-auto">
-        <!-- Uncomment the line below if you also wish to use an image logo -->
-        <!-- <img src="assets/img/logo.png" alt=""> -->
-        {% comment %} <h1 class="sitename">The Career Linker</h1> {% endcomment %}
         <h1 class="sitename">TCL</h1>
       </a>
 
@@ -59,7 +72,6 @@
           <li><a href="{% url "index" %}">Home<br></a></li>
           <li><a href="{% url "about" %}">About</a></li>
           <li><a href="{% url "courses" %}">Courses</a></li>
-          {% comment %} <li><a href="{% url "trainers" %}">Trainers</a></li> {% endcomment %}
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Tranning
@@ -71,28 +83,10 @@
               <li><a class="dropdown-item" href="#">Something else here</a></li>
             </ul>
           </li>
-          {% comment %} <li><a href="events.html">Events</a></li> {% endcomment %}
           {% if request.user.is_authenticated %}
           <li><a href="{% url "profile" %}">{{request.user}}</a></li>
           {% endif %}
           <li><a href="{% url "pricing" %}">Pricing</a></li>
-          {% comment %} <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-            <ul>
-              <li><a href="#">Dropdown 1</a></li>
-              <li class="dropdown"><a href="#"><span>Deep Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                <ul>
-                  <li><a href="#">Deep Dropdown 1</a></li>
-                  <li><a href="#">Deep Dropdown 2</a></li>
-                  <li><a href="#">Deep Dropdown 3</a></li>
-                  <li><a href="#">Deep Dropdown 4</a></li>
-                  <li><a href="#">Deep Dropdown 5</a></li>
-                </ul>
-              </li>
-              <li><a href="#">Dropdown 2</a></li>
-              <li><a href="#">Dropdown 3</a></li>
-              <li><a href="#">Dropdown 4</a></li>
-            </ul>
-          </li> {% endcomment %}
           <li><a href="{% url "contact" %}">Contact</a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -105,6 +99,12 @@
 
     </div>
   </header>
+
+  {% comment %} <a href="{% url "chat" %}">
+    <div class="custom-div-holder bg-primary">
+      <p class="text-position-holder text-white w-100">Connect&nbsp;Everyone<i class="fa-solid fa-comment"></i></p>
+    </div>
+  </a> {% endcomment %}
 
   {% block content %}
     <main class="main">

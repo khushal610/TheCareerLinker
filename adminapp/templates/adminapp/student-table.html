@@ -24,7 +24,7 @@
                         <tbody>
                             {% for student in students %}
                                 <tr>
-                                    <th scope="row">{{student.id}}</th>
+                                    <th scope="row">{{forloop.counter}}</th>
                                     <td>{{student.username}}</td>
                                     <td>{{student.email}}</td>
                                     <td>{{student.contact}}</td>

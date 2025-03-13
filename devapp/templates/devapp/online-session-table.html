@@ -27,7 +27,13 @@
                                 <td>{{data.topic_name}}</td>
                                 <td>{{data.start_time}}</td>
                                 <td>{{data.end_time}}</td>
-                                <td>{{data.is_live}}</td>
+                                <td>
+                                    {% if data.is_live %}
+                                        <p class="text-success d-flex align-items-center gap-1"><i class="fa-solid fa-circle-check"></i> Active</p>
+                                    {% else %}
+                                        <p class="text-danger d-flex align-items-center gap-1"><i class="fa-solid fa-circle-xmark"></i> Inactive</p>
+                                    {% endif %}
+                                </td>
                                 {% comment %} <td>{{data.weekdays}}</td> {% endcomment %}
                                 <td>
                                     {% for day in data.week_days %}
@@ -55,7 +61,7 @@
                                     <div class="d-grid gap-2">
                                         <a href="{% url "notify_students" data.id %}" class="btn btn-primary">Notify Students</a>
                                         {% if data.is_live == False %}
-                                            <a href="{% url "activate_online_session" data.id %}" class="btn btn-success">Active</a>
+                                            <a href="{% url "activate_online_session" data.id %}" target="_blank" class="btn btn-success">Active</a>
                                         {% else %}
                                             <a href="{% url "deactivate_online_session" data.id %}" class="btn btn-warning">Inactive</a>
                                         {% endif %}

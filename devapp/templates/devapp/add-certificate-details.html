@@ -3,13 +3,14 @@
 {% block content %}
 <head>
   <style>
-  #sig-canvas {
-    border: 2px dotted #CCCCCC;
-    border-radius: 15px;
-    cursor: crosshair;
-  }
-</style>
+    #sig-canvas {
+      border: 2px dotted #CCCCCC;
+      border-radius: 15px;
+      cursor: crosshair;
+    }
+  </style>
 </head>
+
 {% comment %} links {% endcomment %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.css">
@@ -18,29 +19,157 @@
 
 <div class="container my-5">
     <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <h4 class="mb-3">Add Certificate Details</h4>
+
+            {% if certificate_data %}
+              <!-- Render the table if certificate_data exists -->
+              <div class="col-xl-12 p-4 d-flex align-items-center justify-content-center">
+                  <div class="bg-light rounded p-4">
+                      <h6 class="mb-4">Certificate Details</h6>
+                      <table class="table table-bordered">
+                          <thead>
+                              <tr>
+                                  <th scope="col">Your Company Logo</th>
+                                  <th scope="col">Your Signature</th>
+                                  <th scope="col">Action</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr>
+                                  <td>
+                                      {% if certificate_data.company_logo %}
+                                          <img src="{{ certificate_data.company_logo.url }}" alt="Company Logo">
+                                      {% else %}
+                                          No Logo Found
+                                      {% endif %}
+                                  </td>
+                                  <td>
+                                      {% if certificate_data.dev_signature %}
+                                          <img src="{{ certificate_data.dev_signature.url }}" alt="Signature">
+                                      {% else %}
+                                          No Signature Found
+                                      {% endif %}
+                                  </td>
+                                  <td>
+                                      <a href="{% url 'update_certificate_details' certificate_data.id %}" class="btn btn-secondary">Edit</a>
+                                  </td>
+                              </tr>
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
+            {% else %}
+                <!-- Render the form if certificate_data does not exist -->
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="col-md-8">
+                        <label for="company_logo" class="form-label">Your Company Logo</label>
+                        <input type="file" name="company_logo" class="form-control" id="company_logo">
+                    </div>
+
+                    <div class="col-md-8">
+                        <h5>E-Signature</h5>
+                        <p>Sign in the canvas below and save your signature as an image!</p>
+                    </div>
+
+                    <div class="col-md-8">
+                        <canvas id="sig-canvas" class="border rounded" width="500" height="160"></canvas>
+                    </div>
+
+                    <div class="col-md-8">
+                        <button type="button" class="btn btn-primary" id="sig-submitBtn">Submit Signature</button>
+                        <button type="button" class="btn btn-secondary" id="sig-clearBtn">Clear Signature</button>
+                    </div>
+
+                    <input type="hidden" name="dev_signature" id="sig-data-url">
+
+                    <div class="col-md-8">
+                        <img id="sig-image" src="" alt="Your signature will go here!" />
+                    </div>
+
+                    <div class="col-md-8">
+                        <button type="submit" class="btn btn-success">Save Certificate</button>
+                    </div>
+                </form>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      var canvas = document.getElementById("sig-canvas");
+      var ctx = canvas.getContext("2d");
+      var drawing = false;
+      var mousePos = { x: 0, y: 0 };
+      var lastPos = mousePos;
+  
+      function getMousePos(canvasDom, mouseEvent) {
+          var rect = canvasDom.getBoundingClientRect();
+          return {
+              x: mouseEvent.clientX - rect.left,
+              y: mouseEvent.clientY - rect.top,
+          };
+      }
+  
+      canvas.addEventListener("mousedown", function (e) {
+          drawing = true;
+          lastPos = getMousePos(canvas, e);
+      });
+  
+      canvas.addEventListener("mouseup", function () {
+          drawing = false;
+      });
+  
+      canvas.addEventListener("mousemove", function (e) {
+          if (drawing) {
+              ctx.beginPath();
+              ctx.moveTo(lastPos.x, lastPos.y);
+              ctx.lineTo(getMousePos(canvas, e).x, getMousePos(canvas, e).y);
+              ctx.stroke();
+              lastPos = getMousePos(canvas, e);
+          }
+      });
+  
+      document.getElementById("sig-submitBtn").addEventListener("click", function () {
+          var dataUrl = canvas.toDataURL("image/png");
+          document.getElementById("sig-image").setAttribute("src", dataUrl);
+          document.getElementById("sig-data-url").value = dataUrl;
+      });
+  
+      document.getElementById("sig-clearBtn").addEventListener("click", function () {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          document.getElementById("sig-image").setAttribute("src", "");
+          document.getElementById("sig-data-url").value = "";
+      });
+  });
+</script>
+
+{% endblock %}
+
+{% comment %} {% extends "devapp/master.html" %}
+{% load static %}
+{% block content %}
+<head>
+  <style>
+  #sig-canvas {
+    border: 2px dotted #CCCCCC;
+    border-radius: 15px;
+    cursor: crosshair;
+  }
+</style>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.css">
+<script src="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.js"></script>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
       <div class="col-lg-9">
         <h4 class="mb-3">Add Certificate Details</h4>
-        {% comment %} <form method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          <div class="d-flex flex-column gap-2 align-items-center justify-content-center">
-            <div class="col-md-8">
-                <label for="your-name" class="form-label">Your Company Logo</label>
-                <input type="file" name="company_logo" class="form-control" id="your-name">
-            </div>
-            <div class="col-md-8">
-              <h5>E-Signature</h5>
-              <p>Sign in the canvas below and save your signature as an image!</p>
-            </div>          
-            <div class="col-md-8">
-              <canvas id="sig-canvas" class="border rounded" width="500" height="160">
-                Get a better browser, bro.
-              </canvas>
-            </div>     
-            <div class="col-md-8">
-              <button class="btn btn-primary" id="sig-submitBtn">Submit Signature</button>
-              <button class="btn btn-default" id="sig-clearBtn">Clear Signature</button>
-            </div>
-        </form>  {% endcomment %}
+        
         <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
           <div class="col-md-8">
@@ -74,6 +203,7 @@
           </div>
       </form>
 
+        {% if certificate_data %}
         <div class="col-xl-12 p-4 d-flex align-items-center justify-content-center">
           <div class="bg-light rounded p-4">
               <h6 class="mb-4">Bordered Table</h6>
@@ -108,6 +238,7 @@
                   </tbody>
               </table>
           </div>
+          {% endif %}
       </div>
 
 <script>
@@ -160,4 +291,4 @@
 </script>
         
             
-{% endblock %}
+{% endblock %} {% endcomment %}

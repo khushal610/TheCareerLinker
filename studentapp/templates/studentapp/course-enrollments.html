@@ -3,19 +3,7 @@
 {% block content %}
 <head>
     <style>
-        {% comment %} .sidebar {
-            width: 250px;
-            {% comment %} min-height: 100vh; 
-            {% comment %} position: fixed; 
-            overflow-y: auto;
-            background: linear-gradient(135deg, #6e8efb, #a777e3);
-            color: white;
-            padding-top: 20px;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-        } {% endcomment %}
         pre{
-            {% comment %} font-family: cursive; {% endcomment %}
-            {% comment %} font-family: time-new-roman; {% endcomment %}
             font-family: Poppins;
         }
         .sidebar h5 {
@@ -39,11 +27,6 @@
         .sidebar ul li {
             padding: 5px 10px;
         }
-        {% comment %} .sidebar ul .collapse li {
-            padding-left: 20px;
-            font-size: 14px;
-            color: #f8f9fa;
-        } {% endcomment %}
         .content {
             margin-left: 260px;
             padding: 20px;
@@ -89,15 +72,11 @@
                                                     {% for stage_id,doc in module_content_data.items %}
                                                         {% if stage_id == stage.id %}
                                                             {% for docs in doc %}
-                                                                {% comment %} {% if docs.id in course_progress_tracker_data.document_id %} {% endcomment %}
-                                                                    {% comment %} {% for finished_doc in course_progress_tracker_data %} {% endcomment %}
-                                                                        <li class="text-dark">
-                                                                            <a href="{% url "course_document_content" course_data.id docs.id %}" class="doc-link text-dark">
-                                                                                {{ docs.documentation_name }}
-                                                                            </a>
-                                                                        </li>
-                                                                    {% comment %} {% endfor %} {% endcomment %}
-                                                                {% comment %} {% endif %} {% endcomment %}
+                                                                <li class="text-dark">
+                                                                    <a href="{% url "course_document_content" course_data.id docs.id %}" class="doc-link text-dark">
+                                                                        {{ docs.documentation_name }}
+                                                                    </a>
+                                                                </li>
                                                             {% endfor %}
                                                         {% endif %}
                                                     {% endfor %}

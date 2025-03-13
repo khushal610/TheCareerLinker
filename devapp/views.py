@@ -11,6 +11,7 @@ from django.urls import reverse
 import base64
 import uuid
 from django.core.files.base import ContentFile
+import random,string
 # for celery worker
 # from devapp.tasks import send_online_session_email
 
@@ -338,9 +339,10 @@ def delete_online_session(request,id):
 
 def activate_online_session(request,id):
     session_data = models.Online_sessions.objects.get(id=id)
+    meeting_link = session_data.meeting_link
     session_data.is_live = True
     session_data.save()
-    return redirect(online_session_table)
+    return redirect(meeting_link)
 
 def deactivate_online_session(request,id):
     session_data = models.Online_sessions.objects.get(id=id)
@@ -793,24 +795,23 @@ def detailedview_course_module_content(request,id):
     return render(request,"devapp/course-module-content-review.html",context=context)
 
 
+
 def add_certificate_details(request):
+    certificate_data = None
     if models.Certificate_Details.objects.filter(dev_id=request.user).exists():
         certificate_data = models.Certificate_Details.objects.get(dev_id=request.user)
-        print("----------------------------->",certificate_data)
+        print("----------------------------->", certificate_data)
 
     if request.method == "POST":
         company_logo = request.FILES.get("company_logo")
         signature_data = request.POST.get("dev_signature")
-
-        # Convert base64 signature to an image file
         format, imgstr = signature_data.split(';base64,') if signature_data else (None, None)
         if imgstr:
             ext = format.split('/')[-1] if format else 'png'
             signature_file = ContentFile(base64.b64decode(imgstr), name=f"signature_{uuid.uuid4()}.{ext}")
         else:
             signature_file = None
-
-        # Save data in the database
+            
         certificate = models.Certificate_Details(
             company_logo=company_logo,
             dev_signature=signature_file,
@@ -818,11 +819,11 @@ def add_certificate_details(request):
         )
         certificate.save()
 
-        return redirect("add_certificate_details")  # Redirect to the same page after saving
+        return redirect("add_certificate_details")
     context = {
-        'certificate_data':certificate_data
+        'certificate_data': certificate_data
     }
-    return render(request, "devapp/add-certificate-details.html",context=context)
+    return render(request, "devapp/add-certificate-details.html", context=context)
 
 
 def update_certificate_details(request,id):
@@ -844,3 +845,59 @@ def update_certificate_details(request,id):
         return redirect(add_certificate_details)
 
     return render(request,"devapp/update-certificate-details.html")
+
+
+
+def generate_digital_signature(student, course_id, certificate_detail_id):
+    try:
+        course_data = models.Online_Certification_Course.objects.get(id=course_id)
+        student_data = User.objects.get(username=student)
+        certificate_details_data = models.Certificate_Details.objects.get(id=certificate_detail_id)
+    except models.Online_Certification_Course.DoesNotExist:
+        return f"Course with ID {course_id} not found."
+    except User.DoesNotExist:
+        return f"Student with username {student} not found."
+    except models.Certificate_Details.DoesNotExist:
+        return f"Certificate Details with ID {certificate_detail_id} not found."
+    print("---course_data--------------------------------->", course_data)
+    print("---student_data--------------------------------->", student_data)
+    print("---certificate_details_data--------------------------------->", certificate_details_data)
+    issued_certificate = models.Issued_Certificate.objects.filter(student_id=student_data, course_id=course_data).first()
+
+    if issued_certificate:
+        print("Certificate already issued:")
+        print(f"Digital Signature: {issued_certificate.digital_signature}")
+        print(f"Certificate Details: {issued_certificate.certificate_details}")
+        return issued_certificate
+
+    length = 20
+    digital_signature = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+    issue_new_certificate = models.Issued_Certificate.objects.create(
+        student_id=student_data,
+        course_id=course_data,
+        certificate_details=certificate_details_data,
+        digital_signature=digital_signature
+    )
+    
+    issue_new_certificate.save()
+    print("----------------digital signature---------------", digital_signature)
+    return digital_signature
+
+
+def selected_student_table(request):
+    dev_details = User.objects.get(username=request.user)
+    selected_student_data = User.objects.filter(is_selected=True,company_name=dev_details.company_name)
+    paginator = Paginator(selected_student_data, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'selected_student_data':page_obj,
+    }
+    return render(request,"devapp/selected-student-table.html",context=context)
+
+def unselect_student(request,id):
+    student_data = User.objects.get(id=id)
+    student_data.is_selected = False
+    student_data.company_name = ""
+    student_data.save()
+    return redirect(selected_student_table)

@@ -25,7 +25,7 @@
                     <a href="{% url "quiz_list" %}" class="btn btn-primary px-4 py-2">Find Another Quiz</a>
                     <a href="{% url "profile" %}" class="btn btn-primary px-4 py-2">View Profile</a>
                 </div>
-            {% else %}
+            {% elif data.quiz_category.is_course_quiz == True %}
                 <div class="d-flex align-items-center">
                     <div class="p-1 px-4 d-flex flex-column align-items-center score rounded">
                         <span class="d-block char text-success">Score</span>
@@ -40,7 +40,7 @@
                     </div>
                 </div>
                 <div>
-                    <a href="{% url "view_certificate" %}" class="btn btn-primary px-4 py-2">View Certificate</a>
+                    {% comment %} <a href="{% url "view_certificate" %}" class="btn btn-primary px-4 py-2">View Certificate</a> {% endcomment %}
                     <a href="{% url "profile" %}" class="btn btn-primary px-4 py-2">View Profile</a>
                 </div>
             {% endif %}

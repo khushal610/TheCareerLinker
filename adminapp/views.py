@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
 from devapp import models as devModels
 from devapp import forms
-from studentapp.models import User,Quiz_attempt,Attempted_session
+from studentapp.models import User,Quiz_attempt,Attempted_session,Contact_us
 from TheCareerLinker import views as TCL_views
 from devapp import views as dev_views
 from django.core.paginator import Paginator
@@ -166,3 +166,25 @@ def session_attempted_student(request,id):
         'session_name':session_name
     }
     return render(request,"adminapp/session-attempted-student.html",context=context)
+
+
+def shortlisted_student_detail(request):
+    shortlisted_student_data = User.objects.filter(role="Student")
+    paginator = Paginator(shortlisted_student_data, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'shortlisted_student_data':page_obj
+    }
+    return render(request,"adminapp/shortlisted-student-detail.html",context=context)
+
+
+def contact_details(request):
+    contact_details_data = Contact_us.objects.all()
+    paginator = Paginator(contact_details_data, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'contact_details_data':page_obj,
+    }
+    return render(request,"adminapp/contact-details.html",context=context)

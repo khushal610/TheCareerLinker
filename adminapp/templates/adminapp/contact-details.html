@@ -1,0 +1,56 @@
+{% extends "adminapp/master.html" %}
+{% load static %}
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Contact Us Details</h6>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Subject</th>
+                            <th scope="col">Message</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contact_data in contact_details_data %}
+                            <tr>
+                                <th scope="row">{{forloop.counter}}</th>
+                                <td>{{contact_data.student_id.role}}</td>
+                                <td>{{contact_data.student_id.username}}</td>
+                                <td>{{contact_data.student_id.email}}</td>
+                                <td>{{contact_data.subject}}</td>
+                                <td>{{contact_data.message}}</td>
+                                <td>
+                                    <a href="#" class="btn btn-danger">Delete</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="pagination d-flex align-items-center gap-4">
+                    {% if contact_details_data.has_previous %}
+                        <a href="?page=1" class="btn btn-secondary">First</a>
+                        <a href="?page={{ contact_details_data.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                    {% endif %}
+
+                    <span class="current-page">Page {{ contact_details_data.number }} of {{ contact_details_data.paginator.num_pages }}</span>
+
+                    {% if contact_details_data.has_next %}
+                        <a href="?page={{ contact_details_data.next_page_number }}" class="btn btn-secondary">Next</a>
+                        <a href="?page={{ contact_details_data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

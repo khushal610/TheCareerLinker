@@ -28,4 +28,6 @@ urlpatterns = [
     path('<int:course_data_id>/next_documentation/<int:id>/',views.next_documentation,name="next_documentation"),
     path('<int:course_data_id>/previous_documentation/<int:id>/',views.previous_documentation,name="previous_documentation"),
     path('view-certificate/<int:course_data_id>',views.view_certificate,name="view_certificate"),
+    path('generate-certificate/<int:course_data_id>/', views.generate_certificate_pdf, name='generate_certificate_pdf'),
+    path('chat/',views.chat,name="chat"),
 ]

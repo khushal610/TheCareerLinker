@@ -11,9 +11,10 @@
             font-family: 'Arial', sans-serif;
             background: #f8f9fa;
             text-align: center;
+            width: calc(100% + 20%);
         }
         .certificate-container {
-            width: 65%;
+            {% comment %} width: 65%; {% endcomment %}
             margin: 30px auto;
             padding-top: 30px;
             padding-left: 30px;
@@ -69,7 +70,7 @@
         }
         
         .signature img {
-            height: 70px;
+            height: 50px;
         }
         
         .signature p {
@@ -81,6 +82,10 @@
         .company-logo-container {
             display: flex;
             align-items: center;
+        }
+        .company-logo-container img{
+            width: 120px;
+            height: 120px;
         }
         
         .company-logo {
@@ -109,10 +114,10 @@
             <p>This is to certify that</p>
             <h3><strong>{{ student_name }}</strong></h3>
     
-            {% if course %}
+            
             <p>has successfully completed the</p>
-            <h4><strong>{{ course.course_name }}</strong></h4>
-            {% endif %}
+            <h4><strong>{{ course_name }}</strong></h4>
+            
             
             <p>We at <strong>The Career Linker</strong> recognize your dedication to learning and professional growth.</p>
             <p>Keep striving for excellence in your career journey!</p>
@@ -120,14 +125,13 @@
     
         <div class="certificate-footer">
             <div class="signature">
-                <img src="{{ dev_signature }}" alt="Developer Signature" class="px-4">
+                <img src="{{ dev_signature }}" class="px-4">
                 <p>{{ dev_name }}</p>
                 <small>Course Developer</small>
             </div>
 
             <div class="company-logo-container">
-                {% comment %} <img src="{{ company_logo }}" alt="TCL Logo" class="company-logo"> {% endcomment %}
-                <img src="{% static 'assets/img/logo1.jpg' %}" alt="" width="170px">
+                <img src="{% static 'assets/img/logo1.jpg' %}" alt="" width="40px">
             </div>   
         </div>
 
@@ -135,6 +139,5 @@
             <small>{{digital_signature}}</small>
         </div>
     </div>
-    <a href="{% url 'generate_certificate_pdf' course_id %}" class="btn btn-primary mb-4">Download PDF</a>
 </body>
 </html>

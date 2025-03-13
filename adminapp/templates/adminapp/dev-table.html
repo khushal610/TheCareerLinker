@@ -24,7 +24,7 @@
                         <tbody>
                             {% for dev_data in dev_details %}
                                 <tr>
-                                    <td>{{dev_data.id}}</td>
+                                    <td>{{forloop.counter}}</td>
                                     <td>{{dev_data.username}}</td>
                                     <td>{{dev_data.company_name}}</td>
                                     <td>{{dev_data.email}}</td>

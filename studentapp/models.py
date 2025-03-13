@@ -28,7 +28,6 @@ class User(AbstractUser):
     dev_img = models.FileField(upload_to='developer_images/',null=True,blank=True)
     is_verified = models.BooleanField(default=False)
 
-
 class Quiz_attempt(models.Model): # id
     student_id = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
     quiz_category = models.ForeignKey("devapp.QuizCategory",on_delete=models.CASCADE,null=True,blank=True)
@@ -61,4 +60,8 @@ class Course_Progress_Tracker(models.Model):
     quiz_id = models.ForeignKey("devapp.QuizCategory",on_delete=models.CASCADE,null=True,blank=True)
     is_completed = models.BooleanField(default=False)
     date_time = models.DateTimeField(auto_now_add=True,null=True,blank=True)
-    
+
+class Contact_us(models.Model):
+    user_id = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
+    subject = models.CharField(max_length=255,null=True,blank=True)
+    message = models.TextField(null=True,blank=True)

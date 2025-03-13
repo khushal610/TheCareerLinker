@@ -21,4 +21,6 @@ urlpatterns = [
     path('delete-quiz-attempt/<int:id>/',views.delete_quiz_attempt,name="delete_quiz_attempt"),
     path('manage-online-session-table/',views.manage_online_session_table,name="manage_online_session_table"),
     path('session-attempted-student/<int:id>/',views.session_attempted_student,name="session_attempted_student"),
+    path('shortlisted-student-detail/',views.shortlisted_student_detail,name="shortlisted_student_detail"),
+    path('contact-details/',views.contact_details,name="contact_details"),
 ]

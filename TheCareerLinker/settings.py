@@ -153,3 +153,8 @@ EMAIL_HOST_USER = "pcability610@gmail.com"
 EMAIL_HOST_PASSWORD = "sbij rzvj qjmu ovyv"
 
 # sbij rzvj qjmu ovyv
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+import logging
+logging.getLogger('weasyprint').setLevel(logging.ERROR)
