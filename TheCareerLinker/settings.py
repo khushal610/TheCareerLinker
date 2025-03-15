@@ -154,6 +154,11 @@ EMAIL_HOST_PASSWORD = "sbij rzvj qjmu ovyv"
 
 # sbij rzvj qjmu ovyv
 
+RAZORPAY_KEY_ID = "rzp_test_kRLOHDnzOAxCT4"
+RAZORPAY_KEY_SECRET = "BmKT1rAvCcMTFrvCkX02DSpg"
+
+
+
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 import logging

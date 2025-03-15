@@ -7,9 +7,11 @@ urlpatterns = [
     path('contact/',views.contact,name="contact"),
     path('trainers/',views.trainers,name="trainers"),
     path('pricing/',views.pricing,name="pricing"),
+    
     path('courses/',views.courses,name="courses"),
     path('course-details/<int:id>/',views.course_details,name="course_details"),
     path('course-enrollment/<int:id>/',views.course_enrollment,name="course_enrollment"),
+
     path('profile/',views.profile,name="profile"),
     path('login/',views.loginview,name="login"),
     path('student/registration/',views.registration,name="registration"),

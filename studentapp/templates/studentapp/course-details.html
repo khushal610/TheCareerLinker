@@ -31,6 +31,11 @@
               <p>{{course_details.dev_id.username}}</p>
             </div>
 
+            <div class="course-info d-flex justify-content-between align-items-center">
+              <h5>Course Duration</h5>
+              <p>{{course_details.course_duration}}</p>
+            </div>
+
             {% if course_details.course_type == "Free" %}
               <div class="course-info d-flex justify-content-between align-items-center">
                 <h5>Course Type</h5>
@@ -41,26 +46,51 @@
                 <h5>Course Type</h5>
                 <p>{{course_details.course_type}}</p>
               </div>
-              <div class="course-info d-flex justify-content-between align-items-center">
-                <h5>Course Fees</h5>
-                <p>₹ {{course_details.course_charges}}/-</p>
-              </div>
             {% endif %}
-            <div class="course-info d-flex justify-content-between align-items-center">
-              <h5>Course Duration</h5>
-              <p>{{course_details.course_duration}}</p>
-            </div>
-            <div class="course-info d-flex justify-content-between align-items-center">
-              {% comment %} <a href="{% url "course_enrollment" course_details.id %}" class="btn btn-primary w-100 text-light">Enroll Now</a> {% endcomment %}
+            {% comment %} <div class="course-info d-flex justify-content-between align-items-center">
               <a href="{% url "course_enrollment" course_details.id %}" class="btn btn-primary w-100 text-light">Enroll Now</a>
-            </div>
-              {% comment %} {% if messages %}
-                  {% for message in messages %}
-                      <div class="alert alert-{{ message.tags }}">
-                          {{ message }}
-                      </div>
-                  {% endfor %}
-              {% endif %} {% endcomment %}
+            </div> {% endcomment %}
+            {% if course_details.course_type == "Free" %}
+              <div class="course-info d-flex justify-content-between align-items-center">
+                <a href="{% url 'course_enrollment' course_details.id %}" class="btn btn-success w-100 text-light">Enroll Now</a>
+              </div>
+            {% else %}
+              {% if user.is_authenticated %}
+                {% if enrollment and enrollment.is_payment_received == True %}
+                  <div class="course-info d-flex justify-content-between align-items-center">
+                    <a href="{% url 'course_enrollment' course_details.id %}" class="btn btn-success w-100 text-light">Enroll Now</a>
+                  </div>
+                {% else %}
+                  <div class="course-info d-flex justify-content-between align-items-center">
+                    <h5>Course Fees</h5>
+                    <p>₹ {{ course_details.course_charges }}/-</p>
+                  </div>
+                  <div class="course-info d-flex justify-content-between align-items-center">
+                    <form id="payment-form" method="post">
+                      {% csrf_token %}
+                      <script 
+                        src="https://checkout.razorpay.com/v1/checkout.js"
+                        data-key="{{ RAZORPAY_KEY_ID }}"
+                        data-amount="{{ course_details.course_charges|floatformat:0 }}"
+                        data-currency="INR"
+                        data-order_id="{{ razorpay_order_id }}"
+                        data-buttontext="Buy Now"
+                        data-name="The Career Linker"
+                        data-description="Enroll in {{ course_details.course_name }}"
+                        data-theme.color="#F37254"
+                        data-callback-handler="handlePaymentSuccess">
+                      </script>
+                    </form>
+                  </div>
+                {% endif %}
+              {% else %}
+                <div class="course-info d-flex justify-content-between align-items-center">
+                  <a href="{% url 'login' %}" class="btn btn-warning w-100 text-light">Login to Buy</a>
+                </div>
+              {% endif %}
+            {% endif %}
+
+          
           </div>
         </div>
 
@@ -119,4 +149,13 @@
         </div>
       </div>
     </section>
+
+
+    <script>
+      function handlePaymentSuccess(response) {
+        alert("Payment successful! Enrollment confirmed.");
+        location.reload();
+    }
+    </script>
+
   {% endblock %}

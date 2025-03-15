@@ -16,13 +16,15 @@ import datetime
 from django.urls import reverse
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse,JsonResponse
 from django.template.loader import render_to_string
 from weasyprint import HTML
 import tempfile
 import os
+import razorpay
+from django.views.decorators.csrf import csrf_exempt
 
-# Create your views here.
+
 def home(request):
     return render(request,'studentapp/index.html')
 
@@ -46,6 +48,8 @@ def contact(request):
         return render(request,'studentapp/contact.html',{'alert':"Your data send successfully"})
     return render(request,'studentapp/contact.html')
 
+
+
 def courses(request):
     course_data = devModels.Online_Certification_Course.objects.filter(is_launched=True)
     course_enrollment_data = studentModels.Course_Enrollment.objects.filter(student_id=request.user)
@@ -55,8 +59,11 @@ def courses(request):
     }
     return render(request,'studentapp/courses.html',context=context)
 
+razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+@csrf_exempt
 def course_details(request, id):
-    course_details = devModels.Online_Certification_Course.objects.get(id=id, is_launched=True)
+    course_details = get_object_or_404(devModels.Online_Certification_Course, id=id, is_launched=True)
     dev_id = course_details.dev_id
     course_module_data = devModels.Module_list.objects.filter(course_id=id, dev_id=dev_id)
 
@@ -66,14 +73,65 @@ def course_details(request, id):
         module_stage_data = list(devModels.Module_Stage.objects.filter(module_id=module_id, dev_id=dev_id))  
         if module_stage_data:
             module_stage_data_details[module_id] = module_stage_data
-            print("=============================>",module_stage_data_details)
+
+    # Check if user is enrolled
+    enrollment = None
+    razorpay_order_id = None
+
+    if request.user.is_authenticated:
+        enrollment, created = studentModels.Course_Enrollment.objects.get_or_create(
+            student_id=request.user,
+            course_id=course_details,
+            defaults={"is_payment_received": False}
+        )
+
+        if enrollment.is_payment_received:
+            razorpay_order_id = enrollment.razorpay_order_id
+        else:
+            if not enrollment.razorpay_order_id:
+                order_data = {
+                    "amount": int(float(course_details.course_charges) * 100),
+                    "currency": "INR",
+                    "payment_capture": "1"
+                }
+                order = razorpay_client.order.create(order_data)
+                enrollment.razorpay_order_id = order["id"]
+                enrollment.save()
+
+            razorpay_order_id = enrollment.razorpay_order_id
+
+    if request.method == "POST":
+        razorpay_payment_id = request.POST.get("razorpay_payment_id")
+        razorpay_order_id = request.POST.get("razorpay_order_id")
+        razorpay_signature = request.POST.get("razorpay_signature")
+
+        if all([razorpay_payment_id, razorpay_order_id, razorpay_signature]):
+            try:
+                razorpay_client.utility.verify_payment_signature({
+                    "razorpay_order_id": razorpay_order_id,
+                    "razorpay_payment_id": razorpay_payment_id,
+                    "razorpay_signature": razorpay_signature,
+                })
+                enrollment.razorpay_payment_id = razorpay_payment_id
+                enrollment.razorpay_signature = razorpay_signature
+                enrollment.is_payment_received = True
+                enrollment.save()
+                return redirect(reverse('course_details', args=[id]))
+            except razorpay.errors.SignatureVerificationError:
+                return JsonResponse({"status": "error", "message": "Invalid payment signature"})
+        else:
+            return JsonResponse({"status": "error", "message": "Missing required parameters"})
 
     context = {
-        'course_details': course_details,
-        'course_module_data': course_module_data,
-        'module_stage_data': module_stage_data_details
+        "course_details": course_details,
+        "course_module_data": course_module_data,
+        "module_stage_data": module_stage_data_details,
+        "enrollment": enrollment,
+        "razorpay_order_id": razorpay_order_id,
+        "RAZORPAY_KEY_ID": settings.RAZORPAY_KEY_ID,
     }
-    return render(request, 'studentapp/course-details.html', context)
+
+    return render(request, "studentapp/course-details.html", context)
 
 
 def course_enrollment(request, id):
@@ -298,17 +356,41 @@ def quiz_list(request):
     return render(request,"studentapp/quiz-list.html",context=context)
 
 
+
 def quiz(request, id):
     quiz_category_data = devModels.QuizCategory.objects.get(id=id)
-    quiz_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=id)
-    quiz_questions_options = devModels.QuizOptions.objects.all()
+    quiz_questions = list(devModels.QuizQuestions.objects.filter(quiz_category_id=id))
+    random.shuffle(quiz_questions)
+
+    quiz_questions_options = []
+
+    for question in quiz_questions:
+        try:
+            option_obj = devModels.QuizOptions.objects.get(question_id=question.id)
+            options = [
+                option_obj.option_1,
+                option_obj.option_2,
+                option_obj.option_3,
+                option_obj.option_4
+            ]
+            options = [opt for opt in options if opt]
+            random.shuffle(options) 
+        except devModels.ObjectDoesNotExist:
+            options = []
+
+        quiz_questions_options.append({
+            "question": question,
+            "options": options
+        })
+
     context = {
-        'data': quiz_questions,
-        'options': quiz_questions_options
+        'quiz_questions_options': quiz_questions_options
     }
+
     if request.method == "POST":
         score = 0
-        total_questions = quiz_questions.count()
+        total_questions = len(quiz_questions)
+
         for question in quiz_questions:
             user_choice = request.POST.get(f"user_choice_{question.id}")
             try:
@@ -316,36 +398,35 @@ def quiz(request, id):
                 correct_answer = quiz_answer.option_1
                 if user_choice == correct_answer:
                     score += 1
-            except devModels.QuizOptions.DoesNotExist:
+            except devModels.ObjectDoesNotExist:
                 continue
 
-        quiz_category = devModels.QuizCategory.objects.get(id=id)
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", quiz_category.is_course_quiz)
-        if quiz_category.is_course_quiz:
+        if quiz_category_data.is_course_quiz:
             course_progress_tracker_data, created = studentModels.Course_Progress_Tracker.objects.get_or_create(
-                student_id=request.user, quiz_id=quiz_category
+                student_id=request.user, quiz_id=quiz_category_data
             )
             course_progress_tracker_data.is_completed = True
             course_progress_tracker_data.save()
-        else:
-            print("-------------------False--------------------------", quiz_category.is_course_quiz)
-            
+
         quiz_attempt_form = forms.QuizAttemptForm(request.POST)
         if quiz_attempt_form.is_valid():
             quiz_attempt_obj = quiz_attempt_form.save(commit=False)
             quiz_attempt_obj.student_id = request.user
-            quiz_attempt_obj.quiz_category = quiz_category
+            quiz_attempt_obj.quiz_category = quiz_category_data
             quiz_attempt_obj.score = score
             quiz_attempt_obj.save()
-            if quiz_category_data.is_course_quiz == False:
-                send_quiz_score_to_email(request.user,id,score,total_questions)
-            return redirect(score_card)
+
+            if not quiz_category_data.is_course_quiz:
+                send_quiz_score_to_email(request.user, id, score, total_questions)
+
+            return redirect("score_card")
         else:
             print(quiz_attempt_form.errors)
+
         context["score"] = score
         context["total_questions"] = total_questions
-        # is_course_quiz
-    return render(request, "studentapp/quiz.html", context=context)
+
+    return render(request, "studentapp/quiz.html", context)
 
 
 def send_quiz_score_to_email(username,id,score,total_questions):

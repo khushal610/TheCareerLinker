@@ -1,6 +1,74 @@
 {% extends "studentapp/master.html" %}
 {% load static %}
 {% block content %}
+
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4 d-flex align-items-center justify-content-center p-3">
+        <form method="post" class="d-flex flex-column gap-4 align-items-center justify-content-center">
+            {% csrf_token %}
+
+            {% for question_data in quiz_questions_options %}
+                <div class="col-sm-12 col-xl-8">
+                    <div class="bg-light rounded h-100 p-4">
+                        <h6 class="mb-4">Question {{ forloop.counter }}</h6>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <td scope="col">
+                                        {{ question_data.question.quiz_question }} <br>
+                                        {% if question_data.question.quiz_question_summary %}
+                                            <pre class="px-3">{{ question_data.question.quiz_question_summary }}</pre>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td scope="row">
+                                        <div class="container p-3 rounded">
+                                            <div class="row">
+                                                {% for option in question_data.options %}
+                                                    <div class="col-md-6 mb-2">
+                                                        <div class="p-2 rounded bg-white d-flex align-items-center">
+                                                            <input 
+                                                                type="radio" 
+                                                                name="user_choice_{{ question_data.question.id }}" 
+                                                                value="{{ option }}" 
+                                                                class="me-2">
+                                                            <label class="m-0">{{ option }}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div class="container d-flex align-items-center justify-content-center p-5">
+                <button type="submit" class="btn btn-success px-5">Finish Quiz</button>
+            </div>
+
+            {% if score is not None %}
+                <div class="text-center mt-4">
+                    <h4>Your Score: {{ score }}/{{ total_questions }}</h4>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+
+
+{% comment %} {% extends "studentapp/master.html" %}
+{% load static %}
+{% block content %}
 <div class="container-fluid pt-4 px-4">
     <div class="row g-4 d-flex align-items-center justify-content-center p-3">
         <form method="post" class="d-flex flex-column gap-4 align-items-center justify-content-center">
@@ -90,4 +158,4 @@
 
     </div>
 </div>
-{% endblock %}
+{% endblock %} {% endcomment %}

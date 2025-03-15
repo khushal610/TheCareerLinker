@@ -18,7 +18,7 @@ class AttemptedSessionAdmin(admin.ModelAdmin):
 admin.site.register(models.Attempted_session, AttemptedSessionAdmin)
 
 class CourseEnrollmentAdmin(admin.ModelAdmin):
-    list_display = ('student_id', 'course_id', 'is_payment_received', 'is_course_completed', 'date_time')  
+    list_display = ('student_id', 'course_id', 'is_payment_received', 'is_course_completed','razorpay_payment_id','razorpay_order_id', 'razorpay_signature', 'date_time')
     readonly_fields = ('date_time',)
 admin.site.register(models.Course_Enrollment, CourseEnrollmentAdmin)
 
