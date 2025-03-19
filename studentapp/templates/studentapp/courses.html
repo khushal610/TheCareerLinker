@@ -11,41 +11,40 @@
           </div>
         </div>
     </div>
+    
     <section id="courses" class="courses section">
       <div class="container">
-      {% if course_enrollment_data %}
-        <h4>Enrolled Courses</h4>
-        <div class="row">
-          {% for enrolled_course in course_enrollment_data %}
-            <div class="col-lg-4 col-md-6 d-flex align-items-stretch p-2" data-aos="zoom-in" data-aos-delay="100">
-              <div class="course-item">
-                <img src="{{enrolled_course.course_id.course_thumbnail_image.url}}" class="img-fluid rounded" alt="...">
-                <div class="course-content">
-                  <h3><a href="{% url "course_enrollment" enrolled_course.course_id.id %}">{{enrolled_course.course_id.course_name}}</a></h3>
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <p class="price">{{enrolled_course.course_id.course_type}} ₹{{enrolled_course.course_id.course_charges}}/-</p>
-                    {% if enrolled_course.is_course_completed %}
-                      <a href="{% url "view_certificate" enrolled_course.course_id.id %}" class="btn btn-primary">View Certificate</a>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-      <hr>
+      
+        <form method="GET" action="{% url 'courses' %}">
+          <div class="d-flex align-items-center col-lg-8 gap-2 mb-4">
+              <input type="text" name="search" class="form-control" placeholder="Search Courses Here" value="{{ search_query }}">
+              
+              <select name="course_type" class="form-control w-50 bg-light">
+                  <option value="None" {% if selected_course_type == "None" %}selected{% endif %}>Select Course Type</option>
+                  <option value="Free" {% if selected_course_type == "Free" %}selected{% endif %}>Free</option>
+                  <option value="Paid" {% if selected_course_type == "Paid" %}selected{% endif %}>Paid</option>
+              </select>
+              
+              <button type="submit" class="btn btn-dark d-flex align-items-center gap-1">
+                  <i class="fa-solid fa-magnifying-glass"></i> Search
+              </button>
+          </div>
+      </form>
+
+      
+      
+
       <h4 class="mt-4">View All Courses</h4>
         <div class="row">
           {% for course in course_data %}
             <div class="col-lg-4 col-md-6 d-flex align-items-stretch p-2" data-aos="zoom-in" data-aos-delay="100">
               <div class="course-item">
-                <img src="{{course.course_thumbnail_image.url}}" class="img-fluid rounded" alt="...">
+                <img src="{{ course.course_thumbnail_image.url }}" class="img-fluid rounded" alt="...">
                 <div class="course-content">
-                  <h3><a href="#">{{course.course_name}}</a></h3>
+                  <h3><a href="#">{{ course.course_name }}</a></h3>
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <a href="{% url "course_details" course.id %}" class="btn category">More Info</a>
-                    <p class="price">{{course.course_type}} ₹{{course.course_charges}}/-</p>
+                    <p class="price">{{ course.course_type }} ₹{{ course.course_charges }}/-</p>
                   </div>
                 </div>
               </div>
@@ -53,6 +52,65 @@
           {% endfor %}
         </div>
 
+        <div class="pagination d-flex align-items-center gap-4">
+          {% if course_data.has_previous %}
+              <a href="?page=1&search={{ search_query }}&course_type={{ selected_course_type }}" class="btn btn-secondary">First</a>
+              <a href="?page={{ course_data.previous_page_number }}&search={{ search_query }}&course_type={{ selected_course_type }}" class="btn btn-secondary">Previous</a>
+          {% endif %}
+      
+          <span class="current-page">Page {{ course_data.number }} of {{ course_data.paginator.num_pages }}</span>
+      
+          {% if course_data.has_next %}
+              <a href="?page={{ course_data.next_page_number }}&search={{ search_query }}&course_type={{ selected_course_type }}" class="btn btn-secondary">Next</a>
+              <a href="?page={{ course_data.paginator.num_pages }}&search={{ search_query }}&course_type={{ selected_course_type }}" class="btn btn-secondary">Last</a>
+          {% endif %}
+        </div>
+        <hr>
+
+
+
+        {% if course_enrollment_data %}
+        <h4>Enrolled Courses</h4>
+        <div class="row">
+          {% for enrolled_course in course_enrollment_data %}
+            {% if enrolled_course.course_id.course_type == "Free" or enrolled_course.is_payment_received %}
+              <div class="col-lg-4 col-md-6 d-flex align-items-stretch p-2" data-aos="zoom-in" data-aos-delay="100">
+                <div class="course-item">
+                  <img src="{{ enrolled_course.course_id.course_thumbnail_image.url }}" class="img-fluid rounded" alt="...">
+                  <div class="course-content">
+                    <h3><a href="{% url "course_enrollment" enrolled_course.course_id.id %}">{{ enrolled_course.course_id.course_name }}</a></h3>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <p class="price">{{ enrolled_course.course_id.course_type }} ₹{{ enrolled_course.course_id.course_charges }}/-</p>
+                      {% if enrolled_course.is_course_completed %}
+                        <a href="{% url "view_certificate" enrolled_course.course_id.id %}" class="btn btn-primary">View Certificate</a>
+                      {% else %}
+                        <p class="d-flex align-items-center gap-1 text-danger"><i class="fa-solid fa-clock"></i> Pendding</p>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <div class="pagination d-flex align-items-center gap-4">
+          {% if course_enrollment_data.has_previous %}
+              <a href="?page=1&company_filter={{ selected_company }}" class="btn btn-secondary">First</a>
+              <a href="?page={{ course_enrollment_data.previous_page_number }}&company_filter={{ selected_company }}" class="btn btn-secondary">Previous</a>
+          {% endif %}
+
+          <span class="current-page">Page {{ course_enrollment_data.number }} of {{ course_enrollment_data.paginator.num_pages }}</span>
+
+          {% if course_enrollment_data.has_next %}
+              <a href="?page={{ course_enrollment_data.next_page_number }}&company_filter={{ selected_company }}" class="btn btn-secondary">Next</a>
+              <a href="?page={{ course_enrollment_data.paginator.num_pages }}&company_filter={{ selected_company }}" class="btn btn-secondary">Last</a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+
+
       </div>
     </section>
-  {% endblock %}
+{% endblock %}

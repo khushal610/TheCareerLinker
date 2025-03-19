@@ -52,4 +52,8 @@ urlpatterns = [
     path('detailedview-course-module-content/<int:id>/',views.detailedview_course_module_content,name="detailedview_course_module_content"),
     path('add-certificate-details/',views.add_certificate_details,name="add_certificate_details"),
     path('update-certificate-details/<int:id>/',views.update_certificate_details,name="update_certificate_details"),
+    path('student-course-query-table/',views.student_course_query_table,name="student_course_query_table"),
+    path('delete-student-course-query/<int:id>/',views.delete_student_course_query,name="delete_student_course_query"),
+    path('student-query-response/<int:id>/',views.student_query_response,name="student_query_response"),
+    path('dev-feedback/',views.dev_feedback,name="dev_feedback"),
 ]

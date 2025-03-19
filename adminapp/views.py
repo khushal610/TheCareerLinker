@@ -3,10 +3,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
 from devapp import models as devModels
 from devapp import forms
-from studentapp.models import User,Quiz_attempt,Attempted_session,Contact_us
+from studentapp.models import User,Quiz_attempt,Attempted_session,Contact_us,Course_Enrollment,Feedback
 from TheCareerLinker import views as TCL_views
 from devapp import views as dev_views
 from django.core.paginator import Paginator
+from django.db.models import Q
 
 # Create your views here.
 def index(request):
@@ -14,11 +15,19 @@ def index(request):
     totalDevelopers = User.objects.filter(role="Developer").count()
     totalQuiz = devModels.QuizCategory.objects.all().count()
     totalOnlineClasses = devModels.Online_sessions.objects.all().count()
+    totalContactDetails = Contact_us.objects.all().count()
+    totalShortlistedStudentData = User.objects.filter(role="Student").count()
+    totalCourseEnrollmentData = Course_Enrollment.objects.all().count()
+    totalFeedbacks = Feedback.objects.all().count()
     context = {
         'totalStudents':totalStudents,
         'totalDevelopers':totalDevelopers,
         'totalQuiz':totalQuiz,
         'totalOnlineClasses':totalOnlineClasses,
+        'totalContactDetails':totalContactDetails,
+        'totalShortlistedStudentData':totalShortlistedStudentData,
+        'totalCourseEnrollmentData':totalCourseEnrollmentData,
+        'totalFeedbacks':totalFeedbacks
     }
     return render(request,'adminapp/index.html',context=context)
 
@@ -30,9 +39,20 @@ def formview(request):
     return render(request,'adminapp/form.html')
 
 def studentTable(request):
-    students = User.objects.filter(role="Student",is_superuser=False)
-    context = {'students':students}
-    return render(request,'adminapp/student-table.html',context=context)
+    query = request.GET.get('search', '')
+    students = User.objects.filter(role="Student", is_superuser=False)
+    if query:
+        students = students.filter(
+            Q(username__icontains=query) | Q(course__icontains=query) | Q(institute_name__icontains=query)
+        )
+    paginator = Paginator(students, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'students': page_obj,
+        'search_query': query
+    }
+    return render(request, 'adminapp/student-table.html', context)
 
 def deleteUser(request,id):
     data = User.objects.get(id=id)
@@ -72,9 +92,20 @@ def admin_add_form(request):
 
 
 def dev_list_table(request):
+    query = request.GET.get('search', '')
     dev_details = User.objects.filter(role="Developer")
-    context = {'dev_details':dev_details}
-    return render(request,"adminapp/dev-table.html",context=context)
+    if query:
+        dev_details = dev_details.filter(
+            Q(username__icontains=query) | Q(company_name__icontains=query)
+        )
+    paginator = Paginator(dev_details, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'dev_details': page_obj,
+        'search_query': query
+    }
+    return render(request, "adminapp/dev-table.html", context)
 
 
 def authorize_dev(request,id):
@@ -169,14 +200,21 @@ def session_attempted_student(request,id):
 
 
 def shortlisted_student_detail(request):
+    query = request.GET.get('search', '')
     shortlisted_student_data = User.objects.filter(role="Student")
+    if query:
+        shortlisted_student_data = shortlisted_student_data.filter(
+            Q(username__icontains=query) | Q(company_name__icontains=query) | Q(institute_name__icontains=query) | Q(course__icontains=query)
+        )
     paginator = Paginator(shortlisted_student_data, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
     context = {
-        'shortlisted_student_data':page_obj
+        'shortlisted_student_data': page_obj,
+        'search_query': query
     }
-    return render(request,"adminapp/shortlisted-student-detail.html",context=context)
+    return render(request, "adminapp/shortlisted-student-detail.html", context)
 
 
 def contact_details(request):
@@ -188,3 +226,43 @@ def contact_details(request):
         'contact_details_data':page_obj,
     }
     return render(request,"adminapp/contact-details.html",context=context)
+
+def delete_contact_details(request,id):
+    contact_data = Contact_us.objects.get(id=id)
+    contact_data.delete()
+    return redirect(contact_details)
+
+
+def course_enrollment_data(request):
+    query = request.GET.get('search', '')
+    data = Course_Enrollment.objects.all()
+    if query:
+        data = data.filter(
+            Q(student_id__username__icontains=query) | 
+            Q(course_id__course_name__icontains=query) | 
+            Q(course_id__course_type__icontains=query)
+        )
+    paginator = Paginator(data, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'course_enrollment_data': page_obj,
+        'search_query': query
+    }
+    return render(request, "adminapp/course-enrollment-data.html", context)
+
+
+def feedback_table(request):
+    feedback_data = Feedback.objects.all()
+    paginator = Paginator(feedback_data, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'feedback_data':page_obj
+    }
+    return render(request,"adminapp/feedback-table.html",context=context)
+
+def delete_feedback(request,id):
+    feedback_data = Feedback.objects.get(id=id)
+    feedback_data.delete()
+    return redirect(feedback_table)

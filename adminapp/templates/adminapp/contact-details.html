@@ -5,7 +5,8 @@
     <div class="row g-4">
         <div class="col-sm-12 col-xl-12">
             <div class="bg-light rounded h-100 p-4">
-                <h6 class="mb-4">Contact Us Details</h6>
+                <h6 class="mb-4"><a href="{% url "adminIndex" %}"><i class="fa-solid fa-arrow-left"></i> Back</a> Dashboard</h6>
+                <h4 class="mb-4">Contact Us Details</h4>
                 <table class="table table-bordered">
                     <thead>
                         <tr>
@@ -19,19 +20,27 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for contact_data in contact_details_data %}
+                        {% if contact_details_data %}
+                            {% for contact_data in contact_details_data %}
+                                <tr>
+                                    <th scope="row">{{forloop.counter}}</th>
+                                    <td>{{contact_data.user_id.role}}</td>
+                                    <td>{{contact_data.user_id.username}}</td>
+                                    <td>{{contact_data.user_id.email}}</td>
+                                    <td>{{contact_data.subject}}</td>
+                                    <td>{{contact_data.message}}</td>
+                                    <td>
+                                        <a href="{% url "delete_contact_details" contact_data.id %}" class="btn btn-danger">Delete</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
                             <tr>
-                                <th scope="row">{{forloop.counter}}</th>
-                                <td>{{contact_data.student_id.role}}</td>
-                                <td>{{contact_data.student_id.username}}</td>
-                                <td>{{contact_data.student_id.email}}</td>
-                                <td>{{contact_data.subject}}</td>
-                                <td>{{contact_data.message}}</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger">Delete</a>
+                                <td colspan="7" class="text-center fw-bold ">
+                                    No Data Found
                                 </td>
                             </tr>
-                        {% endfor %}
+                        {% endif %}
                     </tbody>
                 </table>
 

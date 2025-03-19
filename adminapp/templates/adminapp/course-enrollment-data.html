@@ -1,0 +1,103 @@
+{% extends "adminapp/master.html" %}
+{% load static %}
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+
+        <div>
+            <form method="GET" action="{% url 'course_enrollment_data' %}" class="d-flex align-items-center gap-2 col-lg-10">
+                <input type="text" name="search" placeholder="Search by student name, course name, or course type" value="{{ search_query }}" class="form-control">
+                <button type="submit" class="btn btn-dark d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass"></i> Search
+                </button>
+            </form>
+        </div>
+        
+        
+
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4"><a href="{% url "adminIndex" %}"><i class="fa-solid fa-arrow-left"></i> Back</a> Dashboard</h6>
+                <h4 class="mb-4">Course Enrollment Details</h4>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Student Name</th>
+                            <th scope="col">Course Name</th>
+                            <th scope="col">Course Type</th>
+                            <th scope="col">Payment Status</th>
+                            <th scope="col">Course Status</th>
+                            <th scope="col">Payment ID</th>
+                            <th scope="col">Order ID</th>
+                            <th scope="col">Date Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if course_enrollment_data %}
+                            {% for course_data in course_enrollment_data %}
+                                <tr>
+                                    <th scope="row">{{forloop.counter}}</th>
+                                    <td>{{course_data.student_id.username}}</td>
+                                    <td>{{course_data.course_id.course_name}}</td>
+                                    <td>{{course_data.course_id.course_type}}</td>
+                                    <td>
+                                        {% if course_data.is_payment_received %}
+                                            <p class="text-success d-flex align-items-center justify-content-center gap-1"><i class="fa-solid fa-circle-check"></i></p>
+                                        {% else %}
+                                            <p class="text-center fw-bold">-</p>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if course_data.is_course_completed %}
+                                            <p class="text-success text-center d-flex align-items-center justify-content-center gap-1"><i class="fa-solid fa-circle-check"></i></p>
+                                        {% else %}
+                                            <p class="text-danger text-center d-flex align-items-center justify-content-center gap-1"><i class="fa-solid fa-circle-xmark"></i></p>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if course_data.razorpay_payment_id %}
+                                            {{course_data.razorpay_payment_id}}
+                                        {% else %}
+                                            <p class="text-center fw-bold">-</p>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if course_data.razorpay_payment_id %}
+                                            {{course_data.razorpay_order_id}}
+                                        {% else %}
+                                            <p class="text-center fw-bold">-</p>
+                                        {% endif %}
+                                        </td>
+                                    <td>{{course_data.date_time}}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center fw-bold ">
+                                    No Data Found
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <div class="pagination d-flex align-items-center gap-4">
+                    {% if course_enrollment_data.has_previous %}
+                        <a href="?search={{ search_query }}&page=1" class="btn btn-secondary">First</a>
+                        <a href="?search={{ search_query }}&page={{ course_enrollment_data.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                    {% endif %}
+                
+                    <span class="current-page">Page {{ course_enrollment_data.number }} of {{ course_enrollment_data.paginator.num_pages }}</span>
+                
+                    {% if course_enrollment_data.has_next %}
+                        <a href="?search={{ search_query }}&page={{ course_enrollment_data.next_page_number }}" class="btn btn-secondary">Next</a>
+                        <a href="?search={{ search_query }}&page={{ course_enrollment_data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

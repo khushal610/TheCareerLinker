@@ -18,6 +18,7 @@ class User(AbstractUser):
     student_resume = models.FileField(upload_to='student_resume/',null=True,blank=True)
     course = models.CharField(max_length=20,null=True,blank=True)
     is_selected = models.BooleanField(default=False)
+    student_img = models.FileField(upload_to='student_images/',null=True,blank=True)
 
     # developer registration fields
     company_name = models.CharField(max_length=70,null=True,blank=True)
@@ -68,3 +69,15 @@ class Contact_us(models.Model):
     user_id = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
     subject = models.CharField(max_length=255,null=True,blank=True)
     message = models.TextField(null=True,blank=True)
+
+class Student_Course_Query(models.Model):
+    student_id = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
+    course_name = models.ForeignKey("devapp.Online_Certification_Course",on_delete=models.CASCADE,null=True,blank=True)
+    document_name = models.ForeignKey("devapp.Course_Module_Content",on_delete=models.CASCADE,null=True,blank=True)
+    student_query_content = models.TextField(null=True,blank=True)
+    query_status = models.BooleanField(default=False)
+
+class Feedback(models.Model):
+    user_id = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
+    rating = models.CharField(max_length=30,null=True,blank=True)
+    feedback_content = models.TextField(null=True,blank=True)

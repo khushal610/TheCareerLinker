@@ -1,0 +1,69 @@
+{% extends "studentapp/master.html" %}
+{% load static %}
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4 d-flex align-items-center justify-content-center p-3">
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">My Queries</h6>
+                {% if student_query_data %}
+                    {% for query_data in student_query_data %}
+                    <table class="table table-bordered mb-4">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="bg-light">Query No</th>
+                                <th scope="col">Course Name</th>
+                                <th scope="col">Document Name</th>
+                                <th scope="col">Student Query Content</th>
+                                <th scope="col">Query Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row" class="bg-light">{{forloop.counter}}</th>
+                                <td>{{query_data.course_name.course_name}}</td>
+                                <td>{{query_data.document_name.documentation_name}}</td>
+                                <td>{{query_data.student_query_content}}</td>
+                                <td>
+                                    {% if query_data.query_status %}
+                                        <p class="d-flex align-items-center gap-1 text-success"><i class="fa-solid fa-circle-check"></i> Done</p>
+                                    {% else %}
+                                        <p class="d-flex align-items-center gap-1 text-danger"><i class="fa-solid fa-clock"></i> Pendding</p>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% for query_response in query_response_data %}
+                                {% if query_data.id == query_response.query_id.id %}
+                                    <tr>
+                                        <th class="bg-success text-light">Response</th>
+                                        <td colspan="4">{{query_response.response_content}}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endfor %}
+                {% else %}
+                    <p class="d-flex align-items-center gap-1 text-warning"><i class="fa-solid fa-circle-exclamation"></i> No Querys Found</p>
+                {% endif %}
+
+
+                <div class="pagination d-flex align-items-center gap-4">
+                    {% if student_query_data.has_previous %}
+                        <a href="?page=1" class="btn btn-secondary">First</a>
+                        <a href="?page={{ student_query_data.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                    {% endif %}
+
+                    <span class="current-page">Page {{ student_query_data.number }} of {{ student_query_data.paginator.num_pages }}</span>
+
+                    {% if student_query_data.has_next %}
+                        <a href="?page={{ student_query_data.next_page_number }}" class="btn btn-secondary">Next</a>
+                        <a href="?page={{ student_query_data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

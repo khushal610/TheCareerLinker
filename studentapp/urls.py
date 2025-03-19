@@ -7,12 +7,12 @@ urlpatterns = [
     path('contact/',views.contact,name="contact"),
     path('trainers/',views.trainers,name="trainers"),
     path('pricing/',views.pricing,name="pricing"),
-    
     path('courses/',views.courses,name="courses"),
     path('course-details/<int:id>/',views.course_details,name="course_details"),
     path('course-enrollment/<int:id>/',views.course_enrollment,name="course_enrollment"),
-
     path('profile/',views.profile,name="profile"),
+    path('update-profile/<int:id>/',views.update_profile,name="update_profile"),
+    path('delete-profile-image/<int:id>/',views.delete_profile_image,name="delete_profile_image"),
     path('login/',views.loginview,name="login"),
     path('student/registration/',views.registration,name="registration"),
     path('logout/',views.signout,name="logout"),
@@ -32,4 +32,7 @@ urlpatterns = [
     path('view-certificate/<int:course_data_id>',views.view_certificate,name="view_certificate"),
     path('generate-certificate/<int:course_data_id>/', views.generate_certificate_pdf, name='generate_certificate_pdf'),
     path('chat/',views.chat,name="chat"),
+    path('<int:course_data_id>/student-course-query-form/<int:id>/',views.student_course_query_form,name="student_course_query_form"),
+    path('student-query-details/',views.student_query_details,name="student_query_details"),
+    path('feedback/',views.feedback,name="feedback"),
 ]

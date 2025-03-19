@@ -5,6 +5,8 @@ from studentapp import models
 admin.site.register(models.User)
 admin.site.register(models.Bookmarked_session)
 admin.site.register(models.Contact_us)
+admin.site.register(models.Student_Course_Query)
+admin.site.register(models.Feedback)
 
 
 class QuizAttemptAdmin(admin.ModelAdmin):

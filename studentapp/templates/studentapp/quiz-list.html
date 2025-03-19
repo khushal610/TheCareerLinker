@@ -2,21 +2,45 @@
 {% load static %}
 {% block content %}
 <div class="container-fluid pt-4 px-4">
+
+    <div class="container-fluid pt-4 px-4">
+        <form method="GET" action="{% url 'quiz_list' %}" class="container-fluid px-4 d-flex align-items-center gap-4 col-lg-12">
+            <div class="d-flex align-items-center gap-2 col-lg-6">
+                <input type="text" name="search" class="form-control w-100" placeholder="Search Quiz Here" value="{{ search_query }}">
+            </div>
+            <div class="col-lg-4 d-flex align-items-center gap-3">
+                <select name="quiz_level" class="form-control w-50">
+                    <option value="None" {% if selected_level == "None" %}selected{% endif %}>Select</option>
+                    <option value="Easy" {% if selected_level == "Easy" %}selected{% endif %}>Easy</option>
+                    <option value="Medium" {% if selected_level == "Medium" %}selected{% endif %}>Medium</option>
+                    <option value="Hard" {% if selected_level == "Hard" %}selected{% endif %}>Hard</option>
+                </select>
+                <button type="submit" class="btn btn-dark"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+            </div>
+        </form>
+    </div>
+
     <div class="row g-4 p-5">
         {% for quiz_data in data %}
-            {% if quiz_data.quiz_level == "Easy" %}
+            {% if quiz_data.quiz_level %}
                 <div class="col-12 col-md-6 col-lg-4 col-xl-4">
-                    <div class="bg-success text-black rounded h-100 p-4">
-                        <h6 class="mb-4">{{dev_data.company_name}}</h6>
+                    <div class="bg-light border shadow-lg border-2 border-secondary text-black rounded h-100 p-4">
+                        <h6 class="mb-4">{{ dev_data.company_name }}</h6>
                         <table class="table-borderless">
                             <thead>
                                 <tr>
                                     <th scope="col">Quiz Name</th>
-                                    <td scope="col">{{quiz_data.quiz_category_name}}</td>
+                                    <td scope="col">{{ quiz_data.quiz_category_name }}</td>
                                 </tr>
                                 <tr>
                                     <th scope="col">Level</th>
-                                    <td scope="col">{{quiz_data.quiz_level}}</td>
+                                    {% if quiz_data.quiz_level == "Easy" %}
+                                        <td scope="col" class="fw-bold text-decoration-underline text-success">{{ quiz_data.quiz_level }}</td>
+                                    {% elif quiz_data.quiz_level == "Medium" %}
+                                        <td scope="col" class="fw-bold text-decoration-underline text-warning">{{ quiz_data.quiz_level }}</td>
+                                    {% else %}
+                                        <td scope="col" class="fw-bold text-decoration-underline text-danger">{{ quiz_data.quiz_level }}</td>
+                                    {% endif %}
                                 </tr>
                             </thead>
                             <tbody>
@@ -26,76 +50,55 @@
                                 </tr>
                                 <tr class="d-flex align-items-center gap-2">
                                     <td>
-                                        <a href="{% url "quiz" quiz_data.id %}" class="btn btn-light">Start Quiz</a>
+                                        <button class="btn btn-dark text-light" data-bs-toggle="modal" data-bs-target="#quizModal{{ quiz_data.id }}">Start Quiz</button>
                                     </td>
-                                    <td>[{{quiz_data.dev_id}}]</td>
+                                    <td>[{{ quiz_data.dev_id }}]</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-            {% elif quiz_data.quiz_level == "Medium" %}
-                <div class="col-12 col-md-6 col-lg-4 col-xl-4">
-                    <div class="bg-primary text-black rounded h-100 p-4">
-                        <h6 class="mb-4">{{dev_data.company_name}}</h6>
-                        <table class="table-borderless">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Quiz Name</th>
-                                    <td scope="col">{{quiz_data.quiz_category_name}}</td>
-                                </tr>
-                                <tr>
-                                    <th scope="col">Level</th>
-                                    <td scope="col">{{quiz_data.quiz_level}}</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <th>Questions</th>
-                                    <td>Doe</td>
-                                </tr>
-                                <tr class="d-flex align-items-center gap-2">
-                                    <td>
-                                        <a href="{% url "quiz" quiz_data.id %}" class="btn btn-light">Start Quiz</a>
-                                    </td>
-                                    <td>[{{quiz_data.dev_id}}]</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            {% else %}
-                <div class="col-12 col-md-6 col-lg-4 col-xl-4">
-                    <div class="bg-danger text-black rounded h-100 p-4">
-                        <h6 class="mb-4">{{dev_data.company_name}}</h6>
-                        <table class="table-borderless">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Quiz Name</th>
-                                    <td scope="col">{{quiz_data.quiz_category_name}}</td>
-                                </tr>
-                                <tr>
-                                    <th scope="col">Level</th>
-                                    <td scope="col">{{quiz_data.quiz_level}}</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <th>Questions</th>
-                                    <td>Doe</td>
-                                </tr>
-                                <tr class="d-flex align-items-center gap-2">
-                                    <td>
-                                        <a href="{% url "quiz" quiz_data.id %}" class="btn btn-light">Start Quiz</a>
-                                    </td>
-                                    <td>[{{quiz_data.dev_id}}]</td>
-                                </tr>
-                            </tbody>
-                        </table>
+
+                <!-- Modal for Start Quiz -->
+                <div class="modal fade" id="quizModal{{ quiz_data.id }}" tabindex="-1" aria-labelledby="quizModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="quizModalLabel">Ready to Start the Quiz?</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Click "Attempt Quiz Now" to begin your quiz.  
+                                <br>  
+                                <strong>Note:</strong> Each question carries 1 mark.  
+                                <br>
+                                ⚠️ If you close the quiz or switch tabs, your score will be considered as 0 marks.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <a href="{% url 'quiz' quiz_data.id %}" class="btn btn-primary">Attempt Quiz Now</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             {% endif %}
         {% endfor %}
+
+        <div class="pagination d-flex align-items-center gap-4">
+            {% if data.has_previous %}
+                <a href="?page=1&search={{ search_query }}&quiz_level={{ selected_level }}" class="btn btn-secondary">First</a>
+                <a href="?page={{ data.previous_page_number }}&search={{ search_query }}&quiz_level={{ selected_level }}" class="btn btn-secondary">Previous</a>
+            {% endif %}
+
+            <span class="current-page">Page {{ data.number }} of {{ data.paginator.num_pages }}</span>
+
+            {% if data.has_next %}
+                <a href="?page={{ data.next_page_number }}&search={{ search_query }}&quiz_level={{ selected_level }}" class="btn btn-secondary">Next</a>
+                <a href="?page={{ data.paginator.num_pages }}&search={{ search_query }}&quiz_level={{ selected_level }}" class="btn btn-secondary">Last</a>
+            {% endif %}
+        </div>
+
+
     </div>
 </div>
 {% endblock %}

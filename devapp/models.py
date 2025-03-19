@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-# from studentapp.models import User
+from studentapp.models import Student_Course_Query
 
 
 class QuizCategory(models.Model): # id
@@ -74,3 +74,9 @@ class Issued_Certificate(models.Model):
     course_id = models.ForeignKey(Online_Certification_Course,on_delete=models.CASCADE,null=True,blank=True)
     certificate_details = models.ForeignKey(Certificate_Details,on_delete=models.CASCADE,null=True,blank=True)
     digital_signature = models.CharField(max_length=255,null=True,blank=True)
+
+
+class Response_Student_Query(models.Model):
+    query_id = models.ForeignKey(Student_Course_Query,on_delete=models.CASCADE,null=True,blank=True)
+    dev_id = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True,blank=True)
+    response_content = models.TextField(null=True,blank=True)

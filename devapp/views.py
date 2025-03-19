@@ -1,6 +1,6 @@
 from django.shortcuts import render,HttpResponse,redirect
 from devapp import models,forms
-from studentapp.models import User,Attempted_session,Quiz_attempt
+from studentapp.models import User,Attempted_session,Quiz_attempt,Student_Course_Query,Feedback
 from TheCareerLinker import views as TCL_views
 from django.contrib.auth import logout
 from django.core.paginator import Paginator
@@ -12,6 +12,7 @@ import base64
 import uuid
 from django.core.files.base import ContentFile
 import random,string
+from django.db.models import Q
 # for celery worker
 # from devapp.tasks import send_online_session_email
 
@@ -33,7 +34,17 @@ def dev_profile_bio_forms(request):
 
 
 def dev_profile(request):
-    return render(request,'devapp/dev-profile.html')
+    totalCertificationCourse = models.Online_Certification_Course.objects.filter(dev_id=request.user,is_launched=True).count()
+    totalQuiz = models.QuizCategory.objects.filter(dev_id=request.user,is_approved=True).count()
+    totalOnlineSessions = models.Online_sessions.objects.filter(dev_name=request.user).count()
+    totalSelectedStudent = User.objects.filter(role="Student",is_selected=True,company_name=request.user.company_name).count()
+    context = {
+        'totalCertificationCourse':totalCertificationCourse,
+        'totalQuiz':totalQuiz,
+        'totalOnlineSessions':totalOnlineSessions,
+        'totalSelectedStudent':totalSelectedStudent,
+    }
+    return render(request,'devapp/dev-profile.html',context=context)
 
 
 # ----------------------signup developer
@@ -210,6 +221,27 @@ def delete_question(request,id):
 
 def edit_profile(request,id):
     dev_data = User.objects.get(id=id)
+    if request.method == "POST":
+        username = request.POST.get('username')
+        contact = request.POST.get('contact')
+        company_name = request.POST.get('company_name')
+        bio_title = request.POST.get('bio_title')
+        bio_detail = request.POST.get('bio_detail')
+        experties = request.POST.get('experties')
+        experience = request.POST.get('experience')
+        dev_img = request.FILES.get('dev_img')
+
+        dev_data.username = username
+        dev_data.contact = contact
+        dev_data.company_name = company_name
+        dev_data.bio_title = bio_title
+        dev_data.bio_detail = bio_detail
+        dev_data.experties = experties
+        dev_data.experience = experience
+        if dev_img:
+            dev_data.dev_img = dev_img
+        dev_data.save()
+        return redirect(dev_profile)
     context = { 
         'dev_data':dev_data,
     }
@@ -444,15 +476,26 @@ def view_quiz_attempted_student(request,id):
     return render(request,"devapp/quiz-attempted-students-table.html",context=context)
 
 
+
 def shortlisting_student(request):
-    student_data = User.objects.filter(role="Student")    
+    query = request.GET.get('search', '')
+    student_data = User.objects.filter(role="Student",is_selected=False)
+
+    if query:
+        student_data = student_data.filter(
+            Q(username__icontains=query) | Q(institute_name__icontains=query) | Q(course__icontains=query)
+        )
+
     paginator = Paginator(student_data, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
     context = {
-        'student_data':page_obj,
+        'student_data': page_obj,
+        'search_query': query
     }
-    return render(request,"devapp/shortlisting-table.html",context=context)
+    return render(request, "devapp/shortlisting-table.html", context)
+
 
 def student_quiz_attempts(request,id):
     username = User.objects.get(id=id)
@@ -886,14 +929,20 @@ def generate_digital_signature(student, course_id, certificate_detail_id):
 
 def selected_student_table(request):
     dev_details = User.objects.get(username=request.user)
-    selected_student_data = User.objects.filter(is_selected=True,company_name=dev_details.company_name)
+    query = request.GET.get('search', '') 
+    selected_student_data = User.objects.filter(is_selected=True, company_name=dev_details.company_name)
+    if query:
+        selected_student_data = selected_student_data.filter(
+            Q(username__icontains=query) | Q(course__icontains=query) | Q(institute_name__icontains=query)
+        )
     paginator = Paginator(selected_student_data, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {
-        'selected_student_data':page_obj,
+        'selected_student_data': page_obj,
+        'search_query': query
     }
-    return render(request,"devapp/selected-student-table.html",context=context)
+    return render(request, "devapp/selected-student-table.html", context)
 
 def unselect_student(request,id):
     student_data = User.objects.get(id=id)
@@ -901,3 +950,54 @@ def unselect_student(request,id):
     student_data.company_name = ""
     student_data.save()
     return redirect(selected_student_table)
+
+
+def student_course_query_table(request):
+    developer_user = request.user
+    course_developer = models.Online_Certification_Course.objects.filter(dev_id=developer_user)
+    queries_for_developer_courses = Student_Course_Query.objects.filter(course_name__in=course_developer)
+    paginator = Paginator(queries_for_developer_courses, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'student_course_query_data':page_obj
+    }
+    return render(request,"devapp/student-course-query-table.html",context=context)
+
+def delete_student_course_query(request,id):
+    data = Student_Course_Query.objects.get(id=id)
+    data.delete()
+    return redirect(student_course_query_table)
+
+
+def student_query_response(request,id):
+    student_query_data = Student_Course_Query.objects.get(id=id)
+    if request.method == "POST":
+        response_content = request.POST.get('response_content')
+        add_student_query_response = models.Response_Student_Query.objects.create(
+            query_id = student_query_data,
+            dev_id = request.user,
+            response_content = response_content
+        )
+        add_student_query_response.save()
+        student_query_data.query_status = True
+        student_query_data.save()
+        return redirect(student_course_query_table)
+    context = {
+        'student_query_data':student_query_data
+    }
+    return render(request,"devapp/student-query-response-form.html",context=context)
+
+
+def dev_feedback(request):
+    if request.method == "POST":
+        rating = request.POST.get('rating')
+        feedback_content = request.POST.get('feedback_content')
+        add_new_feedback = Feedback.objects.create(
+            user_id = request.user,
+            rating = rating,
+            feedback_content = feedback_content
+        )
+        add_new_feedback.save()
+        return redirect(index)
+    return render(request,"devapp/dev-feedback.html")

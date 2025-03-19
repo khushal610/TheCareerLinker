@@ -107,8 +107,8 @@
                       </div>
 
                       <div class="row">
+
                         <div class="col-md-5 mb-4 pb-2">
-    
                           <div data-mdb-input-init class="form-outline form-white">
                             <label class="form-label" for="form3Examplea4">Study Area</label>
                             <select name="course" id="" class="form-control">
@@ -121,10 +121,16 @@
                               <option value="M.C.A">M.C.A</option>
                               <option value="Msc.IT">Msc.IT</option>
                             </select>
-                            {% comment %} <input type="text" id="form3Examplea4" class="form-control form-control-lg" /> {% endcomment %}
                           </div>
-    
                         </div>
+
+                        <div class="col-md-5 mb-4 pb-2">
+                          <div data-mdb-input-init class="form-outline form-white">
+                            <label class="form-label" for="form3Examplea4">Upload Your Image</label>
+                            <input type="file" name="student_img" class="form-control" id="">
+                          </div>
+                        </div>
+
                       </div>
     
                       <p class="mb-5 pb-lg-2">Have an already account? <a href="{% url "login" %}"

@@ -3,6 +3,16 @@
 {% block content %}
 <div class="container-fluid pt-4 px-4">
     <div class="row g-4 d-flex align-items-center justify-content-center p-3">
+
+        <div>
+            <form method="GET" action="{% url 'selected_student_table' %}" class="d-flex align-items-center gap-2 col-lg-10">
+                <input type="text" name="search" placeholder="Search students here" value="{{ search_query }}" class="form-control">
+                <button type="submit" class="btn btn-dark d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass"></i> Search
+                </button>
+            </form>
+        </div>        
+
         <div class="col-sm-12 col-xl-12">
             <div class="bg-light rounded h-100 p-4">
                 <h6 class="mb-4">Selected Students Data</h6>
@@ -39,17 +49,18 @@
 
                 <div class="pagination d-flex align-items-center gap-4">
                     {% if selected_student_data.has_previous %}
-                        <a href="?page=1" class="btn btn-secondary">First</a>
-                        <a href="?page={{ selected_student_data.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                        <a href="?search={{ search_query }}&page=1" class="btn btn-secondary">First</a>
+                        <a href="?search={{ search_query }}&page={{ selected_student_data.previous_page_number }}" class="btn btn-secondary">Previous</a>
                     {% endif %}
-
+                
                     <span class="current-page">Page {{ selected_student_data.number }} of {{ selected_student_data.paginator.num_pages }}</span>
-
+                
                     {% if selected_student_data.has_next %}
-                        <a href="?page={{ selected_student_data.next_page_number }}" class="btn btn-secondary">Next</a>
-                        <a href="?page={{ selected_student_data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
+                        <a href="?search={{ search_query }}&page={{ selected_student_data.next_page_number }}" class="btn btn-secondary">Next</a>
+                        <a href="?search={{ search_query }}&page={{ selected_student_data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
                     {% endif %}
                 </div>
+                
 
             </div>
         </div>

@@ -3,9 +3,20 @@
 {% block content %}
 <div class="container-fluid pt-4 px-4">
     <div class="row g-4">
+
+        <div>
+            <form method="GET" action="{% url 'shortlisted_student_detail' %}" class="d-flex align-items-center gap-2 col-lg-10">
+                <input type="text" name="search" placeholder="Search by student name, company name, institute name, or course name" value="{{ search_query }}" class="form-control">
+                <button type="submit" class="btn btn-dark d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass"></i> Search
+                </button>
+            </form>
+        </div>
+        
         <div class="col-sm-12 col-xl-12">
             <div class="bg-light rounded h-100 p-4">
-                <h6 class="mb-4">Shortlisting Student Details</h6>
+                <h6 class="mb-4"><a href="{% url "adminIndex" %}"><i class="fa-solid fa-arrow-left"></i> Back</a> Dashboard</h6>
+                <h4 class="mb-4">Shortlisting Student Details</h4>
                 <table class="table table-bordered">
                     <thead>
                         <tr>
@@ -13,6 +24,8 @@
                             <th scope="col">Student Name</th>
                             <th scope="col">Email</th>
                             <th scope="col">Contact</th>
+                            <th scope="col">Institute Name</th>
+                            <th scope="col">Course Name</th>
                             <th scope="col">Company Name</th>
                             <th scope="col">Status</th>
                         </tr>
@@ -20,15 +33,29 @@
                     <tbody>
                         {% for student_data in shortlisted_student_data %}
                             <tr>
-                                <th scope="row">{{forloop.counter}}</th>
-                                <td>{{student_data.username}}</td>
-                                <td>{{student_data.email}}</td>
-                                <td>{{student_data.contact}}</td>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ student_data.username }}</td>
+                                <td>{{ student_data.email }}</td>
+                                <td>{{ student_data.contact }}</td>
+                                <td>
+                                    {% if student_data.institute_name %}
+                                        {{ student_data.institute_name }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if student_data.course %}
+                                        {{ student_data.course }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% if student_data.company_name %}
-                                    {{student_data.company_name}}
+                                        {{ student_data.company_name }}
                                     {% else %}
-                                    -
+                                        -
                                     {% endif %}
                                 </td>
                                 <td>
@@ -45,17 +72,18 @@
 
                 <div class="pagination d-flex align-items-center gap-4">
                     {% if shortlisted_student_data.has_previous %}
-                        <a href="?page=1" class="btn btn-secondary">First</a>
-                        <a href="?page={{ shortlisted_student_data.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                        <a href="?search={{ search_query }}&page=1" class="btn btn-secondary">First</a>
+                        <a href="?search={{ search_query }}&page={{ shortlisted_student_data.previous_page_number }}" class="btn btn-secondary">Previous</a>
                     {% endif %}
-
+                
                     <span class="current-page">Page {{ shortlisted_student_data.number }} of {{ shortlisted_student_data.paginator.num_pages }}</span>
-
+                
                     {% if shortlisted_student_data.has_next %}
-                        <a href="?page={{ shortlisted_student_data.next_page_number }}" class="btn btn-secondary">Next</a>
-                        <a href="?page={{ shortlisted_student_data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
+                        <a href="?search={{ search_query }}&page={{ shortlisted_student_data.next_page_number }}" class="btn btn-secondary">Next</a>
+                        <a href="?search={{ search_query }}&page={{ shortlisted_student_data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
                     {% endif %}
                 </div>
+                
 
             </div>
         </div>

@@ -1,0 +1,134 @@
+{% extends "studentapp/master.html" %}
+{% load static %}
+{% block content %}
+
+{% comment %} <section class="h-100 h-custom gradient-custom-2"> {% endcomment %}
+    <div class="container py-5 h-100">
+      <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col-12">
+          <div class="card card-registration card-registration-2" style="border-radius: 15px;">
+            <div class="card-body p-0">
+              
+              {% comment %} form tag start  {% endcomment %}
+              <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+                <div class="row g-0 text-white">
+                  {% comment %} left side form section {% endcomment %}
+                  <div class="col-lg-6 bg-dark" style="border-top-left-radius:10px;border-bottom-left-radius:10px;">
+                    <div class="p-5">
+                      <h3 class="fw-normal mb-5" style="color: #fff;">General Infomation</h3>
+                      
+                      <div class="row">
+                        <div class="col-md-12 mb-4 pb-2">
+                          <div data-mdb-input-init class="form-outline">
+                            <input type="text" value="{{student_data.username}}" name="username" id="form3Examplev2" class="form-control form-control-lg" />
+                            <label class="form-label" for="form3Examplev2">Username</label>
+                          </div>
+                          <span class="text-danger fw-bold">{{name_alert}}</span>
+                        </div>
+
+                      </div>
+    
+                      <div class="row">
+                        <div class="col-md-12 mb-4 pb-2">
+                          <div data-mdb-input-init class="form-outline">
+                            <input type="email" value="{{student_data.email}}" name="email" id="form3Examplev2" class="form-control form-control-lg" readonly /> 
+                            <label class="form-label" for="form3Examplev2">Email</label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-12 mb-4 pb-2">
+                          <div data-mdb-input-init class="form-outline">
+                            <input type="tel" value="{{student_data.contact}}" name="contact" id="form3Examplev2" class="form-control form-control-lg" />
+                            <label class="form-label" for="form3Examplev2">Contact</label>
+                          </div>
+                        </div>
+                      </div>   
+    
+                      <div class="row">
+                        <div class="col-md-12 mb-4 pb-2 mb-md-0 pb-md-0">
+    
+                          <div data-mdb-input-init class="form-outline">
+                            <textarea name="address" class="form-control" rows="5" style="resize:none">{{student_data.address}}</textarea>
+                            <label class="form-label" for="form3Examplev5">Address</label>
+                          </div>
+    
+                        </div>
+                      </div>
+    
+                    </div>
+                  </div>
+
+                  {% comment %} right side form section {% endcomment %}
+                  <div class="col-lg-6 text-white" style="border-top-right-radius:10px;border-bottom-right-radius:10px;background:rgb(71, 81, 222)">
+                    <div class="p-5">
+                      <h3 class="fw-normal mb-5" style="color:#fff">Educational Details</h3>
+    
+                      <div class="mb-4 pb-2">
+                        <div data-mdb-input-init class="form-outline form-white">
+                          <input type="text" value="{{student_data.institute_name}}" name="institute_name" id="form3Examplea2" class="form-control form-control-lg" />
+                          <label class="form-label" for="form3Examplea2">University/College Name</label>
+                        </div>
+                      </div>
+    
+                      <div class="mb-4 pb-2">
+                        <div data-mdb-input-init class="form-outline form-white">
+                          <input type="file" name="last_sem_marksheet" id="form3Examplea3" class="form-control form-control-lg" />
+                          <label class="form-label" for="form3Examplea3">Last Sem Marksheet</label>
+                        </div>
+                      </div>
+    
+                      <div class="mb-4 pb-2">
+                        <div data-mdb-input-init class="form-outline form-white">
+                          <input type="file" name="student_resume" id="form3Examplea6" class="form-control form-control-lg" />
+                          <label class="form-label" for="form3Examplea6">Resume</label>
+                        </div>
+                      </div>
+
+                      <div class="row">
+
+                        <div class="col-md-5 mb-4 pb-2">
+                          <div data-mdb-input-init class="form-outline form-white">
+                            <label class="form-label" for="form3Examplea4">Study Area</label>
+                            <select name="course" id="" class="form-control">
+                              <option value="">select course</option>
+                              <option {% if student_data.course == "B.B.A" %}selected{% endif %} value="B.B.A">B.B.A</option>
+                              <option {% if student_data.course == "B.Com" %}selected{% endif %} value="B.Com">B.Com</option>
+                              <option {% if student_data.course == "B.C.A" %}selected{% endif %} value="B.C.A">B.C.A</option>
+                              <option {% if student_data.course == "Bsc.IT" %}selected{% endif %} value="Bsc.IT">Bsc.IT</option>
+                              <option {% if student_data.course == "B.Tech" %}selected{% endif %} value="B.Tech">B.Tech</option>
+                              <option {% if student_data.course == "M.C.A" %}selected{% endif %} value="M.C.A">M.C.A</option>
+                              <option {% if student_data.course == "Msc.IT" %}selected{% endif %} value="Msc.IT">Msc.IT</option>
+                            </select>
+                          </div>
+                        </div>
+
+                         <div class="col-md-5 mb-4 pb-2">
+                          <div data-mdb-input-init class="form-outline form-white">
+                            <label class="form-label" for="form3Examplea4">Upload Your Image</label>
+                            <input type="file" name="student_img" class="form-control" id="">
+                          </div>
+                        </div>
+                        
+                      </div>
+    
+                      
+                      <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-dark btn-lg"
+                        data-mdb-ripple-color="dark">Update Profile</button>
+    
+                    </div>
+                  </div>    
+              </div>
+
+              </form>
+              {% comment %} form tag close {% endcomment %}
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% comment %} </section> {% endcomment %}
+  {% endblock %}

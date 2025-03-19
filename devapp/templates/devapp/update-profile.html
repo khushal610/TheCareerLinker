@@ -52,25 +52,7 @@
                               </div>
                             </div>
                           </div>
-    
-                          {% comment %} <div class="row">
-                            <div class="col-md-6 mb-4 pb-2">
-                              <div data-mdb-input-init class="form-outline">
-                                <input type="password" name="password" id="form3Examplev2" class="form-control form-control-lg" />
-                                <label class="form-label" for="form3Examplev2">Password</label>
-                              </div>
-                              <span class='text-warning'>{{error}}</span>
-                            </div>
-    
-                            <div class="col-md-6 mb-4 pb-2">
-                              <div data-mdb-input-init class="form-outline">
-                                <input type="password" name="confirmPassword" id="form3Examplev2" class="form-control form-control-lg" />
-                                <label class="form-label" for="form3Examplev2">Confirm Password</label>
-                              </div>
-                            </div>
-                          </div> {% endcomment %}
-        
-        
+
                           <div class="row">
                               <div class="col-md-12 mb-4 pb-2">
                                 <div data-mdb-input-init class="form-outline">
@@ -97,7 +79,7 @@
 
                           <div class="mb-4 pb-2">
                               <div data-mdb-input-init class="form-outline form-white">
-                                  <textarea name="bio_detail" value="{{dev_data.bio_detail}}" class="form-control" rows="2" style="resize:none"></textarea>
+                                  <textarea name="bio_detail" class="form-control" rows="2" style="resize:none">{{dev_data.bio_detail}}</textarea>
                                   <label class="form-label" for="form3Examplev5">Bio Detail</label>
                               </div>
                           </div>
@@ -109,6 +91,31 @@
                             </div>
                           </div>
                                
+                          <div class="row">
+                            <div class="col-md-5 mb-4 pb-2">
+        
+                              <div data-mdb-input-init class="form-outline form-white">
+                                <label class="form-label" for="form3Examplea4">Experience</label>
+                                <select name="experience" class="form-control" id="">
+                                  <option {% if dev_data.experience == "1 Year" %}selected{% endif %} value="1 Year">1 Year</option>
+                                  <option {% if dev_data.experience == "2 Year" %}selected{% endif %} value="2 Year">2 Year</option>
+                                  <option {% if dev_data.experience == "3 Year" %}selected{% endif %} value="3 Year">3 Year</option>
+                                  <option {% if dev_data.experience == "5 Year" %}selected{% endif %} value="5 Year">5 Year</option>
+                                  <option {% if dev_data.experience == "More then 5 year" %}selected{% endif %} value="More then 5 year">More then 5 year</option>
+                              </select>
+                              </div>
+        
+                            </div>
+                            <div class="col-md-6 mb-4 pb-2">
+        
+                              <div data-mdb-input-init class="form-outline form-white">
+                                <label class="form-label" for="form3Examplea4">Upload Your Image</label>
+                                <input type="file" name="dev_img" id="" class="form-control">
+                              </select>
+                              </div>
+        
+                            </div>
+                          </div>
         
                           <button  type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-dark btn-lg"
                             data-mdb-ripple-color="dark">Save</button>

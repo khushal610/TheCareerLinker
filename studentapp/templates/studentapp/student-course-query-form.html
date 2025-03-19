@@ -1,0 +1,40 @@
+{% extends "studentapp/master.html" %}
+{% load static %}
+{% block content %}
+
+<section class="h-100 h-custom bg-light">
+    <div class="container h-100">
+      <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col-lg-8 col-xl-6">
+          <div class="card rounded-3 shadow-lg">
+              <div class="card-body p-4 p-md-5">
+                <h6><a href="{% url "course_document_content" course_data_id course_document_content_data %}"><i class="fa-solid fa-arrow-left"></i> Back</a></h6>
+              <h3 class="mb-3 px-md-2">Course Query</h3>
+
+              <form class="px-md-2" method="post">
+                {% csrf_token %}
+                <div data-mdb-input-init class="form-outline mb-4">
+                    <label class="form-label" for="form3Example1q">Course Name</label>
+                    <input type="text" name="course_name" value="{{course_data.course_name}}" id="form3Example1q" class="form-control" readonly />
+                </div>
+
+                <div data-mdb-input-init class="form-outline mb-4">
+                    <label class="form-label" for="form3Example1q">Topic Name</label>
+                    <input type="text" name="document_name" value="{{course_topic_data.documentation_name}}" id="form3Example1q" class="form-control" readonly />
+                </div>
+
+                <div data-mdb-input-init class="form-outline mb-4">
+                    <label class="form-label" for="form3Example1q">Your Query</label>
+                    <textarea name="student_query_content" id="" class="form-control"></textarea>
+                </div>  
+                <button type="submit" class="btn btn-success w-100">Submit</button>
+              </form>
+  
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+{% endblock %}

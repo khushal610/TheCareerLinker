@@ -123,6 +123,11 @@
             {% endif %}
         {% comment %} <a href="{% url "next_documentation" course_data_id course_document_content_data.id %}" class="btn btn-success">Next</a> {% endcomment %}
     </div>
+
+    <div class="d-flex align-items-center justify-content-center pt-3">
+        <a href="{% url "student_course_query_form" course_data_id course_document_content_data.id %}" class="w-50 btn btn-secondary">Any Query</a>
+    </div>
+
 </div>
 
 {% endblock %}

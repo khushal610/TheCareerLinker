@@ -1,0 +1,73 @@
+{% extends "devapp/master.html" %}
+{% load static %}
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4 d-flex align-items-center justify-content-center p-3">
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Student Course Query Data</h6>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Student Name</th>
+                            <th scope="col">Student Email</th>
+                            <th scope="col">Course Name</th>
+                            <th scope="col">Document Name</th>
+                            <th scope="col">Student Query Content</th>
+                            <th scope="col">Query Status</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if student_course_query_data %}
+                            {% for query_data in student_course_query_data %}
+                                <tr>
+                                    <th scope="row">{{forloop.counter}}</th>
+                                    <td>{{query_data.student_id.username}}</td>
+                                    <td>{{query_data.student_id.email}}</td>
+                                    <td>{{query_data.course_name.course_name}}</td>
+                                    <td>{{query_data.document_name.documentation_name}}</td>
+                                    <td>{{query_data.student_query_content}}</td>
+                                    <td>
+                                        {% if query_data.query_status %}
+                                            <p class="d-flex align-items-center gap-1 text-success"><i class="fa-solid fa-circle-check"></i> Done</p>
+                                        {% else %}
+                                            <p class="d-flex align-items-center gap-1 text-danger"><i class="fa-solid fa-clock"></i> Pendding</p>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-grid gap-1">
+                                            <a href="{% url "student_query_response" query_data.id %}" class="btn btn-primary">Response</a>
+                                            <a href="{% url "delete_student_course_query" query_data.id %}" class="btn btn-danger">Delete</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center fw-bold">No Student Query Found</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <div class="pagination d-flex align-items-center gap-4">
+                    {% if student_course_query_data.has_previous %}
+                        <a href="?page=1" class="btn btn-secondary">First</a>
+                        <a href="?page={{ student_course_query_data.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                    {% endif %}
+
+                    <span class="current-page">Page {{ student_course_query_data.number }} of {{ student_course_query_data.paginator.num_pages }}</span>
+
+                    {% if student_course_query_data.has_next %}
+                        <a href="?page={{ student_course_query_data.next_page_number }}" class="btn btn-secondary">Next</a>
+                        <a href="?page={{ student_course_query_data.paginator.num_pages }}" class="btn btn-secondary">Last</a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

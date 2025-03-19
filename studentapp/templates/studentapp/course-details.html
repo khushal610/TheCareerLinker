@@ -47,9 +47,6 @@
                 <p>{{course_details.course_type}}</p>
               </div>
             {% endif %}
-            {% comment %} <div class="course-info d-flex justify-content-between align-items-center">
-              <a href="{% url "course_enrollment" course_details.id %}" class="btn btn-primary w-100 text-light">Enroll Now</a>
-            </div> {% endcomment %}
             {% if course_details.course_type == "Free" %}
               <div class="course-info d-flex justify-content-between align-items-center">
                 <a href="{% url 'course_enrollment' course_details.id %}" class="btn btn-success w-100 text-light">Enroll Now</a>
@@ -61,27 +58,29 @@
                     <a href="{% url 'course_enrollment' course_details.id %}" class="btn btn-success w-100 text-light">Enroll Now</a>
                   </div>
                 {% else %}
-                  <div class="course-info d-flex justify-content-between align-items-center">
-                    <h5>Course Fees</h5>
-                    <p>₹ {{ course_details.course_charges }}/-</p>
-                  </div>
-                  <div class="course-info d-flex justify-content-between align-items-center">
-                    <form id="payment-form" method="post">
-                      {% csrf_token %}
-                      <script 
-                        src="https://checkout.razorpay.com/v1/checkout.js"
-                        data-key="{{ RAZORPAY_KEY_ID }}"
-                        data-amount="{{ course_details.course_charges|floatformat:0 }}"
-                        data-currency="INR"
-                        data-order_id="{{ razorpay_order_id }}"
-                        data-buttontext="Buy Now"
-                        data-name="The Career Linker"
-                        data-description="Enroll in {{ course_details.course_name }}"
-                        data-theme.color="#F37254"
-                        data-callback-handler="handlePaymentSuccess">
-                      </script>
-                    </form>
-                  </div>
+                  {% if course_details.course_type == "Paid" %}
+                    <div class="course-info d-flex justify-content-between align-items-center">
+                      <h5>Course Fees</h5>
+                      <p>₹ {{ course_details.course_charges }}/-</p>
+                    </div>
+                    <div class="course-info d-flex justify-content-between align-items-center">
+                      <form id="payment-form" method="post">
+                        {% csrf_token %}
+                        <script 
+                          src="https://checkout.razorpay.com/v1/checkout.js"
+                          data-key="{{ RAZORPAY_KEY_ID }}"
+                          data-amount="{{ course_details.course_charges|floatformat:0 }}"
+                          data-currency="INR"
+                          data-order_id="{{ razorpay_order_id }}"
+                          data-buttontext="Buy Now"
+                          data-name="The Career Linker"
+                          data-description="Enroll in {{ course_details.course_name }}"
+                          data-theme.color="#F37254"
+                          data-callback-handler="handlePaymentSuccess">
+                        </script>
+                      </form>
+                    </div>
+                  {% endif %}
                 {% endif %}
               {% else %}
                 <div class="course-info d-flex justify-content-between align-items-center">

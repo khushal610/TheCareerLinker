@@ -23,13 +23,22 @@ import tempfile
 import os
 import razorpay
 from django.views.decorators.csrf import csrf_exempt
-
+import json
+from django.db.models import Q
 
 def home(request):
-    return render(request,'studentapp/index.html')
+    course_data = devModels.Online_Certification_Course.objects.all()
+    context = {
+        'course_data': course_data
+    }
+    return render(request,'studentapp/index.html',context=context)
 
 def about(request):
-    return render(request,'studentapp/about.html')
+    feedback_data = studentModels.Feedback.objects.all()
+    context = {
+        'feedback_data':feedback_data,
+    }
+    return render(request,'studentapp/about.html',context=context)
 
 def chat(request):
     return render(request,'studentapp/chat.html')
@@ -39,7 +48,7 @@ def contact(request):
         subject = request.POST.get('subject')
         message = request.POST.get('message')
         contact_us_data = studentModels.Contact_us.objects.create(
-            student_id=request.user,
+            user_id=request.user,
             subject=subject,
             message=message
         )
@@ -51,13 +60,46 @@ def contact(request):
 
 
 def courses(request):
+    search_query = request.GET.get('search', '').strip()
+    course_type_filter = request.GET.get('course_type', '')
     course_data = devModels.Online_Certification_Course.objects.filter(is_launched=True)
+
+    if search_query:
+        course_data = course_data.filter(course_name__icontains=search_query)
+    if course_type_filter and course_type_filter != "None":
+        course_data = course_data.filter(course_type=course_type_filter)
+        
     course_enrollment_data = studentModels.Course_Enrollment.objects.filter(student_id=request.user)
+    paginator = Paginator(course_data, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    paginator1 = Paginator(course_enrollment_data, 3)
+    page_number1 = request.GET.get('page_enrolled')
+    page_obj1 = paginator1.get_page(page_number1)
     context = {
-        'course_data':course_data,
-        'course_enrollment_data':course_enrollment_data,
+        'course_data': page_obj,
+        'course_enrollment_data': page_obj1,
+        'search_query': search_query,
+        'selected_course_type': course_type_filter,
     }
-    return render(request,'studentapp/courses.html',context=context)
+    return render(request, 'studentapp/courses.html', context)
+
+
+# def courses(request):
+#     course_data = devModels.Online_Certification_Course.objects.filter(is_launched=True)
+#     course_enrollment_data = studentModels.Course_Enrollment.objects.filter(student_id=request.user)
+#     paginator = Paginator(course_data, 6)
+#     page_number = request.GET.get('page')
+#     page_obj = paginator.get_page(page_number)
+#     paginator1 = Paginator(course_enrollment_data, 3)
+#     page_number = request.GET.get('page')
+#     page_obj1 = paginator1.get_page(page_number)
+#     context = {
+#         'course_data':page_obj,
+#         'course_enrollment_data':page_obj1,
+#     }
+#     return render(request,'studentapp/courses.html',context=context)
+
 
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
@@ -66,6 +108,8 @@ def course_details(request, id):
     course_details = get_object_or_404(devModels.Online_Certification_Course, id=id, is_launched=True)
     dev_id = course_details.dev_id
     course_module_data = devModels.Module_list.objects.filter(course_id=id, dev_id=dev_id)
+
+    student_data = User.objects.get(username=request.user)
 
     module_stage_data_details = {}
     for module_data in course_module_data:
@@ -116,6 +160,7 @@ def course_details(request, id):
                 enrollment.razorpay_signature = razorpay_signature
                 enrollment.is_payment_received = True
                 enrollment.save()
+                payment_confirmation_email_to_student(course_details.course_name,course_details.course_charges,razorpay_payment_id,student_data.username,student_data.email)
                 return redirect(reverse('course_details', args=[id]))
             except razorpay.errors.SignatureVerificationError:
                 return JsonResponse({"status": "error", "message": "Invalid payment signature"})
@@ -132,6 +177,38 @@ def course_details(request, id):
     }
 
     return render(request, "studentapp/course-details.html", context)
+
+
+def payment_confirmation_email_to_student(course_name, course_charges, transaction_id, username, email):
+    subject = f"Payment Confirmation – {course_name}"
+    
+    message = f"""
+    <p>Dear {username},</p>
+    
+    <p>Thank you for your purchase! We are pleased to confirm that your payment for the course <strong>"{course_name}"</strong> has been successfully processed.</p>
+
+    <h3>Order Summary:</h3>
+    <ul>
+        <li><strong>Course Name:</strong> {course_name}</li>
+        <li><strong>Transaction ID:</strong> {transaction_id}</li>
+        <li><strong>Amount Paid:</strong> {course_charges}</li>
+        <li><strong>Payment Date:</strong> {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</li>
+    </ul>
+
+    <p>You now have full access to the course materials.</p>
+
+    <p>If you have any questions or require assistance, feel free to reach out to us at <strong>The Career Linker</strong>.</p>
+
+    <p>Thank you for choosing <strong>The Career Linker</strong>. We look forward to supporting you on your learning journey!</p>
+
+    <p>Best regards,<br>
+    <strong>The Career Linker Team</strong></p>
+    """
+
+    from_email = settings.EMAIL_HOST_USER
+    to_email = [email]
+
+    send_mail(subject, '', from_email, to_email, html_message=message)
 
 
 def course_enrollment(request, id):
@@ -187,6 +264,8 @@ def profile(request):
     username = request.user
     data = User.objects.get(username=username)
     quiz_attempted_data = Quiz_attempt.objects.filter(student_id=request.user)
+    enrolled_course_details = studentModels.Course_Enrollment.objects.filter(student_id=request.user)
+    print("----------------------------------------->",enrolled_course_details)
     total_questions_as_quiz_category = {}
     for quiz_questions in quiz_attempted_data:
         quiz_category_id = quiz_questions.quiz_category.id
@@ -196,7 +275,8 @@ def profile(request):
     context = {
         'userdata':data,
         'quiz_attempted_data':quiz_attempted_data,
-        'total_questions':total_questions_as_quiz_category
+        'total_questions':total_questions_as_quiz_category,
+        'enrolled_course_details':enrolled_course_details
     }
     return render(request,'studentapp/profile.html',context=context)
 
@@ -212,6 +292,7 @@ def registration(request):
         last_sem_marksheet = request.FILES.get('last_sem_marksheet')
         student_resume = request.FILES.get('student_resume')
         course = request.POST.get('course')
+        student_img = request.FILES.get('student_img')
         try:
             User.objects.get(email=email)
             return HttpResponse("Email is already existed")
@@ -227,6 +308,7 @@ def registration(request):
                     last_sem_marksheet=last_sem_marksheet,
                     student_resume=student_resume,
                     course=course,
+                    student_img=student_img,
                     role=User.STUDENT
                 )
                 send_email_after_registration(username,email)
@@ -347,14 +429,37 @@ def reset_password(request):
 
 
 def quiz_list(request):
-    quiz_data_list = devModels.QuizCategory.objects.filter(is_approved=True,is_course_quiz=False)
+    search_query = request.GET.get('search', '')
+    quiz_level = request.GET.get('quiz_level', '')
+    quiz_data_list = devModels.QuizCategory.objects.filter(is_approved=True, is_course_quiz=False)
+
+    if search_query:
+        quiz_data_list = quiz_data_list.filter(quiz_category_name__icontains=search_query)
+    if quiz_level and quiz_level != "None":
+        quiz_data_list = quiz_data_list.filter(quiz_level=quiz_level)
+    paginator = Paginator(quiz_data_list, 9)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     developer_data = User.objects.all()
     context = {
-        'data':quiz_data_list,
-        'developer_data':developer_data
+        'data': page_obj,
+        'developer_data': developer_data,
+        'search_query': search_query,
+        'selected_level': quiz_level,
     }
-    return render(request,"studentapp/quiz-list.html",context=context)
+    return render(request, "studentapp/quiz-list.html", context)
 
+# def quiz_list(request):
+#     quiz_data_list = devModels.QuizCategory.objects.filter(is_approved=True,is_course_quiz=False)
+#     developer_data = User.objects.all()
+#     paginator = Paginator(quiz_data_list, 9)
+#     page_number = request.GET.get('page')
+#     page_obj = paginator.get_page(page_number)
+#     context = {
+#         'data':page_obj,
+#         'developer_data':developer_data
+#     }
+#     return render(request,"studentapp/quiz-list.html",context=context)
 
 
 def quiz(request, id):
@@ -933,3 +1038,100 @@ def generate_certificate_pdf(request, course_data_id):
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{request.user.username}_certificate.pdf"'
     return response
+
+
+def student_course_query_form(request, course_data_id, id):
+    course_data = devModels.Online_Certification_Course.objects.get(id=course_data_id)
+    course_topic_data = devModels.Course_Module_Content.objects.get(id=id)
+
+    if request.method == "POST":
+        course_name = request.POST.get('course_name')
+        document_name = request.POST.get('document_name')
+        student_query_content = request.POST.get('student_query_content')
+        newStudentQuery = studentModels.Student_Course_Query.objects.create(
+            student_id=request.user,
+            course_name=course_data,
+            document_name=course_topic_data,
+            student_query_content=student_query_content
+        )
+        newStudentQuery.save()
+        return redirect(reverse('course_document_content', args=[course_data_id, id]))
+    context = {
+        'course_data': course_data,
+        'course_data_id': course_data_id,
+        'course_document_content_data': id,
+        'course_topic_data': course_topic_data,
+    }
+    return render(request, "studentapp/student-course-query-form.html", context=context)
+
+def feedback(request):
+    if request.method == "POST":
+        rating = request.POST.get('rating')
+        feedback_content = request.POST.get('feedback_content')
+        add_new_feedback = studentModels.Feedback.objects.create(
+            user_id = request.user,
+            rating = rating,
+            feedback_content = feedback_content
+        )
+        add_new_feedback.save()
+        return redirect(home)
+    return render(request,"studentapp/feedback.html")
+
+
+def update_profile(request,id):
+    student_data = User.objects.get(id=id)
+    if request.method == "POST":
+        username = request.POST.get('username')
+        contact = request.POST.get('contact')
+        address = request.POST.get('address')
+        institute_name = request.POST.get('institute_name')
+        last_sem_marksheet = request.FILES.get('last_sem_marksheet')
+        student_resume = request.FILES.get('student_resume')
+        course = request.POST.get('course')
+        student_img = request.FILES.get('student_img')
+
+        if User.objects.filter(username=username).exclude(id=id).exists():
+            return render(request, "studentapp/update-profile.html", {
+                'name_alert': "That Username is already taken.",
+                'student_data': student_data,
+            })
+
+        student_data.username=username
+        student_data.contact=contact
+        student_data.address=address
+        student_data.institute_name=institute_name
+        student_data.course=course
+        if last_sem_marksheet:
+            student_data.last_sem_marksheet = last_sem_marksheet
+
+        if student_resume:
+            student_data.student_resume = student_resume
+
+        if student_img:
+            student_data.student_img = student_img
+        student_data.save()
+        return redirect(profile)
+    context = {
+        'student_data':student_data,
+    }
+    return render(request,"studentapp/update-profile.html",context=context)
+
+
+def delete_profile_image(request,id):
+    student_data = User.objects.get(id=id)
+    student_data.student_img = None
+    student_data.save()
+    return redirect(profile)
+
+
+def student_query_details(request):
+    query_data = studentModels.Student_Course_Query.objects.filter(student_id=request.user)
+    query_response_data = devModels.Response_Student_Query.objects.filter(query_id__in=query_data)
+    paginator = Paginator(query_data, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'student_query_data':page_obj,
+        'query_response_data':query_response_data,
+    }
+    return render(request,"studentapp/student-query-table-data.html",context=context)

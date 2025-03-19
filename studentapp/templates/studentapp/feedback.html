@@ -1,0 +1,60 @@
+{% extends "studentapp/master.html" %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <div class="mx-0 p-5 col-lg-8 mx-sm-auto">
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary">
+                <h5 class="card-title text-white mt-2" id="exampleModalLabel">Feedback request</h5>
+            </div>
+            <div class="modal-body">      
+                <form class="px-4" method="POST">
+                    {% csrf_token %}
+                    <p class="text-left pt-3"><strong>Your rating:</strong></p>
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" value="Very good" name="rating" id="radio3Example1" />
+                            <label class="form-check-label" for="radio3Example1">
+                            Very good
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" value="Good" name="rating" id="radio3Example2" />
+                            <label class="form-check-label" for="radio3Example2">
+                            Good
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" value="Average" name="rating" id="radio3Example3" />
+                            <label class="form-check-label" for="radio3Example3">
+                            Average
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" value="Bad" name="rating" id="radio3Example4" />
+                            <label class="form-check-label" for="radio3Example4">
+                            Bad
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" value="Very bad" name="rating" id="radio3Example5" />
+                            <label class="form-check-label" for="radio3Example5">
+                            Very bad
+                            </label>
+                        </div>
+                    </div>
+            
+                    <p class="text-left"><strong>What could we improve?</strong></p>
+                    <div data-mdb-input-init class="form-outline mb-4">
+                        <textarea class="form-control" name="feedback_content" id="form4Example3" rows="4"></textarea>
+                        <label class="form-label" for="form4Example3">Your feedback</label>
+                    </div>
+                    <div class="card-footer bg-white mb-2">
+                        <button type="submit" class="btn btn-primary w-25">Save Feedback</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
