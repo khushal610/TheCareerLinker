@@ -51,13 +51,39 @@
                 <div class="card-body">
                   <div class="row">
                     <div class="col-sm-3">
+                      <h6 class="mb-0">First Name</h6>
+                    </div>
+                    <div class="col-sm-9 text-secondary">
+                      {% if userdata.first_name %}
+                        {{userdata.first_name}}
+                      {% else %}
+                      -
+                      {% endif %}
+                    </div>
+                  </div>
+                  <hr>
+                  <div class="row">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">Last Name</h6>
+                    </div>
+                    <div class="col-sm-9 text-secondary">
+                      {% if userdata.last_name %}
+                        {{userdata.last_name}}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </div>
+                  </div>
+                  <hr>
+                  {% comment %} <div class="row">
+                    <div class="col-sm-3">
                       <h6 class="mb-0">Username</h6>
                     </div>
                     <div class="col-sm-9 text-secondary">
                       {{userdata.username}}
                     </div>
                   </div>
-                  <hr>
+                  <hr> {% endcomment %}
                   <div class="row">
                     <div class="col-sm-3">
                       <h6 class="mb-0">Email</h6>

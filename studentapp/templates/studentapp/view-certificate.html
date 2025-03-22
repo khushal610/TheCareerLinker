@@ -107,7 +107,7 @@
     
         <div class="certificate-body">
             <p>This is to certify that</p>
-            <h3><strong>{{ student_name }}</strong></h3>
+            <h3><strong>{{ first_name }} {{ last_name }}</strong></h3>
     
             {% if course %}
             <p>has successfully completed the</p>
@@ -121,8 +121,8 @@
         <div class="certificate-footer">
             <div class="signature">
                 <img src="{{ dev_signature }}" alt="Developer Signature" class="px-4">
-                <p>{{ dev_name }}</p>
-                <small>Course Developer</small>
+                <p>{{dev_first_name}} {{dev_last_name}}</p>
+                {% comment %} <small>[ {{dev_company_name}} ]</small> {% endcomment %}
             </div>
 
             <div class="company-logo-container">

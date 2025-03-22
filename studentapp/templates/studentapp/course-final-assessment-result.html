@@ -5,23 +5,34 @@
 <div class="p-4 border rounded border-light shadow-lg">
     <div class="border p-3 rounded d-flex flex-column align-items-center">
         <div>
-            <h1>Congratulations {{request.user}}</h1>
+            {% if average < 80 %}
+                <h1>!Oops you didn't clear this quiz</h1>
+            {% else %}
+                <h1>Congratulations {{request.user}}</h1>
+            {% endif %}
         </div>
         <div class="d-flex align-items-center">
             <div class="p-1 px-4 d-flex flex-column align-items-center score rounded">
                 <span class="d-block char text-success">Score</span>
-                <span class="text-success">{{data.score}} / {{totalQuestions}}</span>
+                {% if average < 80 %}
+                    <span class="text-danger">{{data.score}} / {{totalQuestions}}</span>
+                {% else %}
+                    <span class="text-success">{{data.score}} / {{totalQuestions}}</span>
+                {% endif %}
             </div>
 
 
             <div class="ml-2 p-3">
-                {% comment %} <h6 class="heading1">PageSpeed Score</h6> {% endcomment %}
                 <h6 class="heading1">{{quiz_category.quiz_category_name}} [ {{quiz_category.quiz_level}} ]</h6>
                 <span>The average page speed score is {{average}}</span> 
             </div>
         </div>
         <div class="col-lg-12 d-flex align-items-center justify-content-center">
-            <a href="{% url "view_certificate" course_data_id %}" class="btn btn-primary px-4 py-2 w-50">View Certificate</a>
+            {% if average < 80 %}
+                <a href="{% url "course_document_content" course_data_id document_quiz_id %}" class="btn btn-warning px-4 py-2 w-50">Reattempt Quiz</a>
+            {% else %}
+                <a href="{% url "view_certificate" course_data_id %}" class="btn btn-primary px-4 py-2 w-50">View Certificate</a>
+            {% endif %}
         </div>
     </div>
 </div>

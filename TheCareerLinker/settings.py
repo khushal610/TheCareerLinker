@@ -150,7 +150,7 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "pcability610@gmail.com"
-EMAIL_HOST_PASSWORD = "sbij rzvj qjmu ovyv"
+EMAIL_HOST_PASSWORD = "qcky cukf bfkz knmw"
 
 # sbij rzvj qjmu ovyv
 

@@ -11,6 +11,16 @@
                     <p>{{request.user.bio_detail}}</p>
                     <div class="row about-list">
                         <div class="col-md-6">
+                            <div class="media d-flex align-items-center gap-4">
+                                <div>
+                                    <label>First Name</label>
+                                    <p>{{request.user.first_name}}</p>
+                                </div>
+                                <div>
+                                    <label>Last Name</label>
+                                    <p>{{request.user.last_name}}</p>
+                                </div>
+                            </div>
                             <div class="media">
                                 <label>E-mail</label>
                                 <p>{{request.user.email}}</p>
@@ -19,15 +29,16 @@
                                 <label>Contact</label>
                                 <p>{{request.user.contact}}</p>
                             </div>
-                            <div class="media">
-                                <label>Experience</label>
-                                <p>{{request.user.experience}}</p>
-                            </div>
+                           
                         </div>
                         <div class="col-md-6">
                             <div class="media">
                                 <label>Company Name</label>
                                 <p>{{request.user.company_name}}</p>
+                            </div>
+                            <div class="media">
+                                <label>Experience</label>
+                                <p>{{request.user.experience}}</p>
                             </div>
                             <div class="media">
                                 <label>Experties</label>
@@ -41,8 +52,15 @@
                 </div>
             </div>
             <div class="col-lg-6">
-                <div class="about-avatar">
-                    <img src="{{request.user.dev_img.url}}" title="" alt="">
+                <div class="about-avatar d-flex flex-column align-items-center justify-content-center">
+                    {% if request.user.dev_img %}
+                        <img src="{{request.user.dev_img.url}}" title="" alt="">
+                        <div class="p-2 d-flex align-items-center justify-content-center">
+                            <a href="{% url "delete_profile_image" request.user.id %}" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Delete Image</a>
+                        </div>
+                    {% else %}
+                        <img src="{% static "img/user3final.png" %}" title="" alt="" width="300px">
+                    {% endif %}
                 </div>
             </div>
         </div>

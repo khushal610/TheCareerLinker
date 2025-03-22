@@ -13,6 +13,7 @@ import math,random,string
 from TheCareerLinker import views as TCL_views
 from django.core.paginator import Paginator
 import datetime
+from django.utils import timezone
 from django.urls import reverse
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -25,6 +26,8 @@ import razorpay
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.db.models import Q
+from django.db.models import Avg
+
 
 def home(request):
     course_data = devModels.Online_Certification_Course.objects.all()
@@ -63,7 +66,6 @@ def courses(request):
     search_query = request.GET.get('search', '').strip()
     course_type_filter = request.GET.get('course_type', '')
     course_data = devModels.Online_Certification_Course.objects.filter(is_launched=True)
-
     if search_query:
         course_data = course_data.filter(course_name__icontains=search_query)
     if course_type_filter and course_type_filter != "None":
@@ -73,32 +75,54 @@ def courses(request):
     paginator = Paginator(course_data, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    
     paginator1 = Paginator(course_enrollment_data, 3)
     page_number1 = request.GET.get('page_enrolled')
     page_obj1 = paginator1.get_page(page_number1)
+
+    quiz_attempted_data = {}
+    for enrolled_course in course_enrollment_data:
+        course_id = enrolled_course.course_id.id 
+        course_module_data = devModels.Module_list.objects.filter(course_id=course_id)
+        for module in course_module_data:
+            module_stage_data = devModels.Module_Stage.objects.filter(module_id=module.id)
+            for stage in module_stage_data:
+                course_module_content_data = devModels.Course_Module_Content.objects.filter(stage_id=stage.id)
+                for content in course_module_content_data:
+                    if content.course_quiz: 
+                        course_quiz = content.course_quiz
+                        quiz_attempts = Quiz_attempt.objects.filter(student_id=request.user, quiz_category=course_quiz) 
+                        if quiz_attempts.exists():
+                            totalQuestions = devModels.QuizQuestions.objects.filter(quiz_category_id=course_quiz.id).count()
+                            
+                            if totalQuestions > 0:
+                                avg_score = quiz_attempts.aggregate(Avg("score"))["score__avg"] or 0
+                                avg_percentage = int((avg_score / totalQuestions) * 100)
+                            else:
+                                avg_percentage = 0
+
+                            quiz_attempted_data[course_id] = {
+                                "quiz_category": course_quiz,
+                                "avg_percentage": avg_percentage,
+                                "date_time": quiz_attempts.order_by('-date_time').first().date_time
+                            }
+
+    final_score_sum = sum(quiz["avg_percentage"] for quiz in quiz_attempted_data.values())
+    total_quizzes = len(quiz_attempted_data)
+    final_avg_score = int(final_score_sum / total_quizzes) if total_quizzes > 0 else 0
+    print('----------------------------------score =======================',final_avg_score)
+
     context = {
         'course_data': page_obj,
         'course_enrollment_data': page_obj1,
         'search_query': search_query,
         'selected_course_type': course_type_filter,
+        'quiz_attempted_data': quiz_attempted_data,
+        'final_avg_score': final_avg_score,
     }
     return render(request, 'studentapp/courses.html', context)
 
 
-# def courses(request):
-#     course_data = devModels.Online_Certification_Course.objects.filter(is_launched=True)
-#     course_enrollment_data = studentModels.Course_Enrollment.objects.filter(student_id=request.user)
-#     paginator = Paginator(course_data, 6)
-#     page_number = request.GET.get('page')
-#     page_obj = paginator.get_page(page_number)
-#     paginator1 = Paginator(course_enrollment_data, 3)
-#     page_number = request.GET.get('page')
-#     page_obj1 = paginator1.get_page(page_number)
-#     context = {
-#         'course_data':page_obj,
-#         'course_enrollment_data':page_obj1,
-#     }
-#     return render(request,'studentapp/courses.html',context=context)
 
 
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
@@ -129,20 +153,21 @@ def course_details(request, id):
             defaults={"is_payment_received": False}
         )
 
-        if enrollment.is_payment_received:
-            razorpay_order_id = enrollment.razorpay_order_id
-        else:
-            if not enrollment.razorpay_order_id:
-                order_data = {
-                    "amount": int(float(course_details.course_charges) * 100),
-                    "currency": "INR",
-                    "payment_capture": "1"
-                }
-                order = razorpay_client.order.create(order_data)
-                enrollment.razorpay_order_id = order["id"]
-                enrollment.save()
+        if course_details.course_type == "Paid":
+            if enrollment.is_payment_received:
+                razorpay_order_id = enrollment.razorpay_order_id
+            else:
+                if not enrollment.razorpay_order_id:
+                    order_data = {
+                        "amount": int(float(course_details.course_charges) * 100),
+                        "currency": "INR",
+                        "payment_capture": "1"
+                    }
+                    order = razorpay_client.order.create(order_data)
+                    enrollment.razorpay_order_id = order["id"]
+                    enrollment.save()
 
-            razorpay_order_id = enrollment.razorpay_order_id
+                razorpay_order_id = enrollment.razorpay_order_id
 
     if request.method == "POST":
         razorpay_payment_id = request.POST.get("razorpay_payment_id")
@@ -282,6 +307,8 @@ def profile(request):
 
 def registration(request):
     if request.method == "POST":
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password')
@@ -299,6 +326,8 @@ def registration(request):
         except:
             if password == confirmPassword:
                 User.objects.create_user(
+                    first_name=first_name,
+                    last_name=last_name,
                     username=username,
                     email=email,
                     password=password,
@@ -449,17 +478,6 @@ def quiz_list(request):
     }
     return render(request, "studentapp/quiz-list.html", context)
 
-# def quiz_list(request):
-#     quiz_data_list = devModels.QuizCategory.objects.filter(is_approved=True,is_course_quiz=False)
-#     developer_data = User.objects.all()
-#     paginator = Paginator(quiz_data_list, 9)
-#     page_number = request.GET.get('page')
-#     page_obj = paginator.get_page(page_number)
-#     context = {
-#         'data':page_obj,
-#         'developer_data':developer_data
-#     }
-#     return render(request,"studentapp/quiz-list.html",context=context)
 
 
 def quiz(request, id):
@@ -478,9 +496,9 @@ def quiz(request, id):
                 option_obj.option_3,
                 option_obj.option_4
             ]
-            options = [opt for opt in options if opt]
-            random.shuffle(options) 
-        except devModels.ObjectDoesNotExist:
+            options = [opt for opt in options if opt] 
+            random.shuffle(options)  
+        except option_obj.ObjectDoesNotExist:
             options = []
 
         quiz_questions_options.append({
@@ -500,11 +518,19 @@ def quiz(request, id):
             user_choice = request.POST.get(f"user_choice_{question.id}")
             try:
                 quiz_answer = devModels.QuizOptions.objects.get(question_id=question.id)
-                correct_answer = quiz_answer.option_1
+                correct_answer = quiz_answer.option_1 
                 if user_choice == correct_answer:
                     score += 1
-            except devModels.ObjectDoesNotExist:
+            except quiz_answer.ObjectDoesNotExist:
                 continue
+
+        if total_questions > 0:
+            average_score = int((score / total_questions) * 100)
+        else:
+            average_score = 0
+
+        print("--------------- Score ------------------", score)
+        print("Average Score:", average_score)
 
         if quiz_category_data.is_course_quiz:
             course_progress_tracker_data, created = studentModels.Course_Progress_Tracker.objects.get_or_create(
@@ -530,8 +556,10 @@ def quiz(request, id):
 
         context["score"] = score
         context["total_questions"] = total_questions
+        context["average_score"] = average_score
 
     return render(request, "studentapp/quiz.html", context)
+
 
 
 def send_quiz_score_to_email(username,id,score,total_questions):
@@ -563,19 +591,21 @@ def score_card(request):
         return render(request, "studentapp/score-card.html", {"error": "No quiz attempt found."})
     findQuizCatName = devModels.QuizCategory.objects.get(id=data.quiz_category.id)
     totalQuestions = devModels.QuizQuestions.objects.filter(quiz_category_id=findQuizCatName).count()
-    if data.score != 0:
-        average = totalQuestions / data.score
+    if totalQuestions > 0:
+        average = int((data.score / totalQuestions) * 100)
     else:
         average = 0
-    print("Average score:", average)
+    print("Average Score:", average)
     print("Total Questions:", totalQuestions)
     context = {
         'data': data,
+        'id':data.quiz_category,
         'quiz_category': findQuizCatName,
         'totalQuestions': totalQuestions,
         'average': average
     }
     return render(request, "studentapp/score-card.html", context=context)
+
 
 
 def live_sessions(request):
@@ -652,93 +682,7 @@ def bookmark_session(request, id):
 
 
 def course_document_content(request, course_data_id, id):
-    course_data = devModels.Online_Certification_Course.objects.get(id=course_data_id)
-    dev_id = course_data.dev_id
-    course_module_data = devModels.Module_list.objects.filter(course_id=course_data_id, dev_id=dev_id)
-
-    module_stage_data_details = {}
-    module_content_data_details = {}
-    course_quiz_id = None 
-    quiz_questions = [] 
-    quiz_options = [] 
-
-    for module_data in course_module_data:
-        module_id = module_data.id
-        module_stage_data = list(devModels.Module_Stage.objects.filter(module_id=module_id, dev_id=dev_id))
-        if module_stage_data:
-            module_stage_data_details[module_id] = module_stage_data
-
-            for stage in module_stage_data:
-                stage_id = stage.id
-                course_module_content_data = list(devModels.Course_Module_Content.objects.filter(stage_id=stage_id, dev_id=dev_id))
-                if course_module_content_data:
-                    module_content_data_details[stage_id] = course_module_content_data
-
-            
-                    for content in course_module_content_data:
-                        if hasattr(content, 'course_quiz_id'):
-                            course_quiz_id = content.course_quiz_id
-                            quiz_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=course_quiz_id)
-                            quiz_options = devModels.QuizOptions.objects.all()
-                            break
-
-    course_document_content_data = devModels.Course_Module_Content.objects.get(id=id)
-
-    if request.method == "POST":
-        score = 0
-        total_questions = quiz_questions.count()
-        for question in quiz_questions:
-            user_choice = request.POST.get(f"user_choice_{question.id}")
-            try:
-                quiz_answer = devModels.QuizOptions.objects.get(question_id=question.id)
-                correct_answer = quiz_answer.option_1
-                if user_choice == correct_answer:
-                    score += 1
-            except devModels.QuizOptions.DoesNotExist:
-                continue
-        
-        if course_quiz_id:
-            quiz_category = devModels.QuizCategory.objects.get(id=course_quiz_id)
-
-            if quiz_category.is_course_quiz:
-                course_progress_tracker_data, created = studentModels.Course_Progress_Tracker.objects.get_or_create(
-                    student_id=request.user, quiz_id=quiz_category
-                )
-                course_progress_tracker_data.is_completed = True
-                course_progress_tracker_data.save()
-            
-            quiz_attempt_form = forms.QuizAttemptForm(request.POST)
-            if quiz_attempt_form.is_valid():
-                quiz_attempt_obj = quiz_attempt_form.save(commit=False)
-                quiz_attempt_obj.student_id = request.user
-                quiz_attempt_obj.quiz_category = quiz_category
-                quiz_attempt_obj.score = score
-                quiz_attempt_obj.save()
-                enrolled_course_data = studentModels.Course_Enrollment.objects.get(student_id=request.user,course_id=course_data)
-                enrolled_course_data.is_course_completed = True
-                enrolled_course_data.save()
-                return redirect(reverse('course_final_assessment_result', args=[course_data_id, id]))
-            else:
-                print(quiz_attempt_form.errors)
-
-    context = {
-        "course_document_content_data": course_document_content_data,
-        'course_data': course_data,
-        'course_data_id': course_data.id,
-        'stage_data_id': stage_id,
-        'course_module_data': course_module_data,
-        'module_stage_data': module_stage_data_details,
-        'module_content_data': module_content_data_details,
-        'course_quiz_id': course_quiz_id,
-        'quiz_questions': quiz_questions,
-        'quiz_options': quiz_options,
-    }
-    return render(request, "studentapp/course-document-content.html", context=context)
-
-
-
-def course_final_assessment_result(request, course_data_id, id):
-    course_data = devModels.Online_Certification_Course.objects.get(id=course_data_id)
+    course_data = get_object_or_404(devModels.Online_Certification_Course, id=course_data_id)
     dev_id = course_data.dev_id
     course_module_data = devModels.Module_list.objects.filter(course_id=course_data_id, dev_id=dev_id)
 
@@ -746,7 +690,7 @@ def course_final_assessment_result(request, course_data_id, id):
     module_content_data_details = {}
     course_quiz_id = None
     quiz_questions = []
-    quiz_options = []
+    quiz_questions_options = []
 
     for module_data in course_module_data:
         module_id = module_data.id
@@ -760,29 +704,232 @@ def course_final_assessment_result(request, course_data_id, id):
                 if course_module_content_data:
                     module_content_data_details[stage_id] = course_module_content_data
 
+                    for content in course_module_content_data:
+                        if hasattr(content, 'course_quiz_id'):
+                            course_quiz_id = content.course_quiz_id
+                            quiz_questions = list(devModels.QuizQuestions.objects.filter(quiz_category_id=course_quiz_id))
+                            random.shuffle(quiz_questions)
+
+                            for question in quiz_questions:
+                                try:
+                                    option_obj = devModels.QuizOptions.objects.get(question_id=question.id)
+                                    options = [
+                                        option_obj.option_1,
+                                        option_obj.option_2,
+                                        option_obj.option_3,
+                                        option_obj.option_4
+                                    ]
+                                    options = [opt for opt in options if opt] 
+                                    random.shuffle(options) 
+                                except devModels.QuizOptions.DoesNotExist:
+                                    options = []
+
+                                quiz_questions_options.append({
+                                    "question": question,
+                                    "options": options
+                                })
+                            break 
+
+    course_document_content_data = get_object_or_404(devModels.Course_Module_Content, id=id)
+
+    if request.method == "POST":
+        score = 0
+        total_questions = len(quiz_questions)
+
+        for question in quiz_questions:
+            user_choice = request.POST.get(f"user_choice_{question.id}")
+            try:
+                quiz_answer = devModels.QuizOptions.objects.get(question_id=question.id)
+                correct_answer = quiz_answer.option_1  
+                if user_choice == correct_answer:
+                    score += 1
+            except devModels.QuizOptions.DoesNotExist:
+                continue
+
+        if course_quiz_id:
+            quiz_category = get_object_or_404(devModels.QuizCategory, id=course_quiz_id)
+            quiz_attempt, created = Quiz_attempt.objects.update_or_create(
+                student_id=request.user,
+                quiz_category=quiz_category,
+                defaults={"score": score, "date_time": timezone.now()}
+            )
+
+            if quiz_category.is_course_quiz:
+                progress_tracker, _ = studentModels.Course_Progress_Tracker.objects.get_or_create(
+                    student_id=request.user, quiz_id=quiz_category
+                )
+                progress_tracker.is_completed = True
+                progress_tracker.save()
+
+            enrolled_course_data = studentModels.Course_Enrollment.objects.get(student_id=request.user, course_id=course_data)
+            enrolled_course_data.is_course_completed = True
+            enrolled_course_data.save()
+
+            return redirect(reverse('course_final_assessment_result', args=[course_data_id, id]))
+
+    context = {
+        "course_document_content_data": course_document_content_data,
+        "course_data": course_data,
+        "course_data_id": course_data.id,
+        "course_module_data": course_module_data,
+        "module_stage_data": module_stage_data_details,
+        "module_content_data": module_content_data_details,
+        "quiz_questions_options": quiz_questions_options, 
+    }
+
+    return render(request, "studentapp/course-document-content.html", context)
+
+
+# def course_document_content(request, course_data_id, id):
+#     course_data = get_object_or_404(devModels.Online_Certification_Course, id=course_data_id)
+#     dev_id = course_data.dev_id
+#     course_module_data = devModels.Module_list.objects.filter(course_id=course_data_id, dev_id=dev_id)
+
+#     module_stage_data_details = {}
+#     module_content_data_details = {}
+#     course_quiz_id = None
+#     quiz_questions = []
+#     quiz_questions_options = []
+
+#     for module_data in course_module_data:
+#         module_id = module_data.id
+#         module_stage_data = list(devModels.Module_Stage.objects.filter(module_id=module_id, dev_id=dev_id))
+#         if module_stage_data:
+#             module_stage_data_details[module_id] = module_stage_data
+
+#             for stage in module_stage_data:
+#                 stage_id = stage.id
+#                 course_module_content_data = list(devModels.Course_Module_Content.objects.filter(stage_id=stage_id, dev_id=dev_id))
+#                 if course_module_content_data:
+#                     module_content_data_details[stage_id] = course_module_content_data
+
+#                     for content in course_module_content_data:
+#                         if hasattr(content, 'course_quiz_id'):
+#                             course_quiz_id = content.course_quiz_id
+#                             quiz_questions = list(devModels.QuizQuestions.objects.filter(quiz_category_id=course_quiz_id))
+#                             random.shuffle(quiz_questions)
+
+#                             for question in quiz_questions:
+#                                 try:
+#                                     option_obj = devModels.QuizOptions.objects.get(question_id=question.id)
+#                                     options = [
+#                                         option_obj.option_1,
+#                                         option_obj.option_2,
+#                                         option_obj.option_3,
+#                                         option_obj.option_4
+#                                     ]
+#                                     options = [opt for opt in options if opt] 
+#                                     random.shuffle(options) 
+#                                 except devModels.QuizOptions.DoesNotExist:
+#                                     options = []
+
+#                                 quiz_questions_options.append({
+#                                     "question": question,
+#                                     "options": options
+#                                 })
+#                             break 
+
+#     course_document_content_data = get_object_or_404(devModels.Course_Module_Content, id=id)
+
+#     if request.method == "POST":
+#         score = 0
+#         total_questions = len(quiz_questions)
+
+#         for question in quiz_questions:
+#             user_choice = request.POST.get(f"user_choice_{question.id}")
+#             try:
+#                 quiz_answer = devModels.QuizOptions.objects.get(question_id=question.id)
+#                 correct_answer = quiz_answer.option_1  
+#                 if user_choice == correct_answer:
+#                     score += 1
+#             except devModels.QuizOptions.DoesNotExist:
+#                 continue
+
+#         if course_quiz_id:
+#             quiz_category = get_object_or_404(devModels.QuizCategory, id=course_quiz_id)
+
+#             if quiz_category.is_course_quiz:
+#                 course_progress_tracker_data, created = studentModels.Course_Progress_Tracker.objects.get_or_create(
+#                     student_id=request.user, quiz_id=quiz_category
+#                 )
+#                 course_progress_tracker_data.is_completed = True
+#                 course_progress_tracker_data.save()
+
+#             quiz_attempt_form = forms.QuizAttemptForm(request.POST)
+#             if quiz_attempt_form.is_valid():
+#                 quiz_attempt_obj = quiz_attempt_form.save(commit=False)
+#                 quiz_attempt_obj.student_id = request.user
+#                 quiz_attempt_obj.quiz_category = quiz_category
+#                 quiz_attempt_obj.score = score
+#                 quiz_attempt_obj.save()
+
+#                 enrolled_course_data = studentModels.Course_Enrollment.objects.get(student_id=request.user, course_id=course_data)
+#                 enrolled_course_data.is_course_completed = True
+#                 enrolled_course_data.save()
+
+#                 return redirect(reverse('course_final_assessment_result', args=[course_data_id, id]))
+#             else:
+#                 print(quiz_attempt_form.errors)
+
+#     context = {
+#         "course_document_content_data": course_document_content_data,
+#         "course_data": course_data,
+#         "course_data_id": course_data.id,
+#         "course_module_data": course_module_data,
+#         "module_stage_data": module_stage_data_details,
+#         "module_content_data": module_content_data_details,
+#         "quiz_questions_options": quiz_questions_options, 
+#     }
+
+#     return render(request, "studentapp/course-document-content.html", context)
+
+
+
+def course_final_assessment_result(request, course_data_id, id):
+    course_data = devModels.Online_Certification_Course.objects.get(id=course_data_id)
+    dev_id = course_data.dev_id
+    course_module_data = devModels.Module_list.objects.filter(course_id=course_data_id, dev_id=dev_id)
+    module_stage_data_details = {}
+    module_content_data_details = {}
+    course_quiz_id = None
+    quiz_questions = []
+    quiz_options = []
+    document_quiz_id = None
+
+    for module_data in course_module_data:
+        module_id = module_data.id
+        module_stage_data = list(devModels.Module_Stage.objects.filter(module_id=module_id, dev_id=dev_id))
+        if module_stage_data:
+            module_stage_data_details[module_id] = module_stage_data
+
+            for stage in module_stage_data:
+                stage_id = stage.id
+                course_module_content_data = list(devModels.Course_Module_Content.objects.filter(stage_id=stage_id, dev_id=dev_id))
+                if course_module_content_data:
+                    module_content_data_details[stage_id] = course_module_content_data
 
                     for content in course_module_content_data:
                         if hasattr(content, 'course_quiz_id'):
                             course_quiz_id = content.course_quiz_id
                             quiz_questions = devModels.QuizQuestions.objects.filter(quiz_category_id=course_quiz_id)
                             quiz_options = devModels.QuizOptions.objects.all()
-                            break
+                            document = devModels.Course_Module_Content.objects.filter(course_quiz=course_quiz_id).first()
+                            if document:
+                                document_quiz_id = document.id 
+                            break 
 
     course_document_content_data = devModels.Course_Module_Content.objects.get(id=id)
-
     try:
         data = studentModels.Quiz_attempt.objects.filter(student_id=request.user).latest('date_time')
     except studentModels.Quiz_attempt.DoesNotExist:
         return render(request, "studentapp/score-card.html", {"error": "No quiz attempt found."})
+
     findQuizCatName = devModels.QuizCategory.objects.get(id=data.quiz_category.id)
     totalQuestions = devModels.QuizQuestions.objects.filter(quiz_category_id=findQuizCatName).count()
-    if data.score != 0:
-        average = totalQuestions / data.score
-    else:
-        average = 0
-    print("Average score:", average)
-    print("Total Questions:", totalQuestions)
+    average = int((data.score / totalQuestions) * 100) if totalQuestions > 0 else 0
 
+    print("Average Score:", average)
+    print("Total Questions:", totalQuestions)
     context = {
         "course_document_content_data": course_document_content_data,
         'course_data': course_data,
@@ -797,7 +944,8 @@ def course_final_assessment_result(request, course_data_id, id):
         'data': data,
         'quiz_category': findQuizCatName,
         'totalQuestions': totalQuestions,
-        'average': average
+        'average': average,
+        'document_quiz_id': document_quiz_id,
     }
     return render(request, "studentapp/course-final-assessment-result.html", context=context)
 
@@ -978,12 +1126,15 @@ def view_certificate(request, course_data_id):
     else:
         digital_signature = dev_views.generate_digital_signature(request.user, course_data_id, certificate_details.id)
     context = {
-        "student_name": request.user.username,
+        "first_name": request.user.first_name,
+        "last_name": request.user.last_name,
         "course": course_data,
         "course_id": course_data.id,
         "company_logo": certificate_details.company_logo.url if certificate_details.company_logo else "",
         "dev_signature": certificate_details.dev_signature.url if certificate_details.dev_signature else "",
-        "dev_name": certificate_details.dev_id.username,
+        "dev_first_name": certificate_details.dev_id.first_name,
+        "dev_last_name": certificate_details.dev_id.last_name,
+        "dev_company_name": certificate_details.dev_id.company_name,
         "digital_signature": digital_signature,
     }
     return render(request, "studentapp/view-certificate.html", context)
@@ -1081,6 +1232,8 @@ def feedback(request):
 def update_profile(request,id):
     student_data = User.objects.get(id=id)
     if request.method == "POST":
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
         username = request.POST.get('username')
         contact = request.POST.get('contact')
         address = request.POST.get('address')
@@ -1096,6 +1249,8 @@ def update_profile(request,id):
                 'student_data': student_data,
             })
 
+        student_data.first_name=first_name
+        student_data.last_name=last_name
         student_data.username=username
         student_data.contact=contact
         student_data.address=address

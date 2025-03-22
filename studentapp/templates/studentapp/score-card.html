@@ -5,25 +5,40 @@
     <div class="container d-flex align-items-center justify-content-center p-5">
         <div class="border p-3 rounded d-flex flex-column align-items-center">
             <div>
-                <h1>Congratulations {{request.user}}</h1>
+                {% if average != 70 %}
+                    <h1>!Oops you didn't clear this quiz</h1>
+                {% else %}
+                    <h1>Congratulations {{request.user}}</h1>
+                {% endif %}
             </div>
             {% if data.quiz_category.is_course_quiz == False %}
                 <div class="d-flex align-items-center">
                     <div class="p-1 px-4 d-flex flex-column align-items-center score rounded">
-                        <span class="d-block char text-success">Score</span>
-                        <span class="text-success">{{data.score}} / {{totalQuestions}}</span>
+                        {% if average != 70 %}
+                            <span class="d-block char text-danger">Score</span>
+                            <span class="text-danger">{{data.score}} / {{totalQuestions}}</span>
+                        {% else %}
+                            <span class="d-block char text-success">Score</span>
+                            <span class="text-success">{{data.score}} / {{totalQuestions}}</span>
+                        {% endif %}
                     </div>
-
 
                     <div class="ml-2 p-3">
-                        {% comment %} <h6 class="heading1">PageSpeed Score</h6> {% endcomment %}
                         <h6 class="heading1">{{quiz_category.quiz_category_name}} [ {{quiz_category.quiz_level}} ]</h6>
-                        <span>The average page speed score is {{average}}</span> 
+                        {% if average != 70 %}
+                            <span class="text-danger">The average page speed score is {{average}}</span> 
+                        {% else %}
+                            <span>The average page speed score is {{average}}</span> 
+                        {% endif %}
                     </div>
                 </div>
-                <div>
-                    <a href="{% url "quiz_list" %}" class="btn btn-primary px-4 py-2">Find Another Quiz</a>
-                    <a href="{% url "profile" %}" class="btn btn-primary px-4 py-2">View Profile</a>
+                <div class="w-100 d-flex align-items-center justify-content-center gap-3">
+                    {% if average != 70 %}
+                        <a href="{% url "quiz" id.id %}" class="btn btn-warning w-50 px-4 py-2">Reattempt</a>
+                    {% else %}
+                        <a href="{% url "quiz_list" %}" class="btn btn-primary px-4 py-2">Find Another Quiz</a>
+                        <a href="{% url "profile" %}" class="btn btn-primary px-4 py-2">View Profile</a>
+                    {% endif %}
                 </div>
             {% elif data.quiz_category.is_course_quiz == True %}
                 <div class="d-flex align-items-center">
@@ -34,13 +49,11 @@
 
 
                     <div class="ml-2 p-3">
-                        {% comment %} <h6 class="heading1">PageSpeed Score</h6> {% endcomment %}
                         <h6 class="heading1">{{quiz_category.quiz_category_name}} [ {{quiz_category.quiz_level}} ]</h6>
                         <span>The average page speed score is {{average}}</span> 
                     </div>
                 </div>
                 <div>
-                    {% comment %} <a href="{% url "view_certificate" %}" class="btn btn-primary px-4 py-2">View Certificate</a> {% endcomment %}
                     <a href="{% url "profile" %}" class="btn btn-primary px-4 py-2">View Profile</a>
                 </div>
             {% endif %}

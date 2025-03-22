@@ -21,17 +21,11 @@
         {% endif %}    
     </p>
     <p>
-        {% comment %} {% if course_document_content_data.course_quiz %}
-        <div class="d-flex align-items-center justify-content-center">
-            <a href="{% url "quiz" course_document_content_data.course_quiz.id %}" class="btn btn-primary w-50 p-2">Attept Quiz</a>
-        </div>
-        {% endif %} {% endcomment %}
-        {% if course_document_content_data.course_quiz %}
+        {% if quiz_questions_options %}
             <form method="post" class="d-flex flex-column gap-4 align-items-center justify-content-center">
                 {% csrf_token %}
 
-                {% for questions in quiz_questions %}
-                    {% if questions.is_option_added %}
+                    {% for question_data in quiz_questions_options %}
                         <div class="col-sm-12 col-xl-12">
                             <div class="bg-light rounded h-100 p-4">
                                 <h6 class="mb-4">Question {{ forloop.counter }}</h6>
@@ -39,79 +33,52 @@
                                     <thead>
                                         <tr>
                                             <td scope="col">
-                                                {{ questions.quiz_question }} <br>
-                                                {% if questions.quiz_question_summary %}
-                                                <pre class="px-3">{{ questions.quiz_question_summary }}</pre>
+                                                {{ question_data.question.quiz_question }} <br>
+                                                {% if question_data.question.quiz_question_summary %}
+                                                    <pre class="px-3">{{ question_data.question.quiz_question_summary }}</pre>
                                                 {% endif %}
                                             </td>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            {% for option in quiz_options %}
-                                                {% if option.question_id == questions %}
-                                                    <td scope="row">
-                                                        <div class="d-flex align-items-center justify-content-center p-2 gap-5">
-                                                            <div class="d-flex align-items-start justify-content-start flex-column gap-3">
-                                                                <div>
-                                                                    <span class="text-secondary fw-bold">A.</span> 
+                                            <td>
+                                                <div class="container p-3 rounded">
+                                                    <div class="row">
+                                                        {% for option in question_data.options %}
+                                                            <div class="col-md-6 mb-2">
+                                                                <div class="p-2 rounded bg-white d-flex align-items-center">
                                                                     <input 
                                                                         type="radio" 
-                                                                        name="user_choice_{{ questions.id }}" 
-                                                                        value="{{ option.option_1 }}">
-                                                                    {{ option.option_1 }}
-                                                                </div>
-                                                                <div>
-                                                                    <span class="text-secondary fw-bold">C.</span> 
-                                                                    <input 
-                                                                        type="radio" 
-                                                                        name="user_choice_{{ questions.id }}" 
-                                                                        value="{{ option.option_3 }}">
-                                                                    {{ option.option_3 }}
+                                                                        name="user_choice_{{ question_data.question.id }}" 
+                                                                        value="{{ option }}" 
+                                                                        class="me-2">
+                                                                    <label class="m-0">{{ option }}</label>
                                                                 </div>
                                                             </div>
-                                                            
-                                                            <div class="d-flex align-items-start flex-column gap-3">
-                                                                <div>
-                                                                    <span class="text-secondary fw-bold">B.</span> 
-                                                                    <input 
-                                                                        type="radio" 
-                                                                        name="user_choice_{{ questions.id }}" 
-                                                                        value="{{ option.option_2 }}">
-                                                                    {{ option.option_2 }}
-                                                                </div>
-                                                                <div>
-                                                                    <span class="text-secondary fw-bold">D.</span> 
-                                                                    <input 
-                                                                        type="radio" 
-                                                                        name="user_choice_{{ questions.id }}" 
-                                                                        value="{{ option.option_4 }}">
-                                                                    {{ option.option_4 }}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                {% endif %}
-                                            {% endfor %}
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                    {% endif %}
-                {% endfor %}
+                    {% endfor %}
 
-                <div class="container d-flex align-items-center justify-content-center p-5">
-                    <button type="submit" class="btn btn-success px-5">Finish Quiz</button>
-                </div>
-
-                {% if score is not None %}
-                    <div class="text-center mt-4">
-                        <h4>Your Score: {{ score }}/{{ total_questions }}</h4>
+                    <div class="container d-flex align-items-center justify-content-center p-5">
+                        <button type="submit" class="btn btn-success px-5">Finish Quiz</button>
                     </div>
-                {% endif %}
+
+                    {% if score is not None %}
+                        <div class="text-center mt-4">
+                            <h4>Your Score: {{ score }}/{{ quiz_questions_options|length }}</h4>
+                        </div>
+                    {% endif %}
             </form>
-        {% endif %} 
+        {% endif %}
+
     </p>
     <div class="d-flex align-items-center justify-content-between">
         {% comment %} <a href="{% url "previous_documentation" course_data_id course_document_content_data.id %}" class="btn btn-secondary">Prev</a> {% endcomment %}

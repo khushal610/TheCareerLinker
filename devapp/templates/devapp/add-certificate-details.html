@@ -63,7 +63,7 @@
                 <!-- Render the form if certificate_data does not exist -->
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <div class="col-md-8">
+                    <div class="col-md-8 mb-2">
                         <label for="company_logo" class="form-label">Your Company Logo</label>
                         <input type="file" name="company_logo" class="form-control" id="company_logo">
                     </div>

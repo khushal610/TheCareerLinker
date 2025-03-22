@@ -34,7 +34,6 @@ class Quiz_attempt(models.Model): # id
     quiz_category = models.ForeignKey("devapp.QuizCategory",on_delete=models.CASCADE,null=True,blank=True)
     score = models.IntegerField(null=True,blank=True,default=0)
     date_time = models.DateTimeField(auto_now_add=True,null=True,blank=True)
-    # quiz_category = models.ForeignKey(QuizCategory,on_delete=models.CASCADE)
 
 class Attempted_session(models.Model):
     session_id = models.ForeignKey("devapp.Online_sessions",on_delete=models.CASCADE,null=True,blank=True)

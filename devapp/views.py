@@ -13,14 +13,39 @@ import uuid
 from django.core.files.base import ContentFile
 import random,string
 from django.db.models import Q
+from django.db.models import Count
+import json
 # for celery worker
 # from devapp.tasks import send_online_session_email
 
 # Create your views here.
 def index(request):
-    dev_name = request.session.get('dev_name')
-    context = {'dev_name':dev_name}
-    return render(request,'devapp/index.html',context=context)
+    dev_name = request.user
+    totalQuizCategory = models.QuizCategory.objects.filter(dev_id=request.user,is_course_quiz=False).count()
+    totalOnlineSessions = models.Online_sessions.objects.filter(dev_name=request.user).count()
+    totalUnselectedStudents = User.objects.filter(is_selected=False,role="Student").count()
+    totalSelectedStudents = User.objects.filter(is_selected=True,role="Student").count()
+    quiz_data = (
+        Quiz_attempt.objects
+        .filter(quiz_category__is_course_quiz=False)
+        .values('quiz_category__quiz_category_name')
+        .annotate(count=Count('quiz_category'))
+    )
+    categories = [item['quiz_category__quiz_category_name'] for item in quiz_data]
+    attempts = [item['count'] for item in quiz_data]
+    print("-----------------------------------categories",categories)
+    print("-----------------------------------attmptes",attempts)
+    context = {
+        'categories': json.dumps(categories),
+        'attempts': json.dumps(attempts),
+        'dev_name': dev_name,
+        'totalQuizCategory':totalQuizCategory,
+        'totalOnlineSessions':totalOnlineSessions,
+        'totalUnselectedStudents':totalUnselectedStudents,
+        'totalSelectedStudents':totalSelectedStudents
+    }
+    return render(request, 'devapp/index.html', context=context)
+
 
 def dev_widget(request):
     return render(request,'devapp/widget.html')
@@ -50,6 +75,8 @@ def dev_profile(request):
 # ----------------------signup developer
 def dev_signUp(request):
     if request.method == "POST":
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
         username = request.POST.get('username')
         email = request.POST.get('email')
         contact = request.POST.get('contact')
@@ -68,6 +95,8 @@ def dev_signUp(request):
         except:
             if password == confirmPassword:
                 User.objects.create_user(
+                    first_name=first_name,
+                    last_name=last_name,
                     username=username,
                     email=email,
                     contact=contact,
@@ -222,6 +251,8 @@ def delete_question(request,id):
 def edit_profile(request,id):
     dev_data = User.objects.get(id=id)
     if request.method == "POST":
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
         username = request.POST.get('username')
         contact = request.POST.get('contact')
         company_name = request.POST.get('company_name')
@@ -231,6 +262,8 @@ def edit_profile(request,id):
         experience = request.POST.get('experience')
         dev_img = request.FILES.get('dev_img')
 
+        dev_data.first_name = first_name
+        dev_data.last_name = last_name
         dev_data.username = username
         dev_data.contact = contact
         dev_data.company_name = company_name
@@ -1001,3 +1034,10 @@ def dev_feedback(request):
         add_new_feedback.save()
         return redirect(index)
     return render(request,"devapp/dev-feedback.html")
+
+
+def delete_profile_image(request,id):
+    data = User.objects.get(id=id)
+    data.dev_img = None
+    data.save()
+    return redirect(dev_profile)

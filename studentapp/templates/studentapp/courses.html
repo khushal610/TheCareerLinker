@@ -74,24 +74,37 @@
         <div class="row">
           {% for enrolled_course in course_enrollment_data %}
             {% if enrolled_course.course_id.course_type == "Free" or enrolled_course.is_payment_received %}
-              <div class="col-lg-4 col-md-6 d-flex align-items-stretch p-2" data-aos="zoom-in" data-aos-delay="100">
-                <div class="course-item">
-                  <img src="{{ enrolled_course.course_id.course_thumbnail_image.url }}" class="img-fluid rounded" alt="...">
-                  <div class="course-content">
-                    <h3><a href="{% url "course_enrollment" enrolled_course.course_id.id %}">{{ enrolled_course.course_id.course_name }}</a></h3>
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                      <p class="price">{{ enrolled_course.course_id.course_type }} ₹{{ enrolled_course.course_id.course_charges }}/-</p>
-                      {% if enrolled_course.is_course_completed %}
-                        <a href="{% url "view_certificate" enrolled_course.course_id.id %}" class="btn btn-primary">View Certificate</a>
-                      {% else %}
-                        <p class="d-flex align-items-center gap-1 text-danger"><i class="fa-solid fa-clock"></i> Pendding</p>
-                      {% endif %}
+                <div class="col-lg-4 col-md-6 d-flex align-items-stretch p-2" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="course-item">
+                        <img src="{{ enrolled_course.course_id.course_thumbnail_image.url }}" class="img-fluid rounded" alt="Course Thumbnail">
+                        <div class="course-content">
+                            <h3>
+                                <a href="{% url 'course_enrollment' enrolled_course.course_id.id %}">
+                                    {{ enrolled_course.course_id.course_name }}
+                                </a>
+                            </h3>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <p class="price">{{ enrolled_course.course_id.course_type }} ₹{{ enrolled_course.course_id.course_charges }}/-</p>
+
+                                {% for course_id, quiz_data in quiz_attempted_data.items %}
+                                    {% if course_id == enrolled_course.course_id.id and quiz_data.avg_percentage >= 80 %}
+                                        <a href="{% url 'view_certificate' enrolled_course.course_id.id %}" class="btn btn-primary">View Certificate</a>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if enrolled_course.course_id.id not in quiz_attempted_data or quiz_attempted_data.enrolled_course.course_id.id.avg_percentage < 80 %}
+                                    <p class="d-flex align-items-center gap-1 text-danger">
+                                        <i class="fa-solid fa-clock"></i> Pending
+                                    </p>
+                                {% endif %}
+
+                            </div>
+                        </div>
                     </div>
-                  </div>
                 </div>
-              </div>
             {% endif %}
           {% endfor %}
+
         </div>
 
         <div class="pagination d-flex align-items-center gap-4">
