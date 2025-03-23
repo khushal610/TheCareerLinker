@@ -31,10 +31,21 @@ from django.db.models import Avg
 
 def home(request):
     course_data = devModels.Online_Certification_Course.objects.all()
+    user_data = request.user
     context = {
         'course_data': course_data
     }
+    if not user_data.is_authenticated:
+        return render(request,'studentapp/index.html',context=context)
+
+    if user_data.role == "Student":
+        return render(request,'studentapp/index.html',context=context)
+    elif user_data.role == "Developer":
+        return redirect(dev_views.index)
+    elif user_data.role == "Admin":
+        return redirect(admin_views.index)
     return render(request,'studentapp/index.html',context=context)
+    
 
 def about(request):
     feedback_data = studentModels.Feedback.objects.all()
@@ -47,6 +58,9 @@ def chat(request):
     return render(request,'studentapp/chat.html')
 
 def contact(request):
+    user_data = request.user
+    if not user_data.is_authenticated:
+        return redirect('login')
     if request.method == "POST":
         subject = request.POST.get('subject')
         message = request.POST.get('message')
@@ -63,6 +77,9 @@ def contact(request):
 
 
 def courses(request):
+    user_data = request.user
+    if not user_data.is_authenticated:
+        return redirect('login')
     search_query = request.GET.get('search', '').strip()
     course_type_filter = request.GET.get('course_type', '')
     course_data = devModels.Online_Certification_Course.objects.filter(is_launched=True)
@@ -286,6 +303,9 @@ def pricing(request):
     return render(request,'studentapp/pricing.html')
 
 def profile(request):
+    user_data = request.user
+    if not user_data.is_authenticated:
+        return redirect('login')
     username = request.user
     data = User.objects.get(username=username)
     quiz_attempted_data = Quiz_attempt.objects.filter(student_id=request.user)
@@ -481,6 +501,9 @@ def quiz_list(request):
 
 
 def quiz(request, id):
+    user_data = request.user
+    if not user_data.is_authenticated:
+        return redirect('login')
     quiz_category_data = devModels.QuizCategory.objects.get(id=id)
     quiz_questions = list(devModels.QuizQuestions.objects.filter(quiz_category_id=id))
     random.shuffle(quiz_questions)
@@ -609,6 +632,9 @@ def score_card(request):
 
 
 def live_sessions(request):
+    user_data = request.user
+    if not user_data.is_authenticated:
+        return redirect('login')
     session_data = devModels.Online_sessions.objects.all()
     company_filter = request.GET.get('company_filter')
 
@@ -778,110 +804,6 @@ def course_document_content(request, course_data_id, id):
     }
 
     return render(request, "studentapp/course-document-content.html", context)
-
-
-# def course_document_content(request, course_data_id, id):
-#     course_data = get_object_or_404(devModels.Online_Certification_Course, id=course_data_id)
-#     dev_id = course_data.dev_id
-#     course_module_data = devModels.Module_list.objects.filter(course_id=course_data_id, dev_id=dev_id)
-
-#     module_stage_data_details = {}
-#     module_content_data_details = {}
-#     course_quiz_id = None
-#     quiz_questions = []
-#     quiz_questions_options = []
-
-#     for module_data in course_module_data:
-#         module_id = module_data.id
-#         module_stage_data = list(devModels.Module_Stage.objects.filter(module_id=module_id, dev_id=dev_id))
-#         if module_stage_data:
-#             module_stage_data_details[module_id] = module_stage_data
-
-#             for stage in module_stage_data:
-#                 stage_id = stage.id
-#                 course_module_content_data = list(devModels.Course_Module_Content.objects.filter(stage_id=stage_id, dev_id=dev_id))
-#                 if course_module_content_data:
-#                     module_content_data_details[stage_id] = course_module_content_data
-
-#                     for content in course_module_content_data:
-#                         if hasattr(content, 'course_quiz_id'):
-#                             course_quiz_id = content.course_quiz_id
-#                             quiz_questions = list(devModels.QuizQuestions.objects.filter(quiz_category_id=course_quiz_id))
-#                             random.shuffle(quiz_questions)
-
-#                             for question in quiz_questions:
-#                                 try:
-#                                     option_obj = devModels.QuizOptions.objects.get(question_id=question.id)
-#                                     options = [
-#                                         option_obj.option_1,
-#                                         option_obj.option_2,
-#                                         option_obj.option_3,
-#                                         option_obj.option_4
-#                                     ]
-#                                     options = [opt for opt in options if opt] 
-#                                     random.shuffle(options) 
-#                                 except devModels.QuizOptions.DoesNotExist:
-#                                     options = []
-
-#                                 quiz_questions_options.append({
-#                                     "question": question,
-#                                     "options": options
-#                                 })
-#                             break 
-
-#     course_document_content_data = get_object_or_404(devModels.Course_Module_Content, id=id)
-
-#     if request.method == "POST":
-#         score = 0
-#         total_questions = len(quiz_questions)
-
-#         for question in quiz_questions:
-#             user_choice = request.POST.get(f"user_choice_{question.id}")
-#             try:
-#                 quiz_answer = devModels.QuizOptions.objects.get(question_id=question.id)
-#                 correct_answer = quiz_answer.option_1  
-#                 if user_choice == correct_answer:
-#                     score += 1
-#             except devModels.QuizOptions.DoesNotExist:
-#                 continue
-
-#         if course_quiz_id:
-#             quiz_category = get_object_or_404(devModels.QuizCategory, id=course_quiz_id)
-
-#             if quiz_category.is_course_quiz:
-#                 course_progress_tracker_data, created = studentModels.Course_Progress_Tracker.objects.get_or_create(
-#                     student_id=request.user, quiz_id=quiz_category
-#                 )
-#                 course_progress_tracker_data.is_completed = True
-#                 course_progress_tracker_data.save()
-
-#             quiz_attempt_form = forms.QuizAttemptForm(request.POST)
-#             if quiz_attempt_form.is_valid():
-#                 quiz_attempt_obj = quiz_attempt_form.save(commit=False)
-#                 quiz_attempt_obj.student_id = request.user
-#                 quiz_attempt_obj.quiz_category = quiz_category
-#                 quiz_attempt_obj.score = score
-#                 quiz_attempt_obj.save()
-
-#                 enrolled_course_data = studentModels.Course_Enrollment.objects.get(student_id=request.user, course_id=course_data)
-#                 enrolled_course_data.is_course_completed = True
-#                 enrolled_course_data.save()
-
-#                 return redirect(reverse('course_final_assessment_result', args=[course_data_id, id]))
-#             else:
-#                 print(quiz_attempt_form.errors)
-
-#     context = {
-#         "course_document_content_data": course_document_content_data,
-#         "course_data": course_data,
-#         "course_data_id": course_data.id,
-#         "course_module_data": course_module_data,
-#         "module_stage_data": module_stage_data_details,
-#         "module_content_data": module_content_data_details,
-#         "quiz_questions_options": quiz_questions_options, 
-#     }
-
-#     return render(request, "studentapp/course-document-content.html", context)
 
 
 
@@ -1112,6 +1034,9 @@ def previous_documentation(request, course_data_id, id):
 
 
 def view_certificate(request, course_data_id):
+    user_data = request.user
+    if not user_data.is_authenticated:
+        return redirect('login')
     try:
         course_data = devModels.Online_Certification_Course.objects.get(id=course_data_id)
     except devModels.Online_Certification_Course.DoesNotExist:
@@ -1216,6 +1141,9 @@ def student_course_query_form(request, course_data_id, id):
     return render(request, "studentapp/student-course-query-form.html", context=context)
 
 def feedback(request):
+    user_data = request.user
+    if not user_data.is_authenticated:
+        return redirect('login')
     if request.method == "POST":
         rating = request.POST.get('rating')
         feedback_content = request.POST.get('feedback_content')
@@ -1230,6 +1158,9 @@ def feedback(request):
 
 
 def update_profile(request,id):
+    user_data = request.user
+    if not user_data.is_authenticated:
+        return redirect('login')
     student_data = User.objects.get(id=id)
     if request.method == "POST":
         first_name = request.POST.get('first_name')

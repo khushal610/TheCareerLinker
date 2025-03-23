@@ -240,7 +240,11 @@
                                     <div class="card__footer">
                                         <div class="card__job-summary">
                                             <div class="card__job-icon">
-                                                <img src="{{session.dev_name.dev_img.url}}" alt="Dev Image">
+                                                {% if session.dev_name.dev_img %}
+                                                    <img src="{{session.dev_name.dev_img.url}}" alt="Dev Image">
+                                                {% else %}
+                                                <img src="{% static "assets/img/user3final.png" %}" alt="Admin" class="rounded-circle" width="150">
+                                                {% endif %}
                                             </div>
                                             <div class="card__job">
                                                 <p class="card__job-title">

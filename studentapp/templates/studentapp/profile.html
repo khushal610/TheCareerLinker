@@ -75,15 +75,6 @@
                     </div>
                   </div>
                   <hr>
-                  {% comment %} <div class="row">
-                    <div class="col-sm-3">
-                      <h6 class="mb-0">Username</h6>
-                    </div>
-                    <div class="col-sm-9 text-secondary">
-                      {{userdata.username}}
-                    </div>
-                  </div>
-                  <hr> {% endcomment %}
                   <div class="row">
                     <div class="col-sm-3">
                       <h6 class="mb-0">Email</h6>
@@ -121,10 +112,10 @@
 
               <div class="row gutters-sm">
                 <div class="col-sm-6 mb-3">
-                  <div class="card h-100">
+                  <div class="card h-100 overflow-scroll">
                     <div class="card-body">
                       <h6 class="d-flex align-items-center mb-3">Enrolled Course Details</h6>
-                      <div class="h-100 overflow-auto">
+                      <div >
                         {% if enrolled_course_details %}
                           {% for course_data in enrolled_course_details %}
                             <div class="mb-1">
@@ -154,7 +145,7 @@
                   </div>
                 </div>
                 <div class="col-sm-6 mb-3">
-                  <div class="card">
+                  <div class="card h-100 overflow-scroll">
                     <div class="card-body">
                       <h6 class="d-flex align-items-center mb-3">Attempted Quiz</h6>
                       {% if quiz_attempted_data %}
@@ -183,6 +174,6 @@
             </div>
           </div>
 
-        </div>
     </div>
+</div>
 {% endblock %}
