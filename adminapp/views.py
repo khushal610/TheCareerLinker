@@ -19,6 +19,7 @@ def index(request):
     totalShortlistedStudentData = User.objects.filter(role="Student").count()
     totalCourseEnrollmentData = Course_Enrollment.objects.all().count()
     totalFeedbacks = Feedback.objects.all().count()
+    totalIssuedCertificates = devModels.Issued_Certificate.objects.all().count()
     context = {
         'totalStudents':totalStudents,
         'totalDevelopers':totalDevelopers,
@@ -27,7 +28,8 @@ def index(request):
         'totalContactDetails':totalContactDetails,
         'totalShortlistedStudentData':totalShortlistedStudentData,
         'totalCourseEnrollmentData':totalCourseEnrollmentData,
-        'totalFeedbacks':totalFeedbacks
+        'totalFeedbacks':totalFeedbacks,
+        'totalIssuedCertificates':totalIssuedCertificates
     }
     return render(request,'adminapp/index.html',context=context)
 
@@ -266,3 +268,24 @@ def delete_feedback(request,id):
     feedback_data = Feedback.objects.get(id=id)
     feedback_data.delete()
     return redirect(feedback_table)
+
+
+def issued_certificate_detail(request):
+    query = request.GET.get('search', '')
+    # data = Course_Enrollment.objects.all()
+    issued_certificate_data = devModels.Issued_Certificate.objects.all()
+    if query:
+        issued_certificate_data = issued_certificate_data.filter(
+            Q(student_id__username__icontains=query) | 
+            Q(course_id__course_name__icontains=query) | 
+            Q(course_id__course_type__icontains=query) |
+            Q(digital_signature__icontains=query)
+        )
+    paginator = Paginator(issued_certificate_data, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'issued_certificate_data':page_obj,
+        'search_query': query
+    }
+    return render(request,"adminapp/issued-certificate-details.html",context=context)

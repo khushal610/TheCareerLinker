@@ -27,4 +27,5 @@ urlpatterns = [
     path('course-enrollment-data/',views.course_enrollment_data,name="course_enrollment_data"),
     path('feedback-table/',views.feedback_table,name="feedback_table"),
     path('delete-feedback/<int:id>/',views.delete_feedback,name="delete_feedback"),
+    path('issued-certificate-detail/',views.issued_certificate_detail,name="issued_certificate_detail"),
 ]
