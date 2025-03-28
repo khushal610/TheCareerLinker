@@ -148,7 +148,7 @@ def add_quiz_category(request):
 
 def add_questions(request):
     data = models.QuizCategory.objects.filter(dev_id=request.user)
-    paginator = Paginator(data, 5)
+    paginator = Paginator(data, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {'data':page_obj}
@@ -216,6 +216,7 @@ def add_options(request,id):
 
 def update_options(request,id):
     question_data = models.QuizQuestions.objects.get(id=id)
+    quiz_category_id = question_data.quiz_category_id.id
     options = models.QuizOptions.objects.get(question_id=question_data)
     if request.method == "POST":
         quiz_question = request.POST.get('quiz_question')
@@ -233,7 +234,8 @@ def update_options(request,id):
         options.option_3 = option_3
         options.option_4 = option_4
         options.save()
-        return redirect(add_questions)
+        return redirect(reverse('add_options', args=[quiz_category_id]))
+        # return redirect(add_questions)
     context = {
         'data':question_data,
         'options':options,

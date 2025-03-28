@@ -1054,7 +1054,7 @@ def view_certificate(request, course_data_id):
         "first_name": request.user.first_name,
         "last_name": request.user.last_name,
         "course": course_data,
-        "course_id": course_data.id,
+        "course_data_id": course_data.id,
         "company_logo": certificate_details.company_logo.url if certificate_details.company_logo else "",
         "dev_signature": certificate_details.dev_signature.url if certificate_details.dev_signature else "",
         "dev_first_name": certificate_details.dev_id.first_name,
