@@ -19,10 +19,10 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse,JsonResponse
 from django.template.loader import render_to_string
-from weasyprint import HTML
 import tempfile
+from weasyprint import HTML # type: ignore
+import razorpay # type: ignore
 import os
-import razorpay
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.db.models import Q
@@ -1100,7 +1100,8 @@ def generate_certificate_pdf(request, course_data_id):
         "course_id": course_data.id,
         "company_logo": get_file_url(certificate_details.company_logo),
         "dev_signature": get_file_url(certificate_details.dev_signature),
-        "dev_name": certificate_details.dev_id.username,
+        "dev_first_name": certificate_details.dev_id.first_name,
+        "dev_last_name": certificate_details.dev_id.last_name,
         "digital_signature": digital_signature,
         "certificate_id": issued_certificate.id if issued_certificate else "Not Issued",
     }
