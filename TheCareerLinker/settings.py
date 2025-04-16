@@ -153,8 +153,6 @@ EMAIL_HOST_USER = "yourmail@gmail.com" # type here your email id
 EMAIL_HOST_PASSWORD = "your email app password" # typr here your email's app password from google account
 
 
-# sbij rzvj qjmu ovyv
-
 RAZORPAY_KEY_ID = "**************" # type here your razorpay key id
 RAZORPAY_KEY_SECRET = "********************" # type here your razorpay key secret
 
