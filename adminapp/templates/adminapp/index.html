@@ -112,6 +112,18 @@
         <div class="container-fluid pt-4 px-4">
             <div class="row g-4">
                 <div class="col-sm-6 col-xl-3">
+                    <a href="{% url "manage_course_details" %}">
+                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                            <i class="fa-solid fa-book-open-reader fa-3x text-primary"></i>
+                            <div class="ms-3">
+                                <p class="mb-2">Manage Online Course</p>
+                                <h6 class="mb-0">{{totalCourses}}</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-sm-6 col-xl-3">
                     <a href="{% url "issued_certificate_detail" %}">
                         <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
                             <i class="fa-solid fa-certificate fa-3x text-primary"></i>
@@ -121,7 +133,8 @@
                             </div>
                         </div>
                     </a>
-                </div>
+                </div>               
             </div>
         </div>
+    
 {% endblock %}

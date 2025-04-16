@@ -25,7 +25,10 @@ urlpatterns = [
     path('contact-details/',views.contact_details,name="contact_details"),
     path('delete-contact-details/<int:id>/',views.delete_contact_details,name="delete_contact_details"),
     path('course-enrollment-data/',views.course_enrollment_data,name="course_enrollment_data"),
+    path('admin/course-enrollment-report/', views.generate_course_enrollment_pdf, name='generate_course_enrollment_pdf'),
     path('feedback-table/',views.feedback_table,name="feedback_table"),
     path('delete-feedback/<int:id>/',views.delete_feedback,name="delete_feedback"),
     path('issued-certificate-detail/',views.issued_certificate_detail,name="issued_certificate_detail"),
+    path('manage-course-details/',views.manage_course_details,name="manage_course_details"),
+    path('delete-course/<int:id>/',views.delete_course,name="delete_course"),
 ]

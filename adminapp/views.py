@@ -8,6 +8,14 @@ from TheCareerLinker import views as TCL_views
 from devapp import views as dev_views
 from django.core.paginator import Paginator
 from django.db.models import Q
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from django.db.models import Sum
 
 # Create your views here.
 def index(request):
@@ -20,6 +28,7 @@ def index(request):
     totalCourseEnrollmentData = Course_Enrollment.objects.all().count()
     totalFeedbacks = Feedback.objects.all().count()
     totalIssuedCertificates = devModels.Issued_Certificate.objects.all().count()
+    totalCourses = devModels.Online_Certification_Course.objects.all().count()
     context = {
         'totalStudents':totalStudents,
         'totalDevelopers':totalDevelopers,
@@ -29,7 +38,8 @@ def index(request):
         'totalShortlistedStudentData':totalShortlistedStudentData,
         'totalCourseEnrollmentData':totalCourseEnrollmentData,
         'totalFeedbacks':totalFeedbacks,
-        'totalIssuedCertificates':totalIssuedCertificates
+        'totalIssuedCertificates':totalIssuedCertificates,
+        "totalCourses":totalCourses,
     }
     return render(request,'adminapp/index.html',context=context)
 
@@ -237,21 +247,168 @@ def delete_contact_details(request,id):
 
 def course_enrollment_data(request):
     query = request.GET.get('search', '')
+    month = request.GET.get('month', '')
+    year = request.GET.get('select', '')
+
     data = Course_Enrollment.objects.all()
+
     if query:
         data = data.filter(
-            Q(student_id__username__icontains=query) | 
-            Q(course_id__course_name__icontains=query) | 
+            Q(student_id__username__icontains=query) |
+            Q(course_id__course_name__icontains=query) |
             Q(course_id__course_type__icontains=query)
         )
+
+    if month and month != "None":
+        month_number = {
+            'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4,
+            'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8,
+            'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+        }.get(month)
+        if month_number:
+            data = data.filter(date_time__month=month_number)
+
+    if year:
+        data = data.filter(date_time__year=year)
+
     paginator = Paginator(data, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
+    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
     context = {
         'course_enrollment_data': page_obj,
-        'search_query': query
+        'search_query': query,
+        'selected_month': month,
+        'selected_year': year,
+        'months': months
     }
     return render(request, "adminapp/course-enrollment-data.html", context)
+
+
+def generate_course_enrollment_pdf(request):
+    query = request.GET.get('search', '')
+    month = request.GET.get('month', '')
+    year = request.GET.get('select', '')
+    data = Course_Enrollment.objects.all()
+    if query:
+        data = data.filter(
+            Q(student_id__username__icontains=query) |
+            Q(course_id__course_name__icontains=query) |
+            Q(course_id__course_type__icontains=query)
+        )
+    if month and month != "None":
+        month_number = {
+            'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4,
+            'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8,
+            'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+        }.get(month)
+        if month_number:
+            data = data.filter(date_time__month=month_number)
+
+    if year:
+        data = data.filter(date_time__year=year)
+    filename_parts = ["TCL_course_enrollment_report"]
+    if month and month != "None":
+        filename_parts.append(month)
+    if year:
+        filename_parts.append(str(year))
+    filename = "_".join(filename_parts) + ".pdf"
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    pdf = SimpleDocTemplate(response, pagesize=landscape(letter))
+    elements = []
+    styles = getSampleStyleSheet()
+    centered_title = ParagraphStyle(name='CenteredTitle', parent=styles['Title'], alignment=TA_CENTER)
+    centered_heading = ParagraphStyle(name='CenteredHeading', parent=styles['Heading1'], alignment=TA_CENTER)
+    
+    elements.append(Paragraph("<b>The Career Linker</b>", centered_title))
+    elements.append(Spacer(1, 6))
+    
+    report_title = "Course Enrollment Report"
+    if month and month != "None" and year:
+        report_title += f" for {month} {year}"
+    elif month and month != "None":
+        report_title += f" for {month}"
+    elif year:
+        report_title += f" for {year}"
+    elements.append(Paragraph(report_title, centered_heading))
+    elements.append(Spacer(1, 12))
+    # Table column
+    table_data = [[
+        Paragraph("ID", styles['Normal']),
+        Paragraph("Student", styles['Normal']),
+        Paragraph("Course", styles['Normal']),
+        Paragraph("Type", styles['Normal']),
+        Paragraph("Price", styles['Normal']),
+        Paragraph("Payment", styles['Normal']),
+        Paragraph("Course Status", styles['Normal']),
+        Paragraph("Payment ID", styles['Normal']),
+        Paragraph("Order ID", styles['Normal']),
+        Paragraph("Date", styles['Normal']),
+    ]]
+    total_amount = 0
+    for index, course_data in enumerate(data, start=1):
+        course_type = course_data.course_id.course_type
+        course_price = course_data.course_id.course_charges if course_type != "Free" else 0
+        total_amount += int(course_price)
+        table_data.append([
+            Paragraph(str(index), styles['Normal']),
+            Paragraph(course_data.student_id.username, styles['Normal']),
+            Paragraph(course_data.course_id.course_name, styles['Normal']),
+            Paragraph(course_type, styles['Normal']),
+            Paragraph(str(course_price) if course_price else "-", styles['Normal']),
+            Paragraph("Paid" if course_data.is_payment_received else "-", styles['Normal']),
+            Paragraph("Completed" if course_data.is_course_completed else "Not Completed", styles['Normal']),
+            Paragraph(course_data.razorpay_payment_id or "-", styles['Normal']),
+            Paragraph(course_data.razorpay_order_id or "-", styles['Normal']),
+            Paragraph(course_data.date_time.strftime('%Y-%m-%d') if course_data.date_time else "-", styles['Normal']),
+        ])
+    # Add total row
+    table_data.append([
+        "-", 
+        Paragraph("<b>Total</b>", styles['Normal']),
+        "-", 
+        "-", 
+        Paragraph(f"<b>{total_amount}</b>", styles['Normal']),
+        "-", 
+        "-", 
+        "-", 
+        "-", 
+        "-"
+    ])
+
+    # Column widths
+    col_widths = [
+        0.4 * inch,  # ID
+        1.2 * inch,  # Student
+        1.6 * inch,  # Course
+        0.6 * inch,  # Type
+        0.5 * inch,  # Price
+        0.9 * inch,  # Payment
+        0.9 * inch,  # Course Status
+        1.6 * inch,  # Payment ID
+        1.6 * inch,  # Order ID
+        1.2 * inch,  # Date
+    ]
+    table = Table(table_data, colWidths=col_widths, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4CAF50')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('FONTNAME', (-10, -1), (-1, -1), 'Helvetica-Bold'),  # Bold for total row
+    ]))
+
+    elements.append(table)
+    pdf.build(elements)
+    return response
 
 
 def feedback_table(request):
@@ -289,3 +446,20 @@ def issued_certificate_detail(request):
         'search_query': query
     }
     return render(request,"adminapp/issued-certificate-details.html",context=context)
+
+
+def manage_course_details(request):
+    course_data = devModels.Online_Certification_Course.objects.all()
+    paginator = Paginator(course_data, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'course_data':page_obj,
+    }
+    return render(request,"adminapp/manage-course-details.html",context=context)
+
+
+def delete_course(request,id):
+    course_data = devModels.Online_Certification_Course.objects.get(id=id)
+    course_data.delete()
+    return redirect(manage_course_details)

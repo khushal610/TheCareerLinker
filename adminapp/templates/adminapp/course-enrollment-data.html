@@ -1,14 +1,35 @@
 {% extends "adminapp/master.html" %}
 {% load static %}
 {% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
 <div class="container-fluid pt-4 px-4">
     <div class="row g-4">
 
-        <div>
-            <form method="GET" action="{% url 'course_enrollment_data' %}" class="d-flex align-items-center gap-2 col-lg-10">
+        <div class="d-flex align-items-center gap-2 col-lg-12">
+            <form method="GET" action="{% url 'course_enrollment_data' %}" class="d-flex align-items-center gap-2 col-lg-9">
                 <input type="text" name="search" placeholder="Search by student name, course name, or course type" value="{{ search_query }}" class="form-control">
+                <select name="month" class="form-control w-25">
+                    <option value="None">Select Month</option>
+                    {% for m in months %}
+                        <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+                
+                <select name="select" class="form-control" id="dropdownYear" style="width: 120px;">
+                    <!-- Year options will be loaded by JavaScript -->
+                </select>
+                
                 <button type="submit" class="btn btn-dark d-flex align-items-center gap-2">
                     <i class="fa-solid fa-magnifying-glass"></i> Search
+                </button>
+            </form>
+            <form method="GET" action="{% url 'generate_course_enrollment_pdf' %}" target="_blank">
+                <input type="hidden" name="search" value="{{ search_query }}">
+                <input type="hidden" name="month" value="{{ selected_month }}">
+                <input type="hidden" name="select" value="{{ selected_year }}">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fa-solid fa-file-pdf"></i> Download PDF Report
                 </button>
             </form>
         </div>
@@ -40,7 +61,14 @@
                                     <th scope="row">{{forloop.counter}}</th>
                                     <td>{{course_data.student_id.username}}</td>
                                     <td>{{course_data.course_id.course_name}}</td>
-                                    <td>{{course_data.course_id.course_type}}</td>
+                                    <td>
+                                        {% if course_data.course_id.course_type == "Free" %}
+                                            {{course_data.course_id.course_type}}
+                                        {% else %}
+                                            {{course_data.course_id.course_type}} <br>
+                                            [ {{course_data.course_id.course_charges}} ₹ ]
+                                        {% endif %}
+                                    </td>
                                     <td>
                                         {% if course_data.is_payment_received %}
                                             <p class="text-success d-flex align-items-center justify-content-center gap-1"><i class="fa-solid fa-circle-check"></i></p>
@@ -100,4 +128,22 @@
         </div>
     </div>
 </div>
+
+<script>
+    $('#dropdownYear').each(function() {
+        var year = (new Date()).getFullYear();
+        var current = year;
+        var selectedYear = "{{ selected_year }}";
+    
+        for (var i = -1; i < 6; i++) {
+            var yearValue = year + i;
+            if (yearValue.toString() === selectedYear) {
+                $(this).append('<option selected value="' + yearValue + '">' + yearValue + '</option>');
+            } else {
+                $(this).append('<option value="' + yearValue + '">' + yearValue + '</option>');
+            }
+        }
+    });
+    
+</script>
 {% endblock %}
