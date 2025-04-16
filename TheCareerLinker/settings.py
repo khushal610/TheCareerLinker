@@ -149,13 +149,15 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = "pcability610@gmail.com"
-EMAIL_HOST_PASSWORD = "qcky cukf bfkz knmw"
+EMAIL_HOST_USER = "yourmail@gmail.com" # type here your email id
+EMAIL_HOST_PASSWORD = "your email app password" # typr here your email's app password from google account
+
 
 # sbij rzvj qjmu ovyv
 
-RAZORPAY_KEY_ID = "rzp_test_kRLOHDnzOAxCT4"
-RAZORPAY_KEY_SECRET = "BmKT1rAvCcMTFrvCkX02DSpg"
+RAZORPAY_KEY_ID = "**************" # type here your razorpay key id
+RAZORPAY_KEY_SECRET = "********************" # type here your razorpay key secret
+
 
 
 
